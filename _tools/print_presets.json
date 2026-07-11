@@ -119,6 +119,6 @@
     "dustjacket_note": "hardcover (dust jacket): flaps 3.375 x (trim_h + 0.5); jacket W e.g. 20.458 x 9.5 @6x9 100pp — captured for reference, not a kit format",
     "default_paper_for_text_books": "standard_trade_bw_matte_paper",
     "file_specs": { "pdf_standard": "INFERRED — Blurb PDF-to-Book historically PDF/X-3 sRGB 300dpi; confirm at upload", "barcode": "INFERRED — Blurb applies its own barcode for bookstore distribution; keep back-cover bottom-right clear" },
-    "dense_spine_table_pending": "blurb_spine_tables.json (every 12pp, 24-480, 4 combos) being probed from the calculator; merge into spine_tables_in when it lands"
+    "dense_spine_table_outcome": "a dense probe (every 12pp, 24-480) was attempted 2026-07-11 but died to Blurb's rate limiter before writing. The six calculator-exact anchor points per paper above are the shipped basis — linear interpolation between anchors, Blurb's previewer canonical at upload. Re-probe politely (>=10s pacing, single session) only if sub-anchor precision ever matters."
   }
 }
