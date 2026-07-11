@@ -1,0 +1,377 @@
+
+ Page Counts | Mixam 
+ 4.4
+ +1 888 510 1456 
+ Contact Us 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ English 
+ English 
+ Spanish 
+ -->
+ All Products 
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control rounded-start search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#clearSearch">
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--search#openMobileSearch">
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#closeMobileSearch">
+ Search Results
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Print On Demand 
+ +1 888 510 1456 
+ team@mixam.com 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Australia 
+ English 
+ English 
+ Spanish 
+ Sign In 
+ header--megamenu#switchToCategory"
+ data-target-category="books"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Books
+ header--megamenu#switchToCategory"
+ data-target-category="magazinesandbooklets"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Magazines & Booklets
+ header--megamenu#switchToCategory"
+ data-target-category="comicsandzines"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Comics & Zines
+ header--megamenu#switchToCategory"
+ data-target-category="businessandmarketingmaterials"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Business & Marketing
+ header--megamenu#switchToCategory"
+ data-target-category="artandphotography"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Art & Photography
+ header--megamenu#switchToCategory"
+ data-target-category="shareandsell"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Print On Demand
+ header--megamenu#closeOnOutsideClick" data-type="mega-menu" data-version="5" class="collapse position-absolute bg-neutral-7 top-0 start-0 end-0 pt-3 pb-3 z-index-100">
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Print On Demand 
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Print On Demand 
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Books
+ Activity Books
+ Autobiographies
+ Biography Books
+ Bookmarks
+ Children's Books
+ Coffee Table Books
+ Coloring Books
+ Cookbooks
+ Custom Dust Jackets
+ Diaries
+ Dissertations
+ Eulogies
+ Family History Books
+ Graphic Novels
+ Handbooks
+ Hardcover Books
+ Layflat Books
+ Manga
+ Memoirs
+ Notebooks
+ Novels
+ Paperback Books
+ Planners
+ Poetry Books
+ Reports
+ Textbooks
+ Theses
+ Wedding Albums
+ Workbooks
+ Yearbooks
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Magazines & Booklets
+ Booklets
+ Catalogs
+ Lookbooks
+ Magazines
+ Perfect Bound Booklets
+ Spiral Bound Booklets
+ Stapled Booklets
+ Wire-O Bound
+ Zine Printing
+ Featured Products
+ Booklets 
+ Comics & Zines
+ Comic Books
+ Comic Sketch Covers
+ Graphic Novels
+ Manga
+ Zine Printing
+ Business & Marketing
+ Booklets
+ Bookmarks
+ Brochures
+ Business Cards
+ Catalogs
+ Compliment Slips
+ Direct Mail
+ Flyers
+ Handbooks
+ Letterheads
+ Loyalty Cards
+ Manuals
+ Menus
+ Postcards
+ Posters
+ Programs
+ Reports
+ Stapled Booklets
+ Wall Calendars
+ Featured Products
+ Booklets 
+ Business Cards 
+ Art & Photography
+ Art Books
+ Art Prints
+ Baby Photo Books
+ Coffee Table Books
+ Photo Books
+ Photography Books
+ Portfolios
+ Posters
+ Travel Albums
+ Wedding Albums
+ Featured Products
+ Posters 
+ Share & Sell your products with Print-On-Demand
+ For further info, demos and FAQs, including available products & distribution methods
+ Learn More 
+ Alert 
+ Loading Chat
+ Categories
+ Our Top 5 Topics 
+ How To Print A Book with Mixam 
+ Book Printing Basics 
+ Design and File Preparation 
+ Printing Options and Customization 
+ Comparing Your Print Options 
+ Preparing for Print 
+ Ordering with Mixam 
+ Promoting Your Book with Mixam 
+ Additional Notes 
+ Print On Demand with Mixam 
+ Print-on-Demand Introduction 
+ Comparing Your Print Options 
+ The Publisher Hub 
+ Getting Paid with Stripe 
+ Creating and Editing Products 
+ The Buyer Experience 
+ Selling Products with Shopify 
+ Marketing Your Print-on-Demand Products 
+ Rewards Program 
+ Mixam’s Rewards Program FAQ 
+ Design Tools 
+ Design Your Photo Book Online with Mixam: Your How-To Guide 
+ How To Use The Design Online Tool 
+ Print Design Generator Tool 
+ Artwork 
+ Print File Setup Guide 
+ Dust Jacket File Preparation Guide 
+ How To Prepare and Upload Print Files 
+ How To Print Multiple Designs 
+ How To Use Mixam’s AI Image Enhancer 
+ Image Resolution 
+ Variant and Sketch Covers 
+ Delivery 
+ Shipping and Delivery 
+ Understanding Delivery Timelines 
+ Understanding Your Order Status 
+ General 
+ Binding 
+ How To Report Print Issues 
+ How To Count Leaves, Sides and Pages 
+ How To Print With Mixam 
+ How To Submit Print Files 
+ Industry Standard Sizes 
+ Our Paper Range 
+ Page Counts 
+ Print File Setup Checklist 
+ Printing Glossary 
+ Production Timeline 
+ Proofing 
+ Quotes 
+ What Is an ISBN? 
+ Sustainable Printing 
+ Payments 
+ Payment Methods 
+ Printing & Finishing 
+ CMYK Color Charts and Values 
+ CMYK vs RGB 
+ Cloth Book Covers 
+ Color Guide for Printing 
+ Color Variance 
+ Color vs Black and White 
+ Endpapers 
+ Full Bleed Printing Explained 
+ How To Apply Foiling to Prints 
+ How To Apply a Spot UV 
+ How To Convert RGB to CMYK 
+ How To Measure a Book for Printing 
+ How To Print Hardcover Books 
+ Ink Saturation and Density 
+ Manufacturing Variance 
+ Offset Printing versus Digital Printing 
+ Our Print Finishes 
+ Special Print Options 
+ Standard Black vs Rich Black 
+ Why Printed Colors Look Different From Your Screen 
+ Page Counts
+ Counting pages is simple when you know how. Take a look at this page to learn about our rules, exceptions and limits.
+ Counting your Pages 
+ Our Instant Price Calculator counts pages in increments of 4 for you. You need to ensure the number of pages you upload is the same as the number you specified in your quote.
+ If you have a  Paperback Book ,  Catalog  or  Magazine  - these items follow a particular page count format. When you open the cover page, Page 1 will always start on the right-hand side, and each side of the paper will count as one page. So, on the other side of Page 1 is Page 2 (now on the left-hand side). Page 3 is on the right; Page 4 is on the other side (the left) etc.
+ You can always include blank pages in your final project if required. Please note that blank pages will factor into your overall page count.
+ Note:  Our team may add extra blank pages to the end of Paperback Reading Books sized 6" x 9" or smaller.
+ If your item has a cover, do not include the cover pages in your total. Instead, subtract four pages from the total. For example, if you have 28 pages, including the cover, enter 24 pages on the Instant Quote Calculator. If your item is a self-cover, meaning it does not have a separate cover and all pages use the same paper, include all pages in your total. For example, if your file has 28 pages, enter 28 pages on the calculator.
+ Only two extra pages are included if you choose the 'Add Cover (+4 Printed Pages)' option and select 'No' for inner cover printing. In this case, increase your total by two pages instead of four. For example, if your file has 28 pages, enter 30 pages.
+ Why Do We Give Page Counts in Multiples of Four? 
+ Most bound products count interior pages in multiples of four. We will print your artwork on what's known as 'parent sheets' instead of printing individual pages.
+ Depending on the size of your bound item, the parent sheets will hold 8, 16, or 32 pages. If your page count is not a multiple of four, there will be blank pages printed to make the number of pages a multiple of 4.
+ After printing, the parent sheets are folded and gathered together, with 3 sides trimmed to allow for flipping. See our A4 portrait booklet opposite as an example.
+ This multiple of 4 rule is used only for perfect-bound, case-bound (Hardcover), and saddle-stitched (stapled) bindings.
+ Cover Papers 
+ The parent sheet/multiple of four approach outlined above also applies to adding a cover to your Booklet. Just use the first page of your bound item as the cover. The page count will remain the same on our Price Calculator.
+ Exceptions 
+ Hardcover Books  are exceptions to the multiple of four rule. If you want to print a casebound book, we include endpapers for free. You only need to include 2 pages for your cover in your total page count.
+ The first printed page of a Hardcover Book will be Page 3, the first right-hand inside page. Page 2 (on the left-hand side) will be blank.
+ For Paperback Reading Books sized 6" x 9" or smaller, our production team may add extra blank pages at the end to ensure proper binding.
+ Page Count Limits 
+ There are limits to the number of pages you can include for some binding types. 
+ On  Booklets , for example, staple binding is only available as an option until you reach a certain paper thickness. Staple binding can only physically hold so many sheets of paper together. Once you exceed the limit, we can only offer you perfect binding, where we will glue the pages together and onto a rigid spine. This binding option is better suited to projects with a high page count.
+ Your print job must meet a minimum page count or paper thickness before we can use perfect binding. Otherwise, there will not be enough paper sheets to glue to the spine.
+ Our Instant Price Calculator will work out what's best for your prints based on the print specifications you enter. It prevents you from selecting perfect-bound as an option until you have enough pages or the required thickness of the paper. The Calculator will alert you and automatically switch your product from staple-bound to perfect-bound when you exceed the limits of our booklet staple binding.
+ Seeing (and feeling) is believing
+ Start your print journey with our sample packs.
+ Order a Free Sample Pack 
+ Get double points on your first order when you sign up for an account
+ Create an Account 
+ Mixam is a leading online printing platform that creates customizable print products for a global audience. We make print easy, accessible, and affordable with competitive pricing, exceptional materials and pro customer service. Our digital and offset printing solutions combine expert knowledge with the latest technology.
+ TrustScore : 4.4 | 5487 reviews 
+ Customer Support Hours
+ Monday - Friday: 24-Hour Service
+ Saturday - Sunday: 6am to 1pm EST
+ Email : team@mixam.com 
+ Phone : +1 888 510 1456 
+ Address (Appt. Only) : Mixam, Inc, 1 N Wacker Dr, Suite 2410, Chicago, IL, 60606 US
+ Other Mixam Shops
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ Home
+ Knowledge Base 
+ Blog 
+ Our Paper Ranges 
+ Rewards Program 
+ Join Our Team 
+ Privacy Policy 
+ Terms of Use and Service 
+ Cookie Policy 
+ FAQs 
+ Your Privacy Choices 
+ Popular Items
+ Booklets 
+ Brochures 
+ Business Cards 
+ Flyers 
+ Hardcover Books 
+ Paperback Books 
+ Postcards 
+ Posters 
+ Categories
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Educational & Specialty Books 
+ Personal & Special Occasion 
+ © 2003 - 2026, Mixam, Inc. All rights reserved. 
+ Terms & Conditions
+ Mixam's Terms of Use and Service ("Terms") have changed. By tapping Accept or continuing to use our website, you accept our new Terms, which took effect on July 7, 2025.
+ terms--terms#acceptTerms">Accept 
+ Learn More 
+ Read T&Cs 
+ We use cookies
+ Our site uses cookies to give you the best experience. You can choose which cookies to accept or continue shopping if you're happy.
+ We noticed you have a privacy preference set, and we have honored it by disabling advertising cookies. 
+ cookies--consent#acceptAll">Accept All 
+ Manage Cookies 
+ cookies--consent#dismiss" aria-label="Close"> 
+ Manage Your Cookies
+ We use cookies to personalise content, provide analytics, and enhance your browsing experience. Manage your settings for different types of cookies below. You can find out more about what cookies we use and how we use them by viewing our 
+ Cookie Policy .
+ Essential Cookies
+ Essential cookies are necessary for the basic functionality of our website. These cookies enable core features such as security, network management, and accessibility. You cannot opt out of these cookies, as the website cannot function properly without them.
+ Analytics Cookies
+ Analytics cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. These cookies provide data on things like page visits, traffic sources, and user behaviour so we can improve the performance of our site.
+ Ad Storage
+ Ad storage enables the storage and tracking of ads and marketing-related data, allowing for personalised advertisements and analytics about ad campaigns.
+ Ad Personalisation
+ Ad personalisation uses collected data to display personalised advertisements based on user behaviour and preferences.
+ Ad User Data
+ Ad user data tracks user information to enable ad targeting and analytics that provide insights into campaign performance.
+ Personalization Storage
+ Personalization storage enables the storage of data for personalized website content and features, improving your overall browsing experience.
+ Cancel 
+ cookies--consent#savePreferences">Accept & close 

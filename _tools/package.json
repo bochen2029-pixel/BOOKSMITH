@@ -1,0 +1,10 @@
+{
+  "name": "booksmith-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BOOKSMITH Node toolchain — interior/ebook generators + OOXML injectors (docx + jszip).",
+  "dependencies": {
+    "docx": "9.6.1",
+    "jszip": "3.10.1"
+  }
+}

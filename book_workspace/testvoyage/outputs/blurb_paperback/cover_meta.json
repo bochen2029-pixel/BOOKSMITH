@@ -1,0 +1,13 @@
+{
+  "profile": "blurb-wrap",
+  "pages": 18,
+  "spine_in": 0.056,
+  "target_wrap_in": [
+    12.306,
+    9.25
+  ],
+  "files": [
+    "C:\\BOOKSMITH\\book_workspace\\testvoyage\\outputs\\blurb_paperback\\cover_wrap_blurb.pdf",
+    "C:\\BOOKSMITH\\book_workspace\\testvoyage\\outputs\\blurb_paperback\\cover_wrap_blurb.jpg"
+  ]
+}

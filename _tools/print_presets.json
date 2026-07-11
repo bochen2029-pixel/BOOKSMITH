@@ -1,0 +1,124 @@
+{
+  "_meta": {
+    "what": "Prevalidated print-service geometry presets for BOOKSMITH. Single source of truth for per-service cover/interior geometry beyond KDP. Consumed by composite_cover.py, generate_book.js, verify_build.py (via preset_lookup.py).",
+    "as_of": "2026-07-11",
+    "provenance_codes": {
+      "shipped": "proven by Bo's shipped books (LESSONS_LEDGER)",
+      "mixam-template": "decoded from Mixam's own template-generator PDFs (Digest 5.5x8.5 Paperback spine 0.12 + US Trade 6x9 Paperback 'Reading Books' spine 0.51 + US Trade 6x9 Hardcover 'Novels' spine 0.60), MediaBoxes + printed callouts",
+      "blurb-calculator-probe": "probed live from Blurb's official booksize calculator (blurb.com/make/pdf_to_book/booksize_calculator), 2026-07-11",
+      "INFERRED": "not confirmed from an official source — verify at upload; service calculator/previewer is canonical"
+    },
+    "meta_rule": "The service's own calculator/previewer ALWAYS beats these numbers. Presets make the FIRST pass land; a stated dimension from a rejection or calculator goes into book_config.spine.spine_override_in and wins."
+  },
+
+  "kdp_paperback": {
+    "provenance": "shipped",
+    "binding": "perfect-bound softcover",
+    "cover_model": "single wrap [back|spine|front], one PDF",
+    "cover_bleed_in": 0.125,
+    "spine": "pages x 0.002252 (white) / 0.0025 (cream); NO board add",
+    "page_multiple": 2,
+    "interior": "trim-size pages (6x9), no interior bleed for text books; mirror margins",
+    "barcode": "KDP overlays its own ISBN barcode bottom-right of back panel; keep 2.25x1.5 in clear, bake nothing"
+  },
+
+  "kdp_hardcover": {
+    "provenance": "shipped",
+    "binding": "case laminate",
+    "cover_model": "single wrap with 0.708 in turn-in all sides (NOT bleed)",
+    "board_add_in": 0.348,
+    "wrap_height_in_6x9": 10.417,
+    "spine": "pages x per_page_white + 0.348 — NON-extrapolating across page-count bands (186pp needed 0.767 vs formula 0.706); reverse-derive from the Previewer's stated dims on rejection",
+    "page_multiple": 2,
+    "paper": "white only (KDP offers no cream hardcover)"
+  },
+
+  "mixam_hardcover": {
+    "provenance": "shipped + mixam-template",
+    "binding": "case bound",
+    "cover_model": "THREE separate PDFs: front_cover.pdf / back_cover.pdf / spine.pdf (filename keyword routing; bare back.pdf misroutes to body page 1). Template also offers a single-spread variant which adds a 0.40 in hinge allowance (flat 13.00 for 6x9 at 0.60 spine = 2x6 + 0.60 + 0.40) — PREFER the 3-panel form, proven by shipped books, no hinge modeling needed.",
+    "cover_bleed_in": 0.80,
+    "cover_panel_6x9_in": [7.60, 10.60],
+    "cover_quiet_in": { "all": 0.25, "spine_side": 0.40 },
+    "interior_bleed_in": 0.125,
+    "interior_pages_accept": "trim-size pages proven acceptable in shipped production (template nominal body page = trim + 2x0.125)",
+    "spine": "pages x per_page + board add; board add NON-constant (0.160 @204pp, 0.110 @548pp observed in shipped work) — Mixam job calculator canonical. Live-calculator series (US Trade cream 50lb): 68pp 0.31 / 100pp 0.38 / 200pp 0.61 / 300pp 0.84 / 400pp 1.06 / 500pp 1.29 -> fit spine ~= pages x 0.00228 + 0.154 in (single-source CALC; per-center offers varied ±0.05).",
+    "hinge_in": 0.2,
+    "hinge_note": "0.2 in hinge each side of the spine. Single panels: 0.8 bleed all edges but only 0.2 used at the hinge edge. Spread form: back + 0.2 + spine + 0.2 + front, then +0.8 bleed all round (spread grows 1.6 in W and H) — the 3-panel form avoids modeling this entirely.",
+    "spine_file_bleed": "0.8 in TOP/BOTTOM only (none left/right); spine movement tolerance ±0.08 left-right; keep spine text 0.2 from top/bottom",
+    "min_max_pages": "Reading Books hardcover (cream 50/55/60lb): 68 - 916 interior pages; cover counts +2",
+    "endpapers": "automatic on every casebound book; white/black free; printed endpapers not offered",
+    "page_multiple": 4,
+    "barcode": "Mixam does not auto-stamp a barcode"
+  },
+
+  "mixam_paperback": {
+    "provenance": "mixam-template + mixam-official (mixam.com/support/{filesetup,bleed,binding,pagecount} + /paperbackbooks) + live calculator/template API capture 2026-07-11",
+    "binding": "perfect-bound softcover (PUR)",
+    "product_lines_seen": ["Reading Books (US Trade 6x9 — the text-book line)", "Photo Quality Books (Digest 5.5x8.5)"],
+    "cover_model": "single wrap [back|spine|front] at 0.125 in bleed (KDP-wrap geometry, front on right; NO glue-gap added to the spread width), OR separate front/back panels + exact-width spine panel (spine file: 0.125 bleed TOP/BOTTOM ONLY). Wrap form: W = 2 x trim_w + spine + 0.25 ; H = trim_h + 0.25. Verified: template 6x9 @0.51 spine -> spread trim 12.51x9.00, with bleed 12.76x9.25; 5.5x8.5 @0.12 -> 11.37x8.75. Keep content clear of 0.125 in glue area both sides of the spine. No spine file uploaded -> spine prints blank.",
+    "cover_bleed_in": 0.125,
+    "cover_quiet_in": { "all": 0.25, "spine_side": 0.50 },
+    "interior_bleed_in": 0.125,
+    "interior_quiet_in": { "all": 0.25, "binding_side": 0.50 },
+    "interior_pages_accept": "trim-size pages (matches shipped Mixam practice for text books; template nominal body page = trim + 2x0.125)",
+    "spine_table_us_trade_cream50_in": { "68": 0.20, "100": 0.27, "200": 0.50, "300": 0.73, "400": 0.95, "500": 1.18 },
+    "spine_fit": "cream 50lb: spine ~= pages x 0.0023 + 0.04 in (fits the live-calculator series within ±0.005). Cream 55lb @200pp: 0.60; cream 60lb: 0.63; uncoated 40/50/60lb @200pp: 0.34/0.44/0.49. Per-print-center offers vary up to ±0.05 — the CART value is canonical; use spine_override_in for production.",
+    "page_multiple": { "value": 4, "provenance": "CONFIRMED — calculator page slider step=4; multiple-of-4 rule published for perfect-bound (support/pagecount)" },
+    "min_max_pages": "Reading Books (cream 50/55/60lb): 32 - 916 interior pages. Cover counts +2 toward Mixam's total-page accounting.",
+    "spine_text_rule": "keep spine content 0.2 in from top/bottom; blank spine below ~0.25 in width (kit rule; Mixam prints blank if no spine supplied)",
+    "barcode": "not required (incl. PrintLink POD); if used: back cover bottom-right at 300dpi; Mixam does not auto-stamp"
+  },
+
+  "mixam_file_specs": {
+    "provenance": "mixam-official (support/filesetup, /fileformats, /checklist, book-printing-guide.pdf, official .joboptions preset)",
+    "pdf": "print-ready PDF preferred (PDF 1.3 w/ PDF/X-1a:2001 compliance per Mixam's own Adobe export preset); uploads < 2 GB; TrimBox = final page size (bleed OUTSIDE it)",
+    "color": "CMYK preferred (RGB auto-converted, colors may shift); ICC GRACoL2006_Coated1v2; ink 150-250% recommended, 400% max TAC; rich black C30 M30 Y30 K100 for areas, 100K for small text",
+    "resolution": "300 dpi standard; below 100 dpi rejected as unprintable",
+    "fonts": "embed all fonts (or convert to outlines — Mixam's stated safe path)",
+    "naming": "page files auto-sequenced from names (Page_1, page-1); cover.pdf / cover_spread.pdf auto-routed; keywords front/back/last recognized; kit's inner_* labeling is compatible (proven in shipped production, not doc-guaranteed)"
+  },
+
+  "blurb_trade": {
+    "provenance": "blurb-calculator-probe",
+    "what": "Blurb Trade Books (their bookstore-style text line). Papers: standard_trade_bw_matte_paper (Standard Trade B&W), economy_trade_matte_paper, standard_trade_matte_paper (color). Bindings probed: softcover, lithowrap (= Hardcover ImageWrap), hardcover (= Hardcover w/ DUST JACKET, 3.375 in flaps — captured but NOT implemented as a kit format).",
+    "row_schema": "[page_pdf_wxh, page_trim_wxh, page_bleed, page_safety(0.25), page_gutter_min(0.5), cover_pdf_wxh, cover_trim_wxh, cover_bleed, flap_wxh|none, spine_wxh, spine_safety(0.25)] — all inches; field labels for the two 0.25/0.5 constants are INFERRED, values exact",
+    "trims_offered": { "5x8": [5.0, 8.0], "6x9": [6.0, 9.0], "8x10": [8.0, 10.0] },
+    "not_offered": "8x10 hardcover/ImageWrap returns zeros from the calculator (softcover only at 8x10)",
+    "page_bleed_model": "page PDF = (trim_w + 0.125) x (trim_h + 0.25) — bleed on the OUTER width edge only (none into the binding) + both height edges. E.g. 6x9 -> 6.125 x 9.25.",
+    "page_count_range_probed": { "min": 24, "max": 480, "provenance": "calculator accepted 24..480; exact service min/max INFERRED from that range — confirm at upload" },
+
+    "spine_tables_in": {
+      "_note": "spine depends ONLY on paper + page count (verified identical across trims). Linear-interpolate between points; calculator canonical. Softcover spines:",
+      "softcover": {
+        "standard_trade_bw_matte_paper": { "24": 0.056, "50": 0.111, "100": 0.208, "200": 0.431, "300": 0.639, "480": 0.972 },
+        "standard_trade_matte_paper":    { "24": 0.069, "50": 0.139, "100": 0.264, "200": 0.528, "300": 0.792, "480": 1.25 },
+        "economy_trade_matte_paper":     { "24": 0.069, "50": 0.139, "100": 0.264, "200": 0.528, "300": 0.792, "480": 1.25 }
+      },
+      "imagewrap_and_dustjacket": {
+        "_note": "hardcover bindings share spine values; 0.25 board minimum below ~100pp",
+        "standard_trade_bw_matte_paper": { "24": 0.25, "50": 0.25, "100": 0.319, "200": 0.5, "480": 1.069 },
+        "standard_trade_matte_paper":    { "24": 0.25, "50": 0.25, "100": 0.375, "200": 0.694, "480": 1.375 },
+        "economy_trade_matte_paper":     { "24": 0.25, "50": 0.25, "100": 0.375, "200": 0.694, "480": 1.375 }
+      }
+    },
+
+    "softcover_cover_model": "single wrap: W = 2 x trim_w + spine + 0.25 (0.125 bleed each side); H = trim_h + 0.25. Verified against every probed row (e.g. 6x9 @24pp bw: 12.306 x 9.25).",
+    "imagewrap_cover_model": "single wrap, cover_bleed 0.306; panels carry a wrap allowance beyond trim (cover_trim = 2 x (trim_w + allowance) + spine; allowance 0.319 @6x9/8x10, 0.333 @5x8); H = (trim_h + 0.249) + 0.612. DO NOT derive — interpolate cover_pdf W/H + spine directly from probed rows below.",
+    "imagewrap_cover_pdf_rows_6x9": {
+      "_schema": "pages: [cover_pdf_w, cover_pdf_h, spine] inches, paper standard_trade_bw",
+      "_100_note": "100pp row DERIVED: spine 0.319 evidenced by dustjacket-bw@100 (dustjacket==imagewrap spine verified at 200/480pp); W slides 1:1 with spine off the 200pp row (13.75 - 0.181). The raw 13.625/0.375 @100 belongs to the COLOR paper table.",
+      "24": [13.5, 9.861, 0.25], "50": [13.5, 9.861, 0.25], "100": [13.569, 9.861, 0.319], "200": [13.75, 9.861, 0.5], "480": [14.319, 9.861, 1.069]
+    },
+    "imagewrap_cover_pdf_rows_6x9_color": {
+      "_schema": "pages: [cover_pdf_w, cover_pdf_h, spine] inches, paper standard/economy color",
+      "24": [13.5, 9.861, 0.25], "50": [13.5, 9.861, 0.25], "100": [13.625, 9.861, 0.375], "200": [13.944, 9.861, 0.694], "480": [14.625, 9.861, 1.375]
+    },
+    "imagewrap_cover_pdf_rows_5x8": { "100": [11.653, 8.861, 0.375] },
+    "imagewrap_cover_pdf_rows_8x10": { "100": [17.625, 10.861, 0.375] },
+    "dustjacket_note": "hardcover (dust jacket): flaps 3.375 x (trim_h + 0.5); jacket W e.g. 20.458 x 9.5 @6x9 100pp — captured for reference, not a kit format",
+    "default_paper_for_text_books": "standard_trade_bw_matte_paper",
+    "file_specs": { "pdf_standard": "INFERRED — Blurb PDF-to-Book historically PDF/X-3 sRGB 300dpi; confirm at upload", "barcode": "INFERRED — Blurb applies its own barcode for bookstore distribution; keep back-cover bottom-right clear" },
+    "dense_spine_table_pending": "blurb_spine_tables.json (every 12pp, 24-480, 4 combos) being probed from the calculator; merge into spine_tables_in when it lands"
+  }
+}

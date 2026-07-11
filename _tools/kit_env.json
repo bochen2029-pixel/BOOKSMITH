@@ -1,0 +1,45 @@
+{
+  "_comment": "Machine-level paths + runtime for BOOKSMITH tools. SEPARATE from per-book book_config.json. This is the portability seam: moving the kit to another machine means editing ONLY this file. Values below are this machine's known-good setup (Windows 11, RTX 4070 Ti SUPER 16GB, Word installed).",
+
+  "word": {
+    "backend": "com",
+    "note": "docx->PDF via win32com Dispatch('Word.Application'), SaveAs FileFormat=17. Requires installed Microsoft Word. No cross-platform fallback wired."
+  },
+
+  "node": { "bin": "node", "packages": ["docx@9.6.1", "jszip@3.10.1"] },
+  "python": { "bin": "python", "packages": ["pywin32", "Pillow", "PyMuPDF", "PyPDF2", "python-docx", "numpy", "pypdfium2", "requests", "jsonschema"] },
+
+  "fonts_dir": "fonts",
+
+  "cover_gen": {
+    "comfyui_skill_dir": "C:\\Users\\user\\AppData\\Local\\hermes\\hermes-agent\\skills\\creative\\comfyui",
+    "run_workflow": "C:\\Users\\user\\AppData\\Local\\hermes\\hermes-agent\\skills\\creative\\comfyui\\scripts\\run_workflow.py",
+    "workflows_dir": "C:\\Users\\user\\AppData\\Local\\hermes\\hermes-agent\\skills\\creative\\comfyui\\workflows",
+    "comfyui_app": "C:\\Users\\user\\AppData\\Local\\Programs\\ComfyUI",
+    "comfyui_server": "http://127.0.0.1:8188",
+    "checkpoints_dir": "C:\\Users\\user\\Documents\\ComfyUI\\models\\checkpoints",
+    "default_checkpoint": "sd_xl_base_1.0.safetensors",
+    "default_checkpoint_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors",
+    "note": "checkpoints_dir is EMPTY by default; run the setup step to fetch sd_xl_base_1.0.safetensors (~6.5GB) via fetcher or `comfy model download` before first cover gen. Flux-dev-fp8 (~12GB) opt-in when VRAM is free."
+  },
+
+  "vision": {
+    "backend": "keel",
+    "llama_server": "C:\\llama.cpp\\llama-server.exe",
+    "qwen_model": "C:\\models\\Qwen3.5-9B-Q5_K_M.gguf",
+    "mmproj": "C:\\models\\mmproj-F16.gguf",
+    "host": "127.0.0.1",
+    "port": 8080,
+    "start_cmd": "C:\\llama.cpp\\llama-server.exe --model C:\\models\\Qwen3.5-9B-Q5_K_M.gguf --mmproj C:\\models\\mmproj-F16.gguf --host 127.0.0.1 --port 8080 --jinja --n-gpu-layers 99 --ctx-size 16384",
+    "api": "POST http://127.0.0.1:8080/v1/chat/completions (OpenAI-format; image as base64 data URI in an image_url content part); read choices[0].message.content",
+    "fallback": "claude — the harness's own vision via imguard-resized image read from disk"
+  },
+
+  "organs": {
+    "imguard": "C:\\imguard\\imguard.py",
+    "chunker": "C:\\chunker\\chunker.py",
+    "estimate_tokens": "C:\\chunker\\estimate_tokens.py",
+    "fetcher": "C:\\fetcher\\fetch.py",
+    "everything": "C:\\Everything\\search.py"
+  }
+}

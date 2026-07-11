@@ -1,0 +1,258 @@
+"""
+assemble_manuscript.py — Version-pinned master stitcher (the anti-drift keystone).
+
+BOOKSMITH toolchain component. Stitches the front matter + every unit in order
+from manuscript/current/ into the ONE version-pinned master
+book_workspace/<slug>/outputs/markdown/<slug>_vN.md that EVERY downstream
+generator reads.
+
+WHY THIS EXISTS (LESSONS_LEDGER §2.8 / KIT_ARCHITECTURE (c)):
+  A Kindle once shipped 8,476 words SHORT of the print because the print
+  generator read v7 and the Kindle read v6 — divergent sources. The fix is a
+  single version-pinned master: assemble once, and every format builds from
+  that exact file. This script writes that file (append-only version bump: it
+  never overwrites v1 — it writes v2, v3, ...) and prints the total word count,
+  which is the parity baseline every format is checked against.
+
+SOURCE: new — formalizes the implicit by-hand stitch every prior book did.
+  The word-count-parity discipline (parts-sum == stitched master) is
+  LESSONS_LEDGER §1.3 / §2.8.
+
+Unit ordering (explicit include-list, NEVER a directory glob — §1.3):
+  Ordered unit ids are resolved from book_config in this precedence:
+    1. book_config.units[] / structure[] / unit_order[]   (explicit list), else
+    2. book_config.authorship.per_chapter_overrides keys   (ordered dict), else
+    3. hard error (we refuse to glob the directory and risk shipping a
+       superseded draft — repos hold up to 5 byte-identical mirror copies).
+
+Front matter:
+  Assembled from book_config.front_matter[] in order. For each entry we look for
+  manuscript/current/front_<type>.md (e.g. front_half_title.md, front_copyright.md).
+  A "blank" entry contributes nothing to the stitched markdown (blanks are a
+  print-layout concept the generators insert, not manuscript text). A declared
+  front-matter file that does not exist on disk is skipped with a note (front
+  matter is often ceremonial and Class-A/human-authored — its absence must not
+  block assembly), but every MISSING BODY UNIT is a hard error.
+
+Per-unit file resolution under manuscript/current/:
+  <unit_id>_current.md  (preferred)  |  <unit_id>.md
+
+Usage:
+  python assemble_manuscript.py --config book_config.json [--workspace <dir>]
+                                [--version N]   # force a specific version number
+
+Prints a JSON summary on stdout including the total word count (the baseline):
+  {"master":..., "version":N, "words":W, "units":[{"id":...,"words":w}], ...}
+"""
+import sys
+import os
+import re
+import json
+import glob
+
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def load_json(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def word_count(text: str) -> int:
+    """Whitespace-delimited word count — the same definition wc -w uses, so the
+    parity baseline lines up with the manual checks in the ledger."""
+    return len(text.split())
+
+
+def resolve_workspace(cfg, workspace_arg):
+    slug = cfg["slug"]
+    if workspace_arg:
+        return os.path.abspath(workspace_arg)
+    kit_root = os.path.dirname(_THIS_DIR)
+    return os.path.join(kit_root, "book_workspace", slug)
+
+
+def resolve_unit_ids(cfg):
+    """Ordered body-unit ids from an EXPLICIT config list — never a glob."""
+    for key in ("units", "structure", "unit_order"):
+        v = cfg.get(key)
+        if isinstance(v, list) and v:
+            ids = []
+            for item in v:
+                if isinstance(item, str):
+                    ids.append(item)
+                elif isinstance(item, dict):
+                    ids.append(item.get("id") or item.get("unit_id") or "")
+            ids = [i for i in ids if i]
+            if ids:
+                return ids
+    overrides = (cfg.get("authorship") or {}).get("per_chapter_overrides") or {}
+    if isinstance(overrides, dict) and overrides:
+        return list(overrides.keys())
+    raise ValueError(
+        "Cannot resolve an ordered unit list from book_config "
+        "(need units[]/structure[]/unit_order[] or "
+        "authorship.per_chapter_overrides). Refusing to glob the directory "
+        "(risk of shipping a superseded mirror copy).")
+
+
+def find_unit_file(current_dir, unit_id):
+    """Preferred <id>_current.md, else <id>.md."""
+    for name in (f"{unit_id}_current.md", f"{unit_id}.md"):
+        p = os.path.join(current_dir, name)
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def find_front_matter_file(current_dir, fm_type):
+    """front_<type>_current.md | front_<type>.md | <type>_current.md | <type>.md"""
+    candidates = [
+        f"front_{fm_type}_current.md",
+        f"front_{fm_type}.md",
+        f"{fm_type}_current.md",
+        f"{fm_type}.md",
+    ]
+    for name in candidates:
+        p = os.path.join(current_dir, name)
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def read_text(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def next_version(markdown_dir, slug, forced=None):
+    """Append-only version bump: find the highest existing <slug>_vN.md and add
+    one. Never overwrites an existing version."""
+    if forced is not None:
+        return forced
+    highest = 0
+    pattern = os.path.join(markdown_dir, f"{slug}_v*.md")
+    for path in glob.glob(pattern):
+        m = re.search(rf"{re.escape(slug)}_v(\d+)\.md$", os.path.basename(path))
+        if m:
+            highest = max(highest, int(m.group(1)))
+    return highest + 1
+
+
+def assemble(config_path, workspace_arg, forced_version):
+    cfg = load_json(config_path)
+    slug = cfg["slug"]
+    ws = resolve_workspace(cfg, workspace_arg)
+    current_dir = os.path.join(ws, "manuscript", "current")
+    markdown_dir = os.path.join(ws, "outputs", "markdown")
+
+    if not os.path.isdir(current_dir):
+        raise FileNotFoundError(
+            f"manuscript/current not found at {current_dir}. Nothing to stitch.")
+    os.makedirs(markdown_dir, exist_ok=True)
+
+    pieces = []
+    notes = []
+
+    # --- Front matter (ordered, ceremonial; missing files skipped with a note) ---
+    front_report = []
+    for entry in (cfg.get("front_matter") or []):
+        fm_type = entry.get("type") if isinstance(entry, dict) else str(entry)
+        if fm_type == "blank":
+            # Blank versos are a print-layout concept inserted by the generators;
+            # they contribute no manuscript text.
+            front_report.append({"type": "blank", "file": None, "words": 0})
+            continue
+        fpath = find_front_matter_file(current_dir, fm_type)
+        if not fpath:
+            notes.append(f"front matter '{fm_type}' declared but no file on disk (skipped)")
+            front_report.append({"type": fm_type, "file": None, "words": 0})
+            continue
+        text = read_text(fpath).rstrip()
+        pieces.append(text)
+        front_report.append({"type": fm_type, "file": os.path.basename(fpath),
+                             "words": word_count(text)})
+
+    # --- Body units (explicit ordered list; every missing unit is a HARD error) ---
+    unit_ids = resolve_unit_ids(cfg)
+    unit_report = []
+    missing = []
+    for unit_id in unit_ids:
+        fpath = find_unit_file(current_dir, unit_id)
+        if not fpath:
+            missing.append(unit_id)
+            continue
+        text = read_text(fpath).rstrip()
+        pieces.append(text)
+        unit_report.append({"id": unit_id, "file": os.path.basename(fpath),
+                            "words": word_count(text)})
+
+    if missing:
+        raise FileNotFoundError(
+            "Missing body unit file(s) under manuscript/current for: "
+            + ", ".join(missing)
+            + ". Every ordered unit must exist before assembly (refusing to "
+              "ship a partial master).")
+
+    # --- Stitch (single trailing newline between units) ---
+    master_text = "\n\n".join(pieces).rstrip() + "\n"
+    total_words = word_count(master_text)
+
+    version = next_version(markdown_dir, slug, forced_version)
+    master_path = os.path.join(markdown_dir, f"{slug}_v{version}.md")
+    if forced_version is None and os.path.exists(master_path):
+        # Defensive: append-only means we never clobber. Bump past any race.
+        version = next_version(markdown_dir, slug, None)
+        master_path = os.path.join(markdown_dir, f"{slug}_v{version}.md")
+
+    with open(master_path, "w", encoding="utf-8") as f:
+        f.write(master_text)
+
+    # Parity integrity: sum of unit word counts vs stitched master (§1.3).
+    parts_sum = sum(u["words"] for u in unit_report) + \
+        sum(fr["words"] for fr in front_report)
+
+    summary = {
+        "master": master_path,
+        "version": version,
+        "words": total_words,
+        "front_matter": front_report,
+        "units": unit_report,
+        "unit_count": len(unit_report),
+        "parts_word_sum": parts_sum,
+        "notes": notes,
+    }
+    print(json.dumps(summary, indent=2))
+    # Also print the bare word count on its own line — the parity baseline that
+    # every format is checked against (mirrors `wc -w` in the ledger).
+    print(f"TOTAL_WORDS={total_words}", file=sys.stderr)
+    return summary
+
+
+def main() -> int:
+    args = sys.argv[1:]
+    config_path = None
+    workspace_arg = None
+    forced_version = None
+    i = 0
+    while i < len(args):
+        a = args[i]
+        if a == "--config":
+            config_path = args[i + 1]; i += 2; continue
+        if a == "--workspace":
+            workspace_arg = args[i + 1]; i += 2; continue
+        if a == "--version":
+            forced_version = int(args[i + 1]); i += 2; continue
+        i += 1
+
+    if not config_path:
+        print("Usage: python assemble_manuscript.py --config book_config.json "
+              "[--workspace <dir>] [--version N]", file=sys.stderr)
+        return 2
+
+    assemble(config_path, workspace_arg, forced_version)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

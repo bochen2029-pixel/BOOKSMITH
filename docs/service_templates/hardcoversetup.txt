@@ -1,0 +1,471 @@
+
+ How To Print A Hardcover Book | Mixam 
+ 4.4
+ +1 888 510 1456 
+ Contact Us 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ English 
+ English 
+ Spanish 
+ -->
+ All Products 
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control rounded-start search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#clearSearch">
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--search#openMobileSearch">
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#closeMobileSearch">
+ Search Results
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Print On Demand 
+ +1 888 510 1456 
+ team@mixam.com 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Australia 
+ English 
+ English 
+ Spanish 
+ Sign In 
+ header--megamenu#switchToCategory"
+ data-target-category="books"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Books
+ header--megamenu#switchToCategory"
+ data-target-category="magazinesandbooklets"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Magazines & Booklets
+ header--megamenu#switchToCategory"
+ data-target-category="comicsandzines"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Comics & Zines
+ header--megamenu#switchToCategory"
+ data-target-category="businessandmarketingmaterials"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Business & Marketing
+ header--megamenu#switchToCategory"
+ data-target-category="artandphotography"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Art & Photography
+ header--megamenu#switchToCategory"
+ data-target-category="shareandsell"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Print On Demand
+ header--megamenu#closeOnOutsideClick" data-type="mega-menu" data-version="5" class="collapse position-absolute bg-neutral-7 top-0 start-0 end-0 pt-3 pb-3 z-index-100">
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Print On Demand 
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Print On Demand 
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Books
+ Activity Books
+ Autobiographies
+ Biography Books
+ Bookmarks
+ Children's Books
+ Coffee Table Books
+ Coloring Books
+ Cookbooks
+ Custom Dust Jackets
+ Diaries
+ Dissertations
+ Eulogies
+ Family History Books
+ Graphic Novels
+ Handbooks
+ Hardcover Books
+ Layflat Books
+ Manga
+ Memoirs
+ Notebooks
+ Novels
+ Paperback Books
+ Planners
+ Poetry Books
+ Reports
+ Textbooks
+ Theses
+ Wedding Albums
+ Workbooks
+ Yearbooks
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Magazines & Booklets
+ Booklets
+ Catalogs
+ Lookbooks
+ Magazines
+ Perfect Bound Booklets
+ Spiral Bound Booklets
+ Stapled Booklets
+ Wire-O Bound
+ Zine Printing
+ Featured Products
+ Booklets 
+ Comics & Zines
+ Comic Books
+ Comic Sketch Covers
+ Graphic Novels
+ Manga
+ Zine Printing
+ Business & Marketing
+ Booklets
+ Bookmarks
+ Brochures
+ Business Cards
+ Catalogs
+ Compliment Slips
+ Direct Mail
+ Flyers
+ Handbooks
+ Letterheads
+ Loyalty Cards
+ Manuals
+ Menus
+ Postcards
+ Posters
+ Programs
+ Reports
+ Stapled Booklets
+ Wall Calendars
+ Featured Products
+ Booklets 
+ Business Cards 
+ Art & Photography
+ Art Books
+ Art Prints
+ Baby Photo Books
+ Coffee Table Books
+ Photo Books
+ Photography Books
+ Portfolios
+ Posters
+ Travel Albums
+ Wedding Albums
+ Featured Products
+ Posters 
+ Share & Sell your products with Print-On-Demand
+ For further info, demos and FAQs, including available products & distribution methods
+ Learn More 
+ Alert 
+ Loading Chat
+ Categories
+ Our Top 5 Topics 
+ How To Print A Book with Mixam 
+ Book Printing Basics 
+ Design and File Preparation 
+ Printing Options and Customization 
+ Comparing Your Print Options 
+ Preparing for Print 
+ Ordering with Mixam 
+ Promoting Your Book with Mixam 
+ Additional Notes 
+ Print On Demand with Mixam 
+ Print-on-Demand Introduction 
+ Comparing Your Print Options 
+ The Publisher Hub 
+ Getting Paid with Stripe 
+ Creating and Editing Products 
+ The Buyer Experience 
+ Selling Products with Shopify 
+ Marketing Your Print-on-Demand Products 
+ Rewards Program 
+ Mixam’s Rewards Program FAQ 
+ Design Tools 
+ Design Your Photo Book Online with Mixam: Your How-To Guide 
+ How To Use The Design Online Tool 
+ Print Design Generator Tool 
+ Artwork 
+ Print File Setup Guide 
+ Dust Jacket File Preparation Guide 
+ How To Prepare and Upload Print Files 
+ How To Print Multiple Designs 
+ How To Use Mixam’s AI Image Enhancer 
+ Image Resolution 
+ Variant and Sketch Covers 
+ Delivery 
+ Shipping and Delivery 
+ Understanding Delivery Timelines 
+ Understanding Your Order Status 
+ General 
+ Binding 
+ How To Report Print Issues 
+ How To Count Leaves, Sides and Pages 
+ How To Print With Mixam 
+ How To Submit Print Files 
+ Industry Standard Sizes 
+ Our Paper Range 
+ Page Counts 
+ Print File Setup Checklist 
+ Printing Glossary 
+ Production Timeline 
+ Proofing 
+ Quotes 
+ What Is an ISBN? 
+ Sustainable Printing 
+ Payments 
+ Payment Methods 
+ Printing & Finishing 
+ CMYK Color Charts and Values 
+ CMYK vs RGB 
+ Cloth Book Covers 
+ Color Guide for Printing 
+ Color Variance 
+ Color vs Black and White 
+ Endpapers 
+ Full Bleed Printing Explained 
+ How To Apply Foiling to Prints 
+ How To Apply a Spot UV 
+ How To Convert RGB to CMYK 
+ How To Measure a Book for Printing 
+ How To Print Hardcover Books 
+ Ink Saturation and Density 
+ Manufacturing Variance 
+ Offset Printing versus Digital Printing 
+ Our Print Finishes 
+ Special Print Options 
+ Standard Black vs Rich Black 
+ Why Printed Colors Look Different From Your Screen 
+ How To Print Hardcover Books
+ Create outstanding Hardcover Books with this comprehensive print guide.
+ What is a cover spread, and how do I design one? 
+ A cover spread is a set of pages that encase bound inner pages, like a  Magazine or  Booklet . For Hardcover Book printing, you can either:
+ Supply one PDF file with your back cover, spine, and front cover design and upload it to your Artwork tab as a cover spread to ensure your artwork is aligned. 
+ Or upload your spine file separately in addition to your front and back cover design. 
+ In your cover spread design, include the spine width plus an additional 0.2" on both sides of the spine to allow for the hinge on the cover.
+ You can calculate the width without bleed using this formula:
+ Back Cover Width + 0.2" Hinge + Spine Width + 0.2" Hinge + Front Cover Width 
+ Your book's height is the same for your cover spread. Then, add 0.8" bleed on all four edges of the spread. Overall, the dimensions will be 1.6" bigger in height and width.
+ Example: Digest (5.5" x 8.5") size with a 0.35" spine
+ 5.5" + 0.2" + 0.35" + 0.2" + 5.5" x 8.5" (and add 0.8" bleed on all edges - top, bottom, left and right)
+ Final Dimensions (without bleed): 11.75" x 8.5"
+ Final Dimensions (with bleed): 13.35" x 10.1"
+ How does a hardcover overlap and affect alignment? 
+ Hardcover Books are highly durable. The hardboard used to make the covers overlaps the inner pages slightly to protect them. This overlap adds an additional 0.125"–0.2" beyond the trim line, which you can include in the 0.8" bleed for the front and back covers and spine. You can also prevent content from becoming hidden or obscured by positioning all text away from the edge by 0.8" (0.125" + 0.2" quiet area).
+ What is the hinge area? 
+ The hinge area is a flexible bridge between the spine and the cover and joins the hard outer covers together. It’s visible on the exterior and is 0.2" wide within the cover bleed area (right edge back cover and left edge front cover). You can exclude the hinge if you centralize your publication’s title on your front cover.
+ What are endpapers? 
+ Endpapers join the bound inner pages (book block) and exterior covers (highlighted in green). They hide the outer cover’s bleed edges and backing material that holds the book block together. You can add classic black or white endpapers to your book prints, or some items include a selection of colored endpapers. We do not produce printed endpapers at this time.
+ What is bleed? 
+ Bleed is an extension of an image or color(s) that appears beyond your page’s finished trim size. Due to manufacturing variance , the bleed prevents unprinted edges from appearing on your final prints.
+ Front, Back, and Spine:  These components require an additional 0.8" bleed on the top, bottom and outer edge. The bleed allows your cover artwork to extend around the cover boards.
+ Inner Pages:  Add a 0.125" bleed on all four sides.
+ Cover (single files):  Add 0.8" on all 4 edges. We will only use a 0.2" bleed on the inner edge to cover the hinge area and up to 0.2" on the outer cover edges.
+ Paperback vs. Hardcover: what’s the difference? 
+ Paperback covers are made from light cardstock, and Hardcovers have thick, rigid covers. Hardcover Books have three main components: a printed wrap, backing boards, and endpapers. The printed wrap is then glued to the backing boards, making the covers around 0.125" thick. Softcovers consist of a cardstock thicker than the paper used for the inner pages, and the covers are glued directly to the book block.
+ How is bleed used and wrapped on hardcovers? 
+ We print your cover artwork and wrap the additional 0.8" bleed around the backing board to form a printed case, some of which will be visible on the outer cover edges. The remaining bleed is tucked under the endpaper to create neat edges.
+ Cover example after wrapping printed content around cover boards before endpapers and book block application
+ How does the central binding affect the gutter area? 
+ The printed text pages are stacked together and compiled into a book block. Next, we glue the binding edge of the book block to a piece of lining material bound into the covers with strong adhesive. Thread-sewn Hardbacks offer a book greater flexibility while preventing spine damage. While you can position graphic content into the binding area, place all text at least 0.4" - 0.5" away to ensure it’s legible.
+ Which file types does Mixam accept for Hardcover Books? 
+ You can upload different  file types , but we don’t recommend using image files (JPEG, PNG, TIF, etc.) for Hardcover Book spines and cover files. However, if you only have these file formats or similar, our print experts can review them and suggest changes.
+ How do I design a dust jacket? 
+ Your spine width will be the same as your book, and your flaps (panels) should measure 2.5”. The height is always 0.2” larger than the book’s inner pages. Visit our  Dust Jacket Support page  for more information.
+ This formula will help you calculate your artwork’s width. Please include an additional 0.125" bleed on all four edges.
+ Example: A5 Hardcover Book
+ Width: 2.5" (flap) + 5.5" + 0.275"(back cover) + Hardcover Spine Width + 5.5" + 0.275" (front cover) + 2.5" (flap).  
+ Height: 8.775" 
+ Size and Orientation 
+ Width x Height 
+ Flap Width 
+ Digest Portrait
+ 5.5” x 8.5”
+ 2.5”
+ Digest Landscape
+ 8.5” x 5.5”
+ 2.5”
+ US Trade Portrait
+ 6” x 9”
+ 2.5”
+ US Trade Landscape
+ 9” x 6”
+ 2.5”
+ Letter Portrait
+ 8.5” x 11”
+ 2.5”
+ Letter Landscape
+ 11” x 8.5”
+ 2.5”
+ 8.5” Square
+ 8.5” x 8.5”
+ 2.5”
+ 7.5” Small Square
+ 7.5” x 7.5”
+ 2.5”
+ 7.25” x 9.5” Portrait
+ 7.25” x 9.5”
+ 2.5”
+ 7.25” x 9.5” Landscape
+ 9.5” x 7.25”
+ 2.5”
+ 7” x 9” Portrait
+ 7” x 9”
+ 2.5”
+ 7” x 9” Landscape
+ 9” x 7”
+ 2.5”
+ Pocket Book Portrait
+ 4.25” x 6.87”
+ 2.5”
+ Pocket Book Landscape
+ 6.87” x 4.25”
+ 2.5”
+ Royal Portrait
+ 6.14” x 9.21”
+ 2.5”
+ Royal Landscape
+ 9.21” x 6.14”
+ 2.5”
+ Executive Portrait
+ 7” x 10”
+ 2.5”
+ Executive Landscape
+ 10” x 7”
+ 2.5”
+ Crown Quarto Portrait
+ 7.44” x 9.68”
+ 2.5”
+ Crown Quarto Landscape
+ 9.68” x 7.44”
+ 2.5”
+ A5 Portrait
+ 5.8” x 8.3”
+ 2.5”
+ A5 Landscape
+ 8.3” x 5.8”
+ 2.5”
+ A4 Portrait
+ 8.3” x 11.7”
+ 2.5”
+ A4 Landscape
+ 11.7” x 8.3”
+ 2.5”
+ Dust Jacket Manufacturing Variance 
+ Manufacturing variance issues can occur, so we advise you to create dust jacket and spine file designs without harsh lines or abrupt color changes between panels. Your spine will slightly wrap around your front and back cover, so instead, use matching colors or apply a color transition (gradient).
+ Our preview feature will place guidelines over your  dust jacket ’s folded parts to ensure your content is aligned. Please check your guidelines before confirming your order.
+ Preview of Dust Jacket with guidelines
+ Seeing (and feeling) is believing
+ Start your print journey with our sample packs.
+ Order a Free Sample Pack 
+ Get double points on your first order when you sign up for an account
+ Create an Account 
+ Mixam is a leading online printing platform that creates customizable print products for a global audience. We make print easy, accessible, and affordable with competitive pricing, exceptional materials and pro customer service. Our digital and offset printing solutions combine expert knowledge with the latest technology.
+ TrustScore : 4.4 | 5487 reviews 
+ Customer Support Hours
+ Monday - Friday: 24-Hour Service
+ Saturday - Sunday: 6am to 1pm EST
+ Email : team@mixam.com 
+ Phone : +1 888 510 1456 
+ Address (Appt. Only) : Mixam, Inc, 1 N Wacker Dr, Suite 2410, Chicago, IL, 60606 US
+ Other Mixam Shops
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ Home
+ Knowledge Base 
+ Blog 
+ Our Paper Ranges 
+ Rewards Program 
+ Join Our Team 
+ Privacy Policy 
+ Terms of Use and Service 
+ Cookie Policy 
+ FAQs 
+ Your Privacy Choices 
+ Popular Items
+ Booklets 
+ Brochures 
+ Business Cards 
+ Flyers 
+ Hardcover Books 
+ Paperback Books 
+ Postcards 
+ Posters 
+ Categories
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Educational & Specialty Books 
+ Personal & Special Occasion 
+ © 2003 - 2026, Mixam, Inc. All rights reserved. 
+ Terms & Conditions
+ Mixam's Terms of Use and Service ("Terms") have changed. By tapping Accept or continuing to use our website, you accept our new Terms, which took effect on July 7, 2025.
+ terms--terms#acceptTerms">Accept 
+ Learn More 
+ Read T&Cs 
+ We use cookies
+ Our site uses cookies to give you the best experience. You can choose which cookies to accept or continue shopping if you're happy.
+ We noticed you have a privacy preference set, and we have honored it by disabling advertising cookies. 
+ cookies--consent#acceptAll">Accept All 
+ Manage Cookies 
+ cookies--consent#dismiss" aria-label="Close"> 
+ Manage Your Cookies
+ We use cookies to personalise content, provide analytics, and enhance your browsing experience. Manage your settings for different types of cookies below. You can find out more about what cookies we use and how we use them by viewing our 
+ Cookie Policy .
+ Essential Cookies
+ Essential cookies are necessary for the basic functionality of our website. These cookies enable core features such as security, network management, and accessibility. You cannot opt out of these cookies, as the website cannot function properly without them.
+ Analytics Cookies
+ Analytics cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. These cookies provide data on things like page visits, traffic sources, and user behaviour so we can improve the performance of our site.
+ Ad Storage
+ Ad storage enables the storage and tracking of ads and marketing-related data, allowing for personalised advertisements and analytics about ad campaigns.
+ Ad Personalisation
+ Ad personalisation uses collected data to display personalised advertisements based on user behaviour and preferences.
+ Ad User Data
+ Ad user data tracks user information to enable ad targeting and analytics that provide insights into campaign performance.
+ Personalization Storage
+ Personalization storage enables the storage of data for personalized website content and features, improving your overall browsing experience.
+ Cancel 
+ cookies--consent#savePreferences">Accept & close 

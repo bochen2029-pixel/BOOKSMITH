@@ -1,0 +1,517 @@
+
+ Book Printing Basics | Essential Guide to Print-Ready Files | Mixam 
+ 4.4
+ +1 888 510 1456 
+ Contact Us 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ English 
+ English 
+ Spanish 
+ -->
+ All Products 
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control rounded-start search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#clearSearch">
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--search#openMobileSearch">
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#closeMobileSearch">
+ Search Results
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Print On Demand 
+ +1 888 510 1456 
+ team@mixam.com 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Australia 
+ English 
+ English 
+ Spanish 
+ Sign In 
+ header--megamenu#switchToCategory"
+ data-target-category="books"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Books
+ header--megamenu#switchToCategory"
+ data-target-category="magazinesandbooklets"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Magazines & Booklets
+ header--megamenu#switchToCategory"
+ data-target-category="comicsandzines"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Comics & Zines
+ header--megamenu#switchToCategory"
+ data-target-category="businessandmarketingmaterials"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Business & Marketing
+ header--megamenu#switchToCategory"
+ data-target-category="artandphotography"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Art & Photography
+ header--megamenu#switchToCategory"
+ data-target-category="shareandsell"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Print On Demand
+ header--megamenu#closeOnOutsideClick" data-type="mega-menu" data-version="5" class="collapse position-absolute bg-neutral-7 top-0 start-0 end-0 pt-3 pb-3 z-index-100">
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Print On Demand 
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Print On Demand 
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Books
+ Activity Books
+ Autobiographies
+ Biography Books
+ Bookmarks
+ Children's Books
+ Coffee Table Books
+ Coloring Books
+ Cookbooks
+ Custom Dust Jackets
+ Diaries
+ Dissertations
+ Eulogies
+ Family History Books
+ Graphic Novels
+ Handbooks
+ Hardcover Books
+ Layflat Books
+ Manga
+ Memoirs
+ Notebooks
+ Novels
+ Paperback Books
+ Planners
+ Poetry Books
+ Reports
+ Textbooks
+ Theses
+ Wedding Albums
+ Workbooks
+ Yearbooks
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Magazines & Booklets
+ Booklets
+ Catalogs
+ Lookbooks
+ Magazines
+ Perfect Bound Booklets
+ Spiral Bound Booklets
+ Stapled Booklets
+ Wire-O Bound
+ Zine Printing
+ Featured Products
+ Booklets 
+ Comics & Zines
+ Comic Books
+ Comic Sketch Covers
+ Graphic Novels
+ Manga
+ Zine Printing
+ Business & Marketing
+ Booklets
+ Bookmarks
+ Brochures
+ Business Cards
+ Catalogs
+ Compliment Slips
+ Direct Mail
+ Flyers
+ Handbooks
+ Letterheads
+ Loyalty Cards
+ Manuals
+ Menus
+ Postcards
+ Posters
+ Programs
+ Reports
+ Stapled Booklets
+ Wall Calendars
+ Featured Products
+ Booklets 
+ Business Cards 
+ Art & Photography
+ Art Books
+ Art Prints
+ Baby Photo Books
+ Coffee Table Books
+ Photo Books
+ Photography Books
+ Portfolios
+ Posters
+ Travel Albums
+ Wedding Albums
+ Featured Products
+ Posters 
+ Share & Sell your products with Print-On-Demand
+ For further info, demos and FAQs, including available products & distribution methods
+ Learn More 
+ Alert 
+ Loading Chat
+ Categories
+ Our Top 5 Topics 
+ How To Print A Book with Mixam 
+ Book Printing Basics 
+ Design and File Preparation 
+ Printing Options and Customization 
+ Comparing Your Print Options 
+ Preparing for Print 
+ Ordering with Mixam 
+ Promoting Your Book with Mixam 
+ Additional Notes 
+ Print On Demand with Mixam 
+ Print-on-Demand Introduction 
+ Comparing Your Print Options 
+ The Publisher Hub 
+ Getting Paid with Stripe 
+ Creating and Editing Products 
+ The Buyer Experience 
+ Selling Products with Shopify 
+ Marketing Your Print-on-Demand Products 
+ Rewards Program 
+ Mixam’s Rewards Program FAQ 
+ Design Tools 
+ Design Your Photo Book Online with Mixam: Your How-To Guide 
+ How To Use The Design Online Tool 
+ Print Design Generator Tool 
+ Artwork 
+ Print File Setup Guide 
+ Dust Jacket File Preparation Guide 
+ How To Prepare and Upload Print Files 
+ How To Print Multiple Designs 
+ How To Use Mixam’s AI Image Enhancer 
+ Image Resolution 
+ Variant and Sketch Covers 
+ Delivery 
+ Shipping and Delivery 
+ Understanding Delivery Timelines 
+ Understanding Your Order Status 
+ General 
+ Binding 
+ How To Report Print Issues 
+ How To Count Leaves, Sides and Pages 
+ How To Print With Mixam 
+ How To Submit Print Files 
+ Industry Standard Sizes 
+ Our Paper Range 
+ Page Counts 
+ Print File Setup Checklist 
+ Printing Glossary 
+ Production Timeline 
+ Proofing 
+ Quotes 
+ What Is an ISBN? 
+ Sustainable Printing 
+ Payments 
+ Payment Methods 
+ Printing & Finishing 
+ CMYK Color Charts and Values 
+ CMYK vs RGB 
+ Cloth Book Covers 
+ Color Guide for Printing 
+ Color Variance 
+ Color vs Black and White 
+ Endpapers 
+ Full Bleed Printing Explained 
+ How To Apply Foiling to Prints 
+ How To Apply a Spot UV 
+ How To Convert RGB to CMYK 
+ How To Measure a Book for Printing 
+ How To Print Hardcover Books 
+ Ink Saturation and Density 
+ Manufacturing Variance 
+ Offset Printing versus Digital Printing 
+ Our Print Finishes 
+ Special Print Options 
+ Standard Black vs Rich Black 
+ Why Printed Colors Look Different From Your Screen 
+ Book Printing Basics
+ Master the basics of book printing with Mixam. Learn about full bleed, binding options, and best practices to ensure your files are print-ready.
+ Full Bleed Printing
+ Full Bleed 
+ False Bleed: Mirror 
+ False Bleed: Upscale 
+ False Bleed: Stretch 
+ A printed image or color that extends 0.125” to a page’s edge on all four sides, minimizing the paper's natural color showing when trimmed.
+ The outer 0.125” of your artwork is duplicated and reflected in the bleed area. This bleed suits designs with repeated patterns or simple backgrounds.
+ An extension of artwork positioned 0.125” inside the bleed area, perfect for extending non-critical artwork elements.
+ Ideal for solid colors or gradients, it replicates the outer 0.2” of each page edge and stretches it to the bleed area.
+ Ensure your print files include bleed before uploading them to your order’s Artwork tab. Mixam’s advanced software will automatically check your files for bleed and notify you of any issues that need correcting. If you need help adding bleed, our team can recommend and apply a false bleed for you. For more information, visit our Bleed support page and watch our Bleed video tutorial below. 
+ Book Printing Terms
+ Quiet Area 
+ The space inside the trim line, ensuring key design elements aren’t trimmed or obscured by binding.
+ Safe Zone 
+ The area that ensures your design stays within printing guidelines.
+ Spine 
+ The bound edge of a book where the binding holds the pages together. Your spine measurements are visible in your shopping cart and the order’s Details tab.
+ Trim Line 
+ The edge of a page when cut to the finished size. Watch our ‘How To Set A Trim Box’ video tutorial on YouTube for a step-by-step guide.
+ Binding Line 
+ Marks where a book will be bound
+ Hinge Area 
+ The flexible sections on either side of the spine that connect it to the covers on hardcover books.
+ What is manufacturing variance?
+ Manufacturing variance refers to slight differences in alignment, color, or position caused by machine calibration, paper type, or environmental conditions. We always aim to minimize these variations and ensure prints adhere to acceptable industry standards. Similarly, tolerance movement refers to the allowable shifts or measurement variations during production. It’s important to account for this during the design stage, as it can impact processes like trimming and binding. Mixam adheres to industry standards to ensure these movements are within acceptable limits, providing the highest quality prints.
+ What is a book block?
+ The interior pages of a book consist of printed and trimmed paper sheets called signatures, gathered to form a block.
+ What is a paperback book?
+ A book in which signatures are bound to the spine with adhesive and covered with slightly heavier covers, creating a rectangular spine using perfect binding. Perfect binding is typical for paperback books, making them affordable and portable.
+ Paperbacks (softcovers) with high page counts or paper weights use PUR (polyurethane reactive) binding, a strong, long-lasting adhesive so books can open flexibly without spine damage.
+ Key Features:
+ Front Cover : Displays the title, subtitle, author name, and cover design.
+ Back Cover : Features a summary, author bio, and optional barcode/ISBN for retail use.
+ Gutter Areas : The space near the spine reserved for binding.
+ Spine : Includes the title, author name, and publisher logo (if applicable).
+ Inner Pages : Contain the book’s content, such as text, images, and illustrations.
+ A paperback book template with guidelines
+ What is a hardcover book?
+ A book in which pages are bound to a spine with adhesive, reinforced with Smyth-sewn binding (optional) and encased in rigid cardboard covers wrapped in printed paper for excellent durability.
+ A typical hardcover book binds trimmed single pages to the spine, while a Smyth-sewn hardcover stitches folded signatures together with thread, strengthened with gauze, and attaches them to the spine with adhesive, ensuring greater flexibility. Endpapers are automatically included inside the front and back covers to protect the first and last inner pages.
+ Key Features:
+ Endpapers : Attach the book block to the cover and provide a decorative element.
+ Head and Tail Bands (optional) : Decorative cotton strips added to the top and bottom of the spine for reinforcement and visual appeal.
+ Smyth Sewn Binding (optional) : A durable binding method where binder thread joins folded signatures, forming a strong and flexible book block
+ Dust Jacket (optional) : A removable paper cover that offers protection and an additional design element.
+ Bookmark Ribbon (optional) : A colored strip of ribbon bound into the binding for readers to mark their progress.
+ A hardcover (casebound) book template with guidelines
+ What is a dust jacket?
+ A dust jacket is a lightweight detachable outer cover with folded panels designed to protect a book and enhance its visual appeal. Available for Hardcover Books only.
+ A dust jacket template with guidelines
+ What is layflat binding?
+ A hardcover book type for printing seamless double-page spreads without visible binding.
+ When opened, pages lie completely flat. Single-sided printed sheets are laminated one side, folded in half, glued to the blank side of the next sheet, and assembled into a block before being bound to the spine and covers.
+ A layflat binding template with guidelines
+ What is staple binding?
+ This method secures pages with two staples along the centerfold. It’s perfect for prints with low page counts and designs requiring uninterrupted graphics.
+ A staple (saddle-stitch) book template with guidelines
+ What is wire-o binding?
+ This binding method involves securing trimmed, hole-punched pages with C-shaped wire loops. It’s suitable for both large and small page counts and works best for content where images don’t span across facing pages.
+           A wire-o binding template with guidelines
+ What is spiral binding?
+ A binding method that threads a plastic coil through holes along the binding edge. It allows pages to rotate 360 degrees and lay flat when opened, making it ideal for large and small page counts.
+ A spiral (coil) binding template with guidelines
+ Perfect Binding
+ Inner and Cover Pages 
+ Area
+ Measurement
+ Bleed
+ 0.125" 
+ Quiet area (binding edge)
+ 0.5" 
+ Quiet area (other edges)
+ 0.25" 
+   Popular Products
+ Booklets 
+ Catalogs 
+ Comic Books 
+ Magazines 
+ Paperback Books 
+ Hardcover Binding
+ Inner Pages 
+ Area
+ Measurement
+ Bleed
+ 0.125" 
+ Quiet area (binding edge)
+ 0.5" 
+ Quiet area (other edges)
+ 0.25" 
+   Popular Products
+ Art Books 
+ Casebound Books 
+ Cookbooks 
+ Children's Books 
+ Photo Books 
+ Cover Pages 
+ Area
+ Measurement
+ Bleed
+ 0.8" 
+ Quiet area (binding edge)
+ 0.5" 
+ Quiet area (other edges)
+ 0.25" 
+ Hardcover Layflat Binding
+ Inner Pages 
+ Area
+ Measurement
+ Bleed
+ 0.125" 
+ Cover Pages 
+ Area
+ Measurement
+ Bleed
+ 0.8" 
+ Quiet area (other edges)
+ 0.25" 
+ Popular Products
+ Layflat Books 
+ Staple Binding
+ Inner and Cover Pages 
+ Area
+ Measurement
+ Bleed
+ 0.125" 
+ Quiet area (binding edge)
+ 0.25" 
+ Quiet area (other edges)
+ 0.25" 
+ Popular Products
+ Activity Books 
+ Graphic Novels 
+ Manga 
+ Zines 
+ Wire-O Binding
+ Inner and Cover Pages 
+ Area
+ Measurement
+ Bleed
+ 0.125" 
+ Quiet area (binding edge)
+ 0.6" 
+ Quiet area (other edges)
+ 0.25" 
+ Popular Products
+ Manuals 
+ Workbooks 
+ Spiral Binding
+ Inner and Cover Pages 
+ Area
+ Measurement
+ Bleed
+ 0.125" 
+ Quiet area (binding edge)
+ 0.8" 
+ Quiet area (other edges)
+ 0.25" 
+ Popular Products
+ Coloring Books 
+ Journals 
+ Notebooks 
+ Yearbooks 
+ Now that you're familiar with the fundamentals of book printing, you're ready to move on to the Design and File Preparation stage.
+ Seeing (and feeling) is believing
+ Start your print journey with our sample packs.
+ Order a Free Sample Pack 
+ Get double points on your first order when you sign up for an account
+ Create an Account 
+ Mixam is a leading online printing platform that creates customizable print products for a global audience. We make print easy, accessible, and affordable with competitive pricing, exceptional materials and pro customer service. Our digital and offset printing solutions combine expert knowledge with the latest technology.
+ TrustScore : 4.4 | 5487 reviews 
+ Customer Support Hours
+ Monday - Friday: 24-Hour Service
+ Saturday - Sunday: 6am to 1pm EST
+ Email : team@mixam.com 
+ Phone : +1 888 510 1456 
+ Address (Appt. Only) : Mixam, Inc, 1 N Wacker Dr, Suite 2410, Chicago, IL, 60606 US
+ Other Mixam Shops
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ Home
+ Knowledge Base 
+ Blog 
+ Our Paper Ranges 
+ Rewards Program 
+ Join Our Team 
+ Privacy Policy 
+ Terms of Use and Service 
+ Cookie Policy 
+ FAQs 
+ Your Privacy Choices 
+ Popular Items
+ Booklets 
+ Brochures 
+ Business Cards 
+ Flyers 
+ Hardcover Books 
+ Paperback Books 
+ Postcards 
+ Posters 
+ Categories
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Educational & Specialty Books 
+ Personal & Special Occasion 
+ © 2003 - 2026, Mixam, Inc. All rights reserved. 
+ Terms & Conditions
+ Mixam's Terms of Use and Service ("Terms") have changed. By tapping Accept or continuing to use our website, you accept our new Terms, which took effect on July 7, 2025.
+ terms--terms#acceptTerms">Accept 
+ Learn More 
+ Read T&Cs 
+ We use cookies
+ Our site uses cookies to give you the best experience. You can choose which cookies to accept or continue shopping if you're happy.
+ We noticed you have a privacy preference set, and we have honored it by disabling advertising cookies. 
+ cookies--consent#acceptAll">Accept All 
+ Manage Cookies 
+ cookies--consent#dismiss" aria-label="Close"> 
+ Manage Your Cookies
+ We use cookies to personalise content, provide analytics, and enhance your browsing experience. Manage your settings for different types of cookies below. You can find out more about what cookies we use and how we use them by viewing our 
+ Cookie Policy .
+ Essential Cookies
+ Essential cookies are necessary for the basic functionality of our website. These cookies enable core features such as security, network management, and accessibility. You cannot opt out of these cookies, as the website cannot function properly without them.
+ Analytics Cookies
+ Analytics cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. These cookies provide data on things like page visits, traffic sources, and user behaviour so we can improve the performance of our site.
+ Ad Storage
+ Ad storage enables the storage and tracking of ads and marketing-related data, allowing for personalised advertisements and analytics about ad campaigns.
+ Ad Personalisation
+ Ad personalisation uses collected data to display personalised advertisements based on user behaviour and preferences.
+ Ad User Data
+ Ad user data tracks user information to enable ad targeting and analytics that provide insights into campaign performance.
+ Personalization Storage
+ Personalization storage enables the storage of data for personalized website content and features, improving your overall browsing experience.
+ Cancel 
+ cookies--consent#savePreferences">Accept & close 

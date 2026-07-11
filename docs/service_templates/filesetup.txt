@@ -1,0 +1,541 @@
+
+ Print File Setup Guide | Prepare Print-Ready Files | Mixam 
+ 4.4
+ +1 888 510 1456 
+ Contact Us 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ English 
+ English 
+ Spanish 
+ -->
+ All Products 
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control rounded-start search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#clearSearch">
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--search#openMobileSearch">
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#closeMobileSearch">
+ Search Results
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Print On Demand 
+ +1 888 510 1456 
+ team@mixam.com 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Australia 
+ English 
+ English 
+ Spanish 
+ Sign In 
+ header--megamenu#switchToCategory"
+ data-target-category="books"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Books
+ header--megamenu#switchToCategory"
+ data-target-category="magazinesandbooklets"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Magazines & Booklets
+ header--megamenu#switchToCategory"
+ data-target-category="comicsandzines"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Comics & Zines
+ header--megamenu#switchToCategory"
+ data-target-category="businessandmarketingmaterials"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Business & Marketing
+ header--megamenu#switchToCategory"
+ data-target-category="artandphotography"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Art & Photography
+ header--megamenu#switchToCategory"
+ data-target-category="shareandsell"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Print On Demand
+ header--megamenu#closeOnOutsideClick" data-type="mega-menu" data-version="5" class="collapse position-absolute bg-neutral-7 top-0 start-0 end-0 pt-3 pb-3 z-index-100">
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Print On Demand 
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Print On Demand 
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Books
+ Activity Books
+ Autobiographies
+ Biography Books
+ Bookmarks
+ Children's Books
+ Coffee Table Books
+ Coloring Books
+ Cookbooks
+ Custom Dust Jackets
+ Diaries
+ Dissertations
+ Eulogies
+ Family History Books
+ Graphic Novels
+ Handbooks
+ Hardcover Books
+ Layflat Books
+ Manga
+ Memoirs
+ Notebooks
+ Novels
+ Paperback Books
+ Planners
+ Poetry Books
+ Reports
+ Textbooks
+ Theses
+ Wedding Albums
+ Workbooks
+ Yearbooks
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Magazines & Booklets
+ Booklets
+ Catalogs
+ Lookbooks
+ Magazines
+ Perfect Bound Booklets
+ Spiral Bound Booklets
+ Stapled Booklets
+ Wire-O Bound
+ Zine Printing
+ Featured Products
+ Booklets 
+ Comics & Zines
+ Comic Books
+ Comic Sketch Covers
+ Graphic Novels
+ Manga
+ Zine Printing
+ Business & Marketing
+ Booklets
+ Bookmarks
+ Brochures
+ Business Cards
+ Catalogs
+ Compliment Slips
+ Direct Mail
+ Flyers
+ Handbooks
+ Letterheads
+ Loyalty Cards
+ Manuals
+ Menus
+ Postcards
+ Posters
+ Programs
+ Reports
+ Stapled Booklets
+ Wall Calendars
+ Featured Products
+ Booklets 
+ Business Cards 
+ Art & Photography
+ Art Books
+ Art Prints
+ Baby Photo Books
+ Coffee Table Books
+ Photo Books
+ Photography Books
+ Portfolios
+ Posters
+ Travel Albums
+ Wedding Albums
+ Featured Products
+ Posters 
+ Share & Sell your products with Print-On-Demand
+ For further info, demos and FAQs, including available products & distribution methods
+ Learn More 
+ Alert 
+ Loading Chat
+ Categories
+ Our Top 5 Topics 
+ How To Print A Book with Mixam 
+ Book Printing Basics 
+ Design and File Preparation 
+ Printing Options and Customization 
+ Comparing Your Print Options 
+ Preparing for Print 
+ Ordering with Mixam 
+ Promoting Your Book with Mixam 
+ Additional Notes 
+ Print On Demand with Mixam 
+ Print-on-Demand Introduction 
+ Comparing Your Print Options 
+ The Publisher Hub 
+ Getting Paid with Stripe 
+ Creating and Editing Products 
+ The Buyer Experience 
+ Selling Products with Shopify 
+ Marketing Your Print-on-Demand Products 
+ Rewards Program 
+ Mixam’s Rewards Program FAQ 
+ Design Tools 
+ Design Your Photo Book Online with Mixam: Your How-To Guide 
+ How To Use The Design Online Tool 
+ Print Design Generator Tool 
+ Artwork 
+ Print File Setup Guide 
+ Dust Jacket File Preparation Guide 
+ How To Prepare and Upload Print Files 
+ How To Print Multiple Designs 
+ How To Use Mixam’s AI Image Enhancer 
+ Image Resolution 
+ Variant and Sketch Covers 
+ Delivery 
+ Shipping and Delivery 
+ Understanding Delivery Timelines 
+ Understanding Your Order Status 
+ General 
+ Binding 
+ How To Report Print Issues 
+ How To Count Leaves, Sides and Pages 
+ How To Print With Mixam 
+ How To Submit Print Files 
+ Industry Standard Sizes 
+ Our Paper Range 
+ Page Counts 
+ Print File Setup Checklist 
+ Printing Glossary 
+ Production Timeline 
+ Proofing 
+ Quotes 
+ What Is an ISBN? 
+ Sustainable Printing 
+ Payments 
+ Payment Methods 
+ Printing & Finishing 
+ CMYK Color Charts and Values 
+ CMYK vs RGB 
+ Cloth Book Covers 
+ Color Guide for Printing 
+ Color Variance 
+ Color vs Black and White 
+ Endpapers 
+ Full Bleed Printing Explained 
+ How To Apply Foiling to Prints 
+ How To Apply a Spot UV 
+ How To Convert RGB to CMYK 
+ How To Measure a Book for Printing 
+ How To Print Hardcover Books 
+ Ink Saturation and Density 
+ Manufacturing Variance 
+ Offset Printing versus Digital Printing 
+ Our Print Finishes 
+ Special Print Options 
+ Standard Black vs Rich Black 
+ Why Printed Colors Look Different From Your Screen 
+ Print File Setup Guide
+ Set up your print files correctly with our comprehensive guide. Learn how to add bleed, trim boxes, and get expert tips to ensure high-quality printing.
+ Quick Overview
+ Use  0.125" bleed ( 0.8" for Hardcover covers)
+ Keep important content away from the  quiet area 
+ Set your  trim box to final page size
+ Export files as print-ready PDFs in CMYK 
+ Name files clearly for correct page order
+ Before You Start Designing
+ Setting up your files correctly at the start will save time and help prevent common print issues. For the best results, we recommend exporting your files as  PDFs to preserve fonts, images, and layout. You can upload other  file types , and we’ll convert them to PDFs.
+ If you use Adobe InDesign, Illustrator, or Photoshop, you can install Mixam’s .joboptions file. This preset optimizes your files for our presses by applying the correct  CMYK color mode and recommended settings for  bleed, transparency, and fonts .
+ How to Apply and Install Mixam’s .joboptions
+ Start by installing our preferred  CMYK color profile :  GRACoL2006_Coated1v2 . Then download the relevant  .joboptions file: Single Pages in Color or Single Pages in Grayscale . Follow the instructions for the relevant design program below:
+ Adobe InDesign 
+ Go to  File > Adobe PDF Presets > Define 
+ Click  Load and select the Mixam .joboptions file
+ Select it from the preset list and click  Done 
+ Adobe Illustrator 
+ Go to  Edit > Adobe PDF Presets 
+ Click  Import and select the file
+ Click  OK to confirm
+ Adobe Photoshop 
+ Go to  Edit > Adobe PDF Presets 
+ Click  Load and select the file
+ Click  Done 
+ Download Templates
+ One of the easiest ways to set up your files is by using a Mixam template. They’re available on all products and tailored to your print specifications with built-in guides for  bleed , trim lines , quiet area , gutter area  and spine width . 
+ Templates help you:
+ Avoid manual setup 
+ Avoid alignment issues
+ Speed up the design process
+ Ensure your files meet production requirements
+ Reduce print errors
+ You can download a template from the  Instant Quote Calculator after selecting your product specifications, or from the  Artwork tab once you have started your order.
+ Pro tip:  Templates are for setup only, so ensure you remove the template before exporting your final file.
+ Mixam template download option via the Instant Quote Calculator
+ Mixam template download option in the Artwork tab
+ Design Online
+ Mixam’s  Design Online tool is another fast and simple way to create files for free in your browser that already meet our print requirements.
+ How To Use Design Online
+ Choose your product and specifications, then click the  Design Online option on the  Instant Quote Calculator or by opening it in your pending order’s  Artwork tab .
+ Select which part you want to design:   Cover & Body, Cover Only or Body Only.
+ Add photos, text and graphics and click  Save as you go. Mixam account holders can view and edit saved designs in their  My Designs tab.
+ Check your files to ensure they appear correctly.
+ Click  Finish & Upload  to transfer your finished design to your Artwork tab.
+ Pro tip:  If your design includes text and images, select the  Advanced Editor  option for maximum editing control.
+ Preview of the Design Online interface
+ Bleed, Trim, Quiet and Gutter Area
+ These are the most important parts of file setup:
+ Full Bleed Printing
+ Full bleed refers to the extra space where your design extends beyond the final trim size of your page. 
+ Artwork that includes background colors or images must extend across the full  bleed area so that even with small shifts during the trimming process, it prevents thin white edges from appearing on your final prints.
+ For most products, add 0.125" bleed .  Hardcover Book covers require  0.8" bleed so your artwork can be wrapped around the cover boards. If your design does not reach the edge of the page, you may not need bleed. However, all files should still include bleed to prevent print issues.
+ Pro tip:  Watch How To Set Up Bleed in InDesign, Illustrator and Photoshop for step-by-step guidance below.
+ An example print file with correct bleed
+ Spines
+ The spine is the edge of a bound item where pages are joined. Its width depends on factors like page count and paper type. You can find your spine width in your cart’s  order summary  and order’s  Artwork tab .
+ How To Set Up a Spine File
+ Use the spine width provided and match the height to your trim size.
+ Extend the file by  0.125" bleed on the top and bottom edges. For hardcover spines, add  0.8” bleed to the top and bottom edges.
+ Export as a PDF with bleed settings included.
+ A spine template example for perfect (PUR) binding
+  A spine template example for hardcover binding
+ Spine Movement
+ Spine setup must allow for slight movement during the binding process.  Tolerance movement is normal and adheres to industry standards.
+ Spine position may shift by up to  0.08" left to right 
+ Spine position may shift by up to  0.125" up and down 
+ Pro tips: 
+ Keep content  0.2” away   from the top and bottom edges 
+ Leave  0.08”   between spine text and cover artwork 
+ Avoid  placing important content close to the edges 
+ Avoid using  contrasting colors between the spine and covers in case movement occurs
+ Avoid  placing text on very narrow spines, as it may not be legible in print
+ Trim Lines
+ Trim lines mark the edge of your page after it is printed and cut to its final size. Your  trim box must match your intended page dimensions. Do not include bleed inside the trim box. Any background colors or images that reach the edge of your page must extend beyond the trim line to the edge of the  bleed   area to prevent unprinted edges.
+ As a general guide:
+ Position content  0.25" away from the trim line to avoid cropping issues.
+ Position content  0.5" away from the binding area  to ensure legibility.
+ Pro Tip: Watch our video guide below on setting trim boxes to ensure your pages are properly sized and aligned before exporting.
+ A hardcover book cover example showing a trim box (Artwork: Exalted Funeral)
+ Quiet Area
+ The  quiet area sits inside the trim line and prevents content from being cut off or appearing uneven during trimming.
+ General guidelines:
+ Outer edges: Keep content 0.25” away from the trim line.
+ Bound side (spine edge): Add 0.5” of space to prevent content from being trimmed or obscured.
+ Hardcover Book cover spreads: Place content 0.6” away from the spine edge to avoid overlapping the hinge (the flexible bridge between the spine and the cover).
+ Layflat binding exception: No quiet area required.
+ Example of a quiet area applied incorrectly to an inner page for a bound item
+ Example of a quiet area applied correctly to an inner page for a bound item
+ Quick Reference: Bleed, Quiet Area, and Binding Area
+ Use this quick guide to help set up your files correctly. For more details on binding options, visit our  binding support page .
+ Binding Type
+ Bleed
+ Quiet Area
+ Binding Area (Gutter)
+ Staple (Saddle-Stitch)
+ 0.125" on all edges
+ 0.25" away from the trim line
+ 0.5"
+ Perfect Binding (PUR)
+ 0.125" on all edges; top & bottom of spine
+ 0.25" away from outer edges
+ 0.5"
+ Wire-O Binding
+ 0.125" on all edges; top & bottom of spine
+ 0.25" away from outer edges
+ 0.6"
+ Spiral (Coil)
+ 0.125" on all edges; top & bottom of spine
+ 0.25" away from outer edges
+ 0.6"
+ Hardcover
+ 0.8" on all edges, include 0.2" hinge on each side of spine
+ 0.25" away from outer edges
+ 0.6"
+ Layflat
+ 0.8" on all edges, include 0.2" hinge on each side of spine
+ 0.25" away from outer edges
+ None required
+ How to Create Single Pages
+ Single-page files are a common format for print. They work well for single-sided items like posters and bound items with small page counts. Clear file naming will also help keep your pages organised. Use simple names such as  page1.pdf ,  page2.pdf , etc.
+ To prepare single pages:
+ Set your page size to the final trim size
+ Add  0.125" bleed (or  0.8" for Hardcover covers )
+ Keep all important content away from the quiet area
+ Export as a  print-ready PDF with bleed enabled 
+ Example (Perfect Bound): 
+ Trim size: 8.5" × 11"
+ Add 0.125" bleed to each edge (0.25" total per dimension)
+ Final file size: 8.75" × 11.25"
+ Pro tip:  If you use InDesign, make sure  Facing Pages is turned off for single-page documents. 
+ How to Create Double-Page Spreads
+ Double-page spreads allow content to run across two pages. They’re easy to organize and fast to upload.
+ To prepare spreads:
+ Set your document width to double the width of a single page
+ Add  0.125" bleed (or  0.8" for Hardcover covers )
+ Keep content away from trim lines, quiet areas and the binding area.
+ Offset images slightly on each page to account for the binding.
+ To offset images:
+ Place each page’s content in its own frame or canvas. Do not use a single image spanning both pages.
+ Shift the left-hand page image left by 0.125" and the right-hand page image right by  0.125" .
+ Make sure all backgrounds or edge images extend past the trim edge into the bleed area, with important content away from the binding area.
+ Export your file with bleed included.
+ Pro tip:  Watch How to Create a Double Page Spread below for a visual step-by-step tutorial.
+ How To Create Cover Spreads
+ Cover files are set up differently from interior pages. They include a front cover, a back cover, and a spine (if applicable). The front cover is positioned on the right, the back cover on the left, and the spine in the center. You can upload individual files for each component, but we recommend uploading a single cover spread for accuracy and design continuity.
+ When designing your cover:
+ Place the spine in the center of the spread
+ Leave a  0.125" gap on both sides (glue area)
+ Keep important content away from trim lines
+ Items like staple-bound products do not require a spine design. If you print an item that includes a spine but you do not supply a spine artwork file, no printing will appear on the physical print, and it will be blank.
+ Example cover spread for a perfect-bound item (Artwork: Michelle Lam)
+ Fonts and Print Quality
+ Fonts can appear differently in print than on screen, and web fonts may not embed correctly. Additionally, TrueType and Type 1 fonts can sometimes cause embedding issues, so it’s best to convert text to outlines (shapes) before exporting to preserve their appearance. Always review your files to ensure characters display correctly.
+ How To Convert Text to Outlines
+ Adobe InDesign 
+ Select the  Type Tool (T) and highlight all text.
+ Go to  Type > Create Outlines .
+ Check that all characters appear correctly.
+ Save your file with a new name to avoid overwriting the editable version:  File > Save As .
+ Adobe Illustrator 
+ Select all text ( Command/Control + A ).
+ Press  Command/Control + Shift + O (or go to  Type > Create Outlines ).
+ Check that all characters appear correctly.
+ Save a new copy:  File > Save As .
+ Adobe Photoshop 
+ Right-click the text layer in the  Layers panel .
+ Choose  Convert to Shape .
+ Check that all characters appear correctly.
+ Save a new copy:  File > Save As , and select  Photoshop PDF .
+ Pro Tip: Always keep an editable version of your file before converting text. Once outlined, text is no longer editable, only as vector shapes. You can also learn more about fonts in our blog post:  Best Fonts for Books .
+ How To Upload, Add Blank Pages, Remove and Reposition Files
+ There are multiple ways to prepare and upload files you’ve created yourself. You can:
+ Drag and drop files into the thumbnails in your Artwork tab 
+ Upload files from your desktop 
+ Upload from cloud-based platforms like Dropbox and Mixam’s  WeTransfer account.
+ Upload from a web URL 
+ To add a blank page, click the three-dotted button under a thumbnail and click  Insert Blank Page. A blank page will appear, and your quote will update.
+ To remove artwork files, click the three-dotted button underneath a thumbnail in your order’s Artwork tab and click  Delete.  You can then reupload a new artwork file.
+ The three-dotted button for adding a blank page
+ To reposition a file, all artwork thumbnails must be filled first. Once they’re filled, you can either:
+ Drag the file into a new position
+ Click the three-dotted icon under the specific page, then  under  Move page to , enter the page number in the field and click  Move .  Your page will automatically appear in its new position. Ensure to double-check your page order so that your files are in the correct order before confirming.
+ The three-dotted button for repositioning a file
+ Pro tip: Always remove old files before uploading updated versions. This prevents duplication and ensures the correct files are used for printing.
+ Additional Resources
+ Explore these guides for more help with preparing and printing your files:
+ Book Printing Guide   
+ Print-On-Demand Guide 
+ Seeing (and feeling) is believing
+ Start your print journey with our sample packs.
+ Order a Free Sample Pack 
+ Get double points on your first order when you sign up for an account
+ Create an Account 
+ Mixam is a leading online printing platform that creates customizable print products for a global audience. We make print easy, accessible, and affordable with competitive pricing, exceptional materials and pro customer service. Our digital and offset printing solutions combine expert knowledge with the latest technology.
+ TrustScore : 4.4 | 5487 reviews 
+ Customer Support Hours
+ Monday - Friday: 24-Hour Service
+ Saturday - Sunday: 6am to 1pm EST
+ Email : team@mixam.com 
+ Phone : +1 888 510 1456 
+ Address (Appt. Only) : Mixam, Inc, 1 N Wacker Dr, Suite 2410, Chicago, IL, 60606 US
+ Other Mixam Shops
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ Home
+ Knowledge Base 
+ Blog 
+ Our Paper Ranges 
+ Rewards Program 
+ Join Our Team 
+ Privacy Policy 
+ Terms of Use and Service 
+ Cookie Policy 
+ FAQs 
+ Your Privacy Choices 
+ Popular Items
+ Booklets 
+ Brochures 
+ Business Cards 
+ Flyers 
+ Hardcover Books 
+ Paperback Books 
+ Postcards 
+ Posters 
+ Categories
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Educational & Specialty Books 
+ Personal & Special Occasion 
+ © 2003 - 2026, Mixam, Inc. All rights reserved. 
+ Terms & Conditions
+ Mixam's Terms of Use and Service ("Terms") have changed. By tapping Accept or continuing to use our website, you accept our new Terms, which took effect on July 7, 2025.
+ terms--terms#acceptTerms">Accept 
+ Learn More 
+ Read T&Cs 
+ We use cookies
+ Our site uses cookies to give you the best experience. You can choose which cookies to accept or continue shopping if you're happy.
+ We noticed you have a privacy preference set, and we have honored it by disabling advertising cookies. 
+ cookies--consent#acceptAll">Accept All 
+ Manage Cookies 
+ cookies--consent#dismiss" aria-label="Close"> 
+ Manage Your Cookies
+ We use cookies to personalise content, provide analytics, and enhance your browsing experience. Manage your settings for different types of cookies below. You can find out more about what cookies we use and how we use them by viewing our 
+ Cookie Policy .
+ Essential Cookies
+ Essential cookies are necessary for the basic functionality of our website. These cookies enable core features such as security, network management, and accessibility. You cannot opt out of these cookies, as the website cannot function properly without them.
+ Analytics Cookies
+ Analytics cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. These cookies provide data on things like page visits, traffic sources, and user behaviour so we can improve the performance of our site.
+ Ad Storage
+ Ad storage enables the storage and tracking of ads and marketing-related data, allowing for personalised advertisements and analytics about ad campaigns.
+ Ad Personalisation
+ Ad personalisation uses collected data to display personalised advertisements based on user behaviour and preferences.
+ Ad User Data
+ Ad user data tracks user information to enable ad targeting and analytics that provide insights into campaign performance.
+ Personalization Storage
+ Personalization storage enables the storage of data for personalized website content and features, improving your overall browsing experience.
+ Cancel 
+ cookies--consent#savePreferences">Accept & close 

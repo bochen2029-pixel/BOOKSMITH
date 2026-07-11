@@ -1,0 +1,20 @@
+# --- dependencies (reinstall via _tools/package.json: npm install --prefix _tools) ---
+_tools/node_modules/
+
+# --- caches / transient artifacts ---
+__pycache__/
+*.pyc
+*_r2k.jpg
+*_r2k.png
+*.pad.tmp
+*.part
+Thumbs.db
+desktop.ini
+
+# --- machine-local (kit_env.json IS tracked — it documents the reference machine;
+#     override locally via kit_env.local.json if that pattern is ever added) ---
+
+# --- large regenerable outputs: keep the testvoyage proof-of-life artifacts,
+#     but exclude any future book workspaces by default (uncomment to track one) ---
+book_workspace/*/outputs/**/*.pdf.bak
+book_workspace/*/manuscript/drafts/*_wip_*

@@ -1,0 +1,581 @@
+
+ Hardcover Book Printing - Custom Hard Cover Book Printing Services - Print Hardback Books - Mixam | Mixam 
+ 4.4
+ +1 888 510 1456 
+ Contact Us 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ English 
+ English 
+ Spanish 
+ -->
+ All Products 
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control rounded-start search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#clearSearch">
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--mixie#open"
+ data-header--mixie-target="chatToggle" type="checkbox" id="chatToggle"
+ data-type="chat-toggle"
+ class="visually-hidden" disabled>
+ header--search#openMobileSearch">
+ header--search#startSearch click@window->header--search#closeSearchOnOutsideClick focus->header--search#openResultsNotEmpty" type="text" class="form-control search-input bg-neutral-7 border-0 input-focus-bg-neutral-7 shadow-none" placeholder="Search..." data-type="search-bar">
+ header--search#closeMobileSearch">
+ Search Results
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Print On Demand 
+ +1 888 510 1456 
+ team@mixam.com 
+ Print Samples 
+ Rewards 
+ United States 
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Australia 
+ English 
+ English 
+ Spanish 
+ Sign In 
+ header--megamenu#switchToCategory"
+ data-target-category="books"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Books
+ header--megamenu#switchToCategory"
+ data-target-category="magazinesandbooklets"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Magazines & Booklets
+ header--megamenu#switchToCategory"
+ data-target-category="comicsandzines"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Comics & Zines
+ header--megamenu#switchToCategory"
+ data-target-category="businessandmarketingmaterials"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Business & Marketing
+ header--megamenu#switchToCategory"
+ data-target-category="artandphotography"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Art & Photography
+ header--megamenu#switchToCategory"
+ data-target-category="shareandsell"
+ data-type="product-category"
+ class="px-3 py-2 border-bottom-2-transparent hover-border-2-green-bottom cursor-pointer text-neutral-3 fs-xl-5 fs-lg-6 lh-lg-1 lh-xl-1">Print On Demand
+ header--megamenu#closeOnOutsideClick" data-type="mega-menu" data-version="5" class="collapse position-absolute bg-neutral-7 top-0 start-0 end-0 pt-3 pb-3 z-index-100">
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Print On Demand 
+ Books 
+ Activity Books Autobiographies Biography Books Bookmarks Children's Books Coffee Table Books Coloring Books Cookbooks Custom Dust Jackets Diaries Dissertations Eulogies Family History Books Graphic Novels Handbooks Hardcover Books Layflat Books Manga Memoirs Notebooks Novels Paperback Books Planners Poetry Books Reports Textbooks Theses Wedding Albums Workbooks Yearbooks 
+ Magazines & Booklets 
+ Booklets Catalogs Lookbooks Magazines Perfect Bound Booklets Spiral Bound Booklets Stapled Booklets Wire-O Bound Zine Printing 
+ Comics & Zines 
+ Comic Books Comic Sketch Covers Graphic Novels Manga Zine Printing 
+ Art & Photography 
+ Art Books Art Prints Baby Photo Books Coffee Table Books Photo Books Photography Books Portfolios Posters Travel Albums Wedding Albums 
+ Business & Marketing 
+ Booklets Bookmarks Brochures Business Cards Catalogs Compliment Slips Direct Mail Flyers Handbooks Letterheads Loyalty Cards Manuals Menus Postcards Posters Programs Reports Stapled Booklets Wall Calendars 
+ Print On Demand 
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Books
+ Activity Books
+ Autobiographies
+ Biography Books
+ Bookmarks
+ Children's Books
+ Coffee Table Books
+ Coloring Books
+ Cookbooks
+ Custom Dust Jackets
+ Diaries
+ Dissertations
+ Eulogies
+ Family History Books
+ Graphic Novels
+ Handbooks
+ Hardcover Books
+ Layflat Books
+ Manga
+ Memoirs
+ Notebooks
+ Novels
+ Paperback Books
+ Planners
+ Poetry Books
+ Reports
+ Textbooks
+ Theses
+ Wedding Albums
+ Workbooks
+ Yearbooks
+ Featured Products
+ Hardcover Books 
+ Paperback Books 
+ Magazines & Booklets
+ Booklets
+ Catalogs
+ Lookbooks
+ Magazines
+ Perfect Bound Booklets
+ Spiral Bound Booklets
+ Stapled Booklets
+ Wire-O Bound
+ Zine Printing
+ Featured Products
+ Booklets 
+ Comics & Zines
+ Comic Books
+ Comic Sketch Covers
+ Graphic Novels
+ Manga
+ Zine Printing
+ Business & Marketing
+ Booklets
+ Bookmarks
+ Brochures
+ Business Cards
+ Catalogs
+ Compliment Slips
+ Direct Mail
+ Flyers
+ Handbooks
+ Letterheads
+ Loyalty Cards
+ Manuals
+ Menus
+ Postcards
+ Posters
+ Programs
+ Reports
+ Stapled Booklets
+ Wall Calendars
+ Featured Products
+ Booklets 
+ Business Cards 
+ Art & Photography
+ Art Books
+ Art Prints
+ Baby Photo Books
+ Coffee Table Books
+ Photo Books
+ Photography Books
+ Portfolios
+ Posters
+ Travel Albums
+ Wedding Albums
+ Featured Products
+ Posters 
+ Share & Sell your products with Print-On-Demand
+ For further info, demos and FAQs, including available products & distribution methods
+ Learn More 
+ Alert 
+ Loading Chat
+ Hardcover Book Printing 
+ Info 
+ FAQ 
+ Our custom hardcover book printing service offers superior strength and durability, ensuring your book stands out and lasts. Give your imaginative ideas the premium look and feel they deserve. Whether you’re printing  children's books ,  custom printed notebooks ,  custom journals ,  yearbooks , or  photo books , our hardcover casebound books offer superior strength and durability that will proudly sit on any bookshelf. From premium paper options to exceptional color printing, the creative potential that  book printing offers for your ideas is limitless.
+ How do I start an order? 
+ Non-account holders can place orders, but we recommend creating a free Mixam account and signing in. Select an item from the categories at the top of the website, and choose your print specifications, free quote and estimated shipping date via the Instant Quote Calculator. Click Add to Cart, then Continue, and upload your files to your Artwork tab. Visit our How To Print With Mixam Support Page for more information.
+ How do I design my files? 
+ You can create artwork by hand, scan it or photograph it and upload images to your desktop. You can also use graphic design programs like Adobe Photoshop, InDesign, Illustrator, Canva, or Affinity Publisher. To ensure print-ready files before upload, download Our Instant Quote Calculator's downloadable PDF templates to lay out your designs. Alternatively, click the Design Online Tool to create artwork in your order (visit our  Support Page  for more information).
+ What is bleed, and why do I need it? 
+ Bleed is an extension of artwork or color(s) to minimize unprinted edges appearing when we cut your prints to size. Your front cover, back cover, and spine need 0.8” bleed on the top, bottom, and outer edges. The bleed allows your cover artwork to extend around the cover boards. Inner pages require the standard 0.125” bleed on all four sides. If you upload your covers and spine as single files, add 0.8” on all 4 edges. We will only use 0.2” bleed on the inner edge to cover the hinge areas (the flexible bridges between the spine and the cover). You don’t need to include bleed if no artwork or color(s) meet the page edges. Visit  How To Print Hardcover Books  and  Full Bleed Printing Explained  for more information.
+ How do I upload my files? 
+ Start a pending order by adding a quote to your Cart and clicking Continue. Please label your files clearly before uploading with names like Page_1, Page_2, etc., so our system can place your files chronologically. Drag and drop files from your desktop or upload them from your computer, online file-sharing accounts like Dropbox, or a web URL. You can upload single and multi-page files to orders. Visit our Print File Setup Guide for more information.
+ Which file types can I upload? 
+ You can upload many file types, and we’ll convert them into high-quality PDFs. You can submit them as single, double, or individual files. Ensure your files are in CMYK color mode before uploading. Visit our Color Guide for Printing and File Formats Support Page to view the complete list of accepted file types.
+ How do I create a multi-piece shipment? 
+ A multi-piece shipment refers to a single order containing multiple items. Once you add your first quote to your Shopping Cart, you can repeat the process for the same item or add a quote for another item via the categories at the top of the website. You can then upload your files to each item in one order.
+ How do I preview my files? 
+ Once you’ve uploaded files in your order’s Artwork tab, you can preview them via Thumbnails, an Online Preview and Downloadable Proof. Mixam’s automatic file checker will scan your files, but please also check all files manually, especially your Downloadable Proof, to review and fix issues before we send your order to production. Visit our Proofing Support Page for more information, and contact our print experts by chat, email or phone for assistance.
+ What is the deadline for confirming my order? 
+ The cut-off time for Confirmed orders is 4 pm CT every workday. It would help to confirm your order before these times to secure your estimated shipping date. Unconfirmed orders may mean you receive a new estimated delivery date. Visit our Shipping and Delivery Support Page for more information.
+ When can I expect my order? 
+ We aim to get your order to you by or on the estimated date you choose on our Instant Quote Calculator. While all shipping dates are not guaranteed, we’ll inform you at the earliest opportunity if a delay occurs. Visit our Shipping and Delivery Support Page for more information, and contact our team in advance if you have a deadline, and we’ll try to accommodate.
+ Can I order samples? 
+ You can familiarize yourself with our quality, products and paper stocks by ordering free printed samples here . You can also create a test print before placing a larger order by ordering one copy via our Instant Quote Calculator. Please note that shipping can take longer depending on your location, but you can contact our team if you have any questions.
+ How do I upload a cover spread? 
+ Upload one 300 dpi PDF file to your Artwork tab containing a back cover, spine and front cover design. Ensure your design matches the dimensions you selected in your initial quote and it's labeled with a name like cover.pdf so our system can automatically put it in the correct place. Visit our Print File Setup Guide for more information.
+ How do I upload a spine? 
+ A spine refers to the edge where the outer covers and interior pages are bound, typically featuring artwork, the publication title and the author's name. Upload a single PDF file or design one as part of a cover spread at 300 dpi. You can find your spine dimensions in your Shopping Cart or Artwork tab. Add 0.125" bleed to the top and bottom of your spine. For Hardcover items, add a 0.2" hinge area on both sides of the spine and 0.8" bleed to the top and bottom. Labeling your files will also ensure they appear in the right place. If you cannot upload spine artwork, add a blank page by clicking the blue three-dot button under the spine thumbnail. Print work will only appear if you upload a spine design file. Otherwise, it will remain blank. Visit our File Setup Support Page for more information.
+ What is lamination, and why do I need it? 
+ Lamination means applying a transparent plastic coating on top of prints to preserve, protect and enhance aesthetics. All laminations and finishes can affect the final appearance of printed colours, but each minimises issues like marking, ink transferral, smudging, creasing, fading, wrinkling, abrasion and tearing. Please note we cannot laminate Uncoated and Recycled Paper stocks. Visit Our Print Finishes Support Page for more information.
+ What is sewn binding, and should I include it? 
+ On Hardcover Books, a Smyth® sewing machine stitches all your inner pages together using thread to form a book block (a stack of folded, gathered pages). A strong adhesive then covers the binding edge and attaches the block to the spine and covers. Sewn binding incurs a higher cost and additional production days but provides unbeatable strength and longevity. We recommend this option for items with high page counts and heavy paper stocks.
+ What is a dust jacket, and how do I create one? 
+ On Hardcover Books, a Dust Jacket is a detachable outer cover with folded panels. It increases a book’s longevity, minimizes damage, and can be highly decorative. We'll produce them on 80lb Cover stock, but we may use a similar, high-quality alternative should this stock become unavailable. You can upload a separate Dust Jacket design file to your Hardcover Book order by selecting the Add Dust Jacket option on the Instant Quote Calculator. Visit our Custom Dust Jackets page to create an order and visit our Dust Jacket support page for more information.
+ footer--chat#openChat" class="text-primary cursor-pointer fw-bold">Chat or 
+ Call us on: 
+ +1 888 510 1456 
+ to speak to our friendly customer service team. 
+ Click the play button to watch the video
+ Credit: 
+ @leatherworkschool 
+ Previous 
+ Next 
+ Loading
+ Information 
+ Available Sizes 
+ Binding Options 
+ Paper Types 
+ How To Upload Your Files 
+ To ensure high-quality print files, we'll convert your files to PDFs, no matter which file type you upload. We accept single pages, double pages or individual files. Visit our  File Formats Support Page to learn how to submit your files.
+ Important - Your Cover 
+ Adding a cover to your order will increase your total page count by four. A cover includes a front cover, an inside front cover, a back cover, and an inside back cover. Hardcover Books have no inside covers; therefore, you don’t need to supply files.
+ Bleed 
+ Bleed is the area surrounding your print’s trim size, extending an image or color beyond the finished trim size. Add a 0.125” bleed to every print file before uploading them to your Artwork Dashboard. Hardcover Books require a 0.8” bleed on the cover and spine files. Avoid placing any important content within the bleed area. You don't need to include bleed if your pages are blank (i.e. no images/graphics meeting the edge of your page). Visit our  Bleed Setup Support Page to learn more about bleed, trim lines and gutter areas.
+ Binding 
+ You can choose from a range of binding options on our Instant Quote Calculator. Head to our  Binding Types Support Page to learn more about binding and how to set up your files for each option.
+ Please Note: 
+ Our Instant Quote Calculator automatically switches to the appropriate binding options when the number of pages or paper weight reaches a specific limit. For example, high page counts and paper weights may mean Perfect Binding is available, while low page counts and low paper weights may mean Staple or Wire-O Binding is better suited.
+ Spine  
+ For Perfect Binding, you can create your spine design and upload it as part of a cover spread or as a separate PDF file. Please include a 0.125” bleed at the top and bottom of your design. We’ll calculate and display your spine measurements in your Shopping Cart and Artwork Dashboard. If you don’t want to include a spine file, please insert a blank page instead. Hardcover Books require a 0.8” bleed on the cover and spine files.
+ Completing Your Order 
+ Make sure you fill in all page thumbnails. For example, if your order has 32 pages, your files must fill 32 thumbnails. You can add blank pages or adjust your quote if you do not have enough content. Visit our  Print File Checklist Support Page for more information.
+ Size
+ Professional Photo Quality Books
+ Reading Books
+ Layflat Books
+ Letter (8.5" x 11")
+ 8.38" x 10.88"
+ 11.8" x 11.8"
+ Executive (7" x 10")
+ Pocket Book (4.25" x 6.87")
+ Digest (5.5" x 8.5")
+ Crown Quarto (7.44" x 9.68")
+ US Letter Tall (8" x 10")
+ 8.25" x 11"
+ US Trade (6" x 9")
+ Medium Square (7.5" x 7.5")
+ Custom Large Format (7.5" x 9.25")
+ 10" x 10"
+ 11" x 14"
+ 12" x 12"
+ 6.13" x 9.25"
+ US Trade Large (7" x 9")
+ US Square (8" x 8")
+ 7.25" x 9.5"
+ Royal (6.14" x 9.21")
+ A4 (8.3" x 11.7")
+ A5 (5.8" x 8.3")
+ 8.5" x 8.5"
+ Professional Photo Quality Books
+ Weight
+ Adhesive Casebound
+ Smyth Sewn
+ Satin Paper
+ 70lb Text
+ 20 - 1000 pages 
+ 20 - 1000 pages 
+ 80lb Text
+ 20 - 700 pages 
+ 20 - 700 pages 
+ 100lb Text
+ 20 - 700 pages 
+ 20 - 700 pages 
+ 115lb Text
+ 24 - 700 pages 
+ 24 - 700 pages 
+ Gloss Paper
+ 70lb Text
+ 20 - 720 pages 
+ 20 - 720 pages 
+ 80lb Text
+ 20 - 700 pages 
+ 20 - 700 pages 
+ 100lb Text
+ 20 - 700 pages 
+ 20 - 700 pages 
+ 115lb Text
+ 24 - 700 pages 
+ 24 - 700 pages 
+ Uncoated Paper
+ 50lb Text
+ 20 - 1056 pages 
+ 20 - 1056 pages 
+ 60lb Text
+ 20 - 916 pages 
+ 20 - 916 pages 
+ 70lb Text
+ 20 - 720 pages 
+ 20 - 720 pages 
+ 80lb Text
+ 20 - 700 pages 
+ 20 - 700 pages 
+ 100lb Text
+ 20 - 700 pages 
+ 20 - 700 pages 
+ Recycled Uncoated Paper
+ 60lb Text
+ 32 - 800 pages 
+ 32 - 800 pages 
+ 70lb Text
+ 32 - 720 pages 
+ 32 - 720 pages 
+ 80lb Text
+ 32 - 600 pages 
+ 32 - 600 pages 
+ 100lb Text
+ 32 - 532 pages 
+ 32 - 532 pages 
+ Reading Books
+ Weight
+ Adhesive Casebound
+ Matte Paper
+ 45lb Text
+ 68 - 1228 pages 
+ 50lb Text
+ 68 - 1052 pages 
+ 60lb Text
+ 68 - 1004 pages 
+ 80lb Text
+ 68 - 600 pages 
+ Uncoated Paper
+ 40lb Text
+ 68 - 1360 pages 
+ 50lb Text
+ 68 - 1056 pages 
+ 60lb Text
+ 68 - 916 pages 
+ Cream Paper
+ 50lb Text
+ 68 - 916 pages 
+ 55lb Text
+ 68 - 916 pages 
+ 60lb Text
+ 68 - 916 pages 
+ Gloss Paper
+ 50lb Text
+ 68 - 1280 pages 
+ 60lb Text
+ 68 - 1052 pages 
+ Layflat Books
+ Weight
+ Hardcover
+ Matte Paper
+ 80lb Cover
+ 24 - 100 pages 
+ E-Photo Paper
+ 110lb Cover
+ 24 - 100 pages 
+ Paper Type
+ Professional Photo Quality Books
+ Reading Books
+ Layflat Books
+ Gloss
+ Recycled Uncoated
+ Satin
+ Cream
+ E-Photo
+ Matte
+ Uncoated
+ Related Products
+ Activity Book
+ Autobiography
+ Biography
+ Bookmark
+ Catalog
+ Children's Book
+ Coffee Table Book
+ Coloring Book
+ Cookbook
+ Custom Dust Jackets
+ Diary
+ Dissertation
+ Eulogy
+ Family History Book
+ Graphic Novel
+ Handbook
+ Layflat Book
+ Magazine
+ Manga
+ Memoir Book
+ Notebook
+ Novel
+ Paperback Book
+ Planner
+ Poetry Book
+ Report
+ Textbook
+ Thesis
+ Wedding Album
+ Workbook
+ Yearbook
+ Zine
+ Explore Real Customer Testimonials
+ 5.0 
+ Easy to do online
+ 3 days ago
+ Easy to do online, pricing okay, quality awesome, delayed delivery
+ 4.0 
+ Great print quality, slow production, shipping damage, good customer service
+ 4 days ago
+ Overall very good print quality, much slower production time than stated online, poor packaging resulting in shipping damage, but good customer service. I ordered 50 hardcover books of fine art reproductions of my oil paintings to test out Mixam, and I am considering doing another order through them when this batch sells out. Here are some of my lessons: 
+1) Overall the print quality is very good. Colors of pages are vibrant, the color hardcover and binding are very well done. I have some lessons for myself color accuracy and calibration for a second batch, but overall they did a really good job. The books look very nice and of high quality.
+2) Print production took double the amount time the website originally said it would take. I gave myself an extra week of wiggle room before an event, and the books shipped 2 weeks later. I wanted the books for an event on 5/31. I put in an order on 5/10, and the online tool showed estimated shipping on 5/21. I paid for next day shipping just in case there were delays. After I uploaded all my files, the production team put my order on pause and messaged me questions about my files early in the morning. After I responded within a couple hours (due to time difference since I'm on the West Coast), they didn't review my response until the following morning. This happened twice and delayed the start of production, so when the order went into production on 5/13, the estimated shipping got pushed to 5/27, which I thought could still meet my deadline. Then 5/27 came and went and I didn't get a tracking number. I messaged through the portal and they said they had production delays and the new shipping date is 6/5. I asked for a refund for my next day shipping fee, which they provided. The books ended up being shipped on 6/8, and arrived on 6/15 through regular shipping.
+3) Shipping boxes were poorly packaged. There was no extra cardboard on the sides of boxes, and they all arrived pretty banged up on the corners. One of the boxes was so banged up that the inside pages were all creased on the images of the artwork. I requested a refund for the books in that box, which they did provide after 2 weeks. 
+4) Customer service was slow, but in the end the provided the refunds I requested for the issues I have explained above.
+In summary, again, overall the print quality is very good, production was way slower than what it says online, and the books got damaged during shipping, but I got the appropriate refunds back. I'm considering going back for another batch when I'm don't have a tight deadline.
+ 5.0 
+ I refuse to use TrustPilot.
+ 4 days ago
+ I refuse to use TrustPilot.
+ 5.0 
+ It was everything that I wanted this…
+ 1 week ago
+ It was everything that I wanted this company always does a great job 
+ 5.0 
+ Very responsive to messages and the…
+ 1 week ago
+ Very responsive to messages and the colorful inner paper options are so perfect
+ 5.0 
+ At first the website was extremely hard…
+ 1 week ago
+ At first the website was extremely hard for me to navigate, but the chat function worked really well and help me through the process
+ 3.0 
+ Good quality, poor timeliness
+ 1 week ago
+ The quality of the book was great, but processing time of the order was not as advertised. My product arrived 2 or 3 days late, which ruined the surprise, as it was for a gift. I did not receive answers to my follow ups about schedule during this processing time, and also never received a call back after leaving a phone message.
+ 3.0 
+ Excellent product
+ 1 week ago
+ Excellent product. Customer service is difficult to navigate and you need to call to get an accurate answer. We requested an extra sample even ruined so we can show a new client and was promised. It never came and were told that we need to order a new sample.
+ 5.0 
+ Outstanding product
+ 1 week ago
+ Outstanding product, great user interface and exceptional value.
+ 5.0 
+ very easy to use and excellent product
+ 2 weeks ago
+ very easy to use and excellent product! pricing very reasonable for the high quality output!
+ 5.0 
+ Great Product
+ 2 weeks ago
+ Fast shipping. Easy process overall. Great quality. Highly recommend!
+ 5.0 
+ Best bang for your buck
+ 2 weeks ago
+ The website was very user-friendly, after my images were uploaded and the format was set any remaining issues were rather quickly addressed by their staff and I was contacted. The staff was extremely helpful and the finished product was well above my expectations, and the quality was fantastic for the price.
+ 5.0 
+ Easy platform to work with
+ 2 weeks ago
+ Easy system, the stages were very clear, I was surprised after trying other platforms.
+I got my book a week ago and couldn't be more thrilled 🙌🏻 
+It's profesional, beautiful and not expensive 
+I will definitely come back for more :)
+ 5.0 
+ Our order was delayed over a week
+ 2 weeks ago
+ Our order was delayed over a week, which seems to be common occurance with mixam. But we contacted support right away and let them know about our deadline and if anything could be expedited. They managed to get the order out sooner than expected and upgraded us to overnight shipping for free for the trouble. Books areived on time and were excellent. Customer service did a wonderful job with us!
+ 5.0 
+ Quick turnaround time
+ 2 weeks ago
+ Quick turnaround time, easy to use website, quality product 
+ 5.0 
+ Awesome customer service
+ 2 weeks ago
+ Awesome customer service
+ X 
+ Seeing (and feeling) is believing
+ Start your print journey with our sample packs.
+ Order a Free Sample Pack 
+ Get double points on your first order when you sign up for an account
+ Create an Account 
+ Mixam is a leading online printing platform that creates customizable print products for a global audience. We make print easy, accessible, and affordable with competitive pricing, exceptional materials and pro customer service. Our digital and offset printing solutions combine expert knowledge with the latest technology.
+ TrustScore : 4.4 | 5487 reviews 
+ Customer Support Hours
+ Monday - Friday: 24-Hour Service
+ Saturday - Sunday: 6am to 1pm EST
+ Email : team@mixam.com 
+ Phone : +1 888 510 1456 
+ Address (Appt. Only) : Mixam, Inc, 1 N Wacker Dr, Suite 2410, Chicago, IL, 60606 US
+ Other Mixam Shops
+ United Kingdom 
+ Ireland 
+ Canada 
+ Japan 
+ Germany 
+ Australia 
+ Home
+ Knowledge Base 
+ Blog 
+ Our Paper Ranges 
+ Rewards Program 
+ Join Our Team 
+ Privacy Policy 
+ Terms of Use and Service 
+ Cookie Policy 
+ FAQs 
+ Your Privacy Choices 
+ Popular Items
+ Booklets 
+ Brochures 
+ Business Cards 
+ Flyers 
+ Hardcover Books 
+ Paperback Books 
+ Postcards 
+ Posters 
+ Categories
+ All Products 
+ Books 
+ Magazines & Booklets 
+ Comics & Zines 
+ Business & Marketing 
+ Art & Photography 
+ Educational & Specialty Books 
+ Personal & Special Occasion 
+ © 2003 - 2026, Mixam, Inc. All rights reserved. 
+ Terms & Conditions
+ Mixam's Terms of Use and Service ("Terms") have changed. By tapping Accept or continuing to use our website, you accept our new Terms, which took effect on July 7, 2025.
+ terms--terms#acceptTerms">Accept 
+ Learn More 
+ Read T&Cs 
+ We use cookies
+ Our site uses cookies to give you the best experience. You can choose which cookies to accept or continue shopping if you're happy.
+ We noticed you have a privacy preference set, and we have honored it by disabling advertising cookies. 
+ cookies--consent#acceptAll">Accept All 
+ Manage Cookies 
+ cookies--consent#dismiss" aria-label="Close"> 
+ Manage Your Cookies
+ We use cookies to personalise content, provide analytics, and enhance your browsing experience. Manage your settings for different types of cookies below. You can find out more about what cookies we use and how we use them by viewing our 
+ Cookie Policy .
+ Essential Cookies
+ Essential cookies are necessary for the basic functionality of our website. These cookies enable core features such as security, network management, and accessibility. You cannot opt out of these cookies, as the website cannot function properly without them.
+ Analytics Cookies
+ Analytics cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. These cookies provide data on things like page visits, traffic sources, and user behaviour so we can improve the performance of our site.
+ Ad Storage
+ Ad storage enables the storage and tracking of ads and marketing-related data, allowing for personalised advertisements and analytics about ad campaigns.
+ Ad Personalisation
+ Ad personalisation uses collected data to display personalised advertisements based on user behaviour and preferences.
+ Ad User Data
+ Ad user data tracks user information to enable ad targeting and analytics that provide insights into campaign performance.
+ Personalization Storage
+ Personalization storage enables the storage of data for personalized website content and features, improving your overall browsing experience.
+ Cancel 
+ cookies--consent#savePreferences">Accept & close 

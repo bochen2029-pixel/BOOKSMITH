@@ -1,0 +1,17 @@
+{
+  "profile": "mixam-3panel",
+  "pages": 20,
+  "spine_in": 0.16,
+  "target_wrap_in": [
+    7.6,
+    10.6
+  ],
+  "files": [
+    "C:\\BOOKSMITH\\book_workspace\\testvoyage\\outputs\\mixam_hardcover\\front_cover.pdf",
+    "C:\\BOOKSMITH\\book_workspace\\testvoyage\\outputs\\mixam_hardcover\\front_cover.jpg",
+    "C:\\BOOKSMITH\\book_workspace\\testvoyage\\outputs\\mixam_hardcover\\back_cover.pdf",
+    "C:\\BOOKSMITH\\book_workspace\\testvoyage\\outputs\\mixam_hardcover\\back_cover.jpg",
+    "C:\\BOOKSMITH\\book_workspace\\testvoyage\\outputs\\mixam_hardcover\\spine.pdf",
+    "C:\\BOOKSMITH\\book_workspace\\testvoyage\\outputs\\mixam_hardcover\\spine.jpg"
+  ]
+}

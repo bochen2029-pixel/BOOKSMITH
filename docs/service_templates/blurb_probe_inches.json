@@ -1,0 +1,272 @@
+[
+ {
+  "combo": "ingram5x8|softcover|standard_trade_bw_matte_paper|100|inches",
+  "book_name": "5x8 inches (13x20 cm)",
+  "paper_name": "Standard Trade B&amp;W Paper, matte finish",
+  "values": [
+   "5.125 x 8.25",
+   "5.0 x 8.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "10.458 x 8.25",
+   "10.208 x 8.0",
+   "0.125",
+   "none",
+   "0.208 x 8.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram5x8|softcover|standard_trade_bw_matte_paper|300|inches",
+  "book_name": "5x8 inches (13x20 cm)",
+  "paper_name": "Standard Trade B&amp;W Paper, matte finish",
+  "values": [
+   "5.125 x 8.25",
+   "5.0 x 8.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "10.889 x 8.25",
+   "10.639 x 8.0",
+   "0.125",
+   "none",
+   "0.639 x 8.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram5x8|softcover|economy_trade_matte_paper|100|inches",
+  "book_name": "5x8 inches (13x20 cm)",
+  "paper_name": "Economy Trade Paper, matte finish",
+  "values": [
+   "5.125 x 8.25",
+   "5.0 x 8.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "10.514 x 8.25",
+   "10.264 x 8.0",
+   "0.125",
+   "none",
+   "0.264 x 8.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram5x8|softcover|economy_trade_matte_paper|300|inches",
+  "book_name": "5x8 inches (13x20 cm)",
+  "paper_name": "Economy Trade Paper, matte finish",
+  "values": [
+   "5.125 x 8.25",
+   "5.0 x 8.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "11.042 x 8.25",
+   "10.792 x 8.0",
+   "0.125",
+   "none",
+   "0.792 x 8.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram5x8|softcover|standard_trade_matte_paper|100|inches",
+  "book_name": "5x8 inches (13x20 cm)",
+  "paper_name": "Standard Trade Paper, matte finish",
+  "values": [
+   "5.125 x 8.25",
+   "5.0 x 8.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "10.514 x 8.25",
+   "10.264 x 8.0",
+   "0.125",
+   "none",
+   "0.264 x 8.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram5x8|softcover|standard_trade_matte_paper|300|inches",
+  "book_name": "5x8 inches (13x20 cm)",
+  "paper_name": "Standard Trade Paper, matte finish",
+  "values": [
+   "5.125 x 8.25",
+   "5.0 x 8.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "11.042 x 8.25",
+   "10.792 x 8.0",
+   "0.125",
+   "none",
+   "0.792 x 8.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram5x8|hardcover|standard_trade_bw_matte_paper|100|inches",
+  "book_name": "5x8 inches (13x20 cm)",
+  "paper_name": "Standard Trade B&amp;W Paper, matte finish",
+  "values": [
+   "5.125 x 8.25",
+   "5.0 x 8.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "18.458 x 8.5",
+   "18.208 x 8.25",
+   "0.125",
+   "3.375 x 8.5",
+   "0.319 x 8.5",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram8x10|softcover|economy_trade_matte_paper|100|inches",
+  "book_name": "8x10 inches (20x25 cm)",
+  "paper_name": "Economy Trade Paper, matte finish",
+  "values": [
+   "8.125 x 10.25",
+   "8.0 x 10.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "16.514 x 10.25",
+   "16.264 x 10.0",
+   "0.125",
+   "none",
+   "0.264 x 10.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram8x10|softcover|economy_trade_matte_paper|300|inches",
+  "book_name": "8x10 inches (20x25 cm)",
+  "paper_name": "Economy Trade Paper, matte finish",
+  "values": [
+   "8.125 x 10.25",
+   "8.0 x 10.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "17.042 x 10.25",
+   "16.792 x 10.0",
+   "0.125",
+   "none",
+   "0.792 x 10.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram8x10|softcover|standard_trade_matte_paper|100|inches",
+  "book_name": "8x10 inches (20x25 cm)",
+  "paper_name": "Standard Trade Paper, matte finish",
+  "values": [
+   "8.125 x 10.25",
+   "8.0 x 10.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "16.514 x 10.25",
+   "16.264 x 10.0",
+   "0.125",
+   "none",
+   "0.264 x 10.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram8x10|softcover|standard_trade_matte_paper|300|inches",
+  "book_name": "8x10 inches (20x25 cm)",
+  "paper_name": "Standard Trade Paper, matte finish",
+  "values": [
+   "8.125 x 10.25",
+   "8.0 x 10.0",
+   "0.125",
+   "0.25",
+   "0.5",
+   "17.042 x 10.25",
+   "16.792 x 10.0",
+   "0.125",
+   "none",
+   "0.792 x 10.25",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram8x10|hardcover|standard_trade_bw_matte_paper|100|inches",
+  "book_name": "8x10 inches (20x25 cm)",
+  "paper_name": "Standard Trade B&amp;W Paper, matte finish",
+  "values": [
+   "0.0 x 0.0",
+   "0.0 x 0.0",
+   "0.0",
+   "0.25",
+   "0.5",
+   "0.0 x 0.0",
+   "0.0 x 0.0",
+   "0.0",
+   "none",
+   "0.0 x 0.0",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram8x10|hardcover|standard_trade_bw_matte_paper|300|inches",
+  "book_name": "8x10 inches (20x25 cm)",
+  "paper_name": "Standard Trade B&amp;W Paper, matte finish",
+  "values": [
+   "0.0 x 0.0",
+   "0.0 x 0.0",
+   "0.0",
+   "0.25",
+   "0.5",
+   "0.0 x 0.0",
+   "0.0 x 0.0",
+   "0.0",
+   "none",
+   "0.0 x 0.0",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram8x10|hardcover|economy_trade_matte_paper|100|inches",
+  "book_name": "8x10 inches (20x25 cm)",
+  "paper_name": "Economy Trade Paper, matte finish",
+  "values": [
+   "0.0 x 0.0",
+   "0.0 x 0.0",
+   "0.0",
+   "0.25",
+   "0.5",
+   "0.0 x 0.0",
+   "0.0 x 0.0",
+   "0.0",
+   "none",
+   "0.0 x 0.0",
+   "0.25"
+  ]
+ },
+ {
+  "combo": "ingram8x10|hardcover|economy_trade_matte_paper|300|inches",
+  "book_name": "8x10 inches (20x25 cm)",
+  "paper_name": "Economy Trade Paper, matte finish",
+  "values": [
+   "0.0 x 0.0",
+   "0.0 x 0.0",
+   "0.0",
+   "0.25",
+   "0.5",
+   "0.0 x 0.0",
+   "0.0 x 0.0",
+   "0.0",
+   "none",
+   "0.0 x 0.0",
+   "0.25"
+  ]
+ }
+]

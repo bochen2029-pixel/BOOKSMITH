@@ -1,0 +1,122 @@
+{
+  "title": "The Night Was Young",
+  "subtitle": "A Novel",
+  "author": "Bo Chen",
+  "slug": "the_night_was_young",
+  "genre": "literary fiction (historical / time-travel)",
+  "is_fiction": true,
+
+  "trim": { "w": 6, "h": 9 },
+  "paper": "cream",
+  "finish": "matte",
+
+  "formats": ["kindle", "kdp_paperback", "kdp_hardcover", "mixam_hardcover", "digital_pdf"],
+
+  "interior": {
+    "body_font": "Georgia",
+    "body_pt": 12,
+    "leading": 340,
+    "first_line_indent": 360,
+    "gutter_in": 0.75,
+    "outside_in": 0.5,
+    "top_in": 0.5,
+    "bottom_in": 0.625,
+    "body_color": "1A1A1A",
+    "ornament_glyph": "✦"
+  },
+
+  "front_matter": [
+    { "type": "half_title", "valign": "center" },
+    { "type": "blank" },
+    { "type": "title", "valign": "center" },
+    { "type": "copyright", "valign": "bottom" },
+    { "type": "dedication", "valign": "center" },
+    { "type": "blank" },
+    { "type": "epigraph", "valign": "center" },
+    { "type": "blank" }
+  ],
+
+  "recto_strategy": "odd_page_sections",
+
+  "cover": {
+    "title_face": "CormorantGaramond",
+    "palette": { "navy": "0D1B2A", "cream": "F4EFE0", "gold": "C9A760", "umber": "1E160F" },
+    "title_tracking_em": 0.05,
+    "author_tracking_em": 0.18,
+    "art": {
+      "checkpoint": "sd_xl_base_1.0.safetensors",
+      "workflow": "sdxl_txt2img.json",
+      "prompt_seed": "front cover art for a Titanic time-travel novel; the RMS Titanic seen from the starboard bow quarter at night, amber portholes glowing, mirror-calm North Atlantic water, a single funnel trailing smoke against a star-dense sky; moody cinematic oil painting, warm umber lower / deep navy upper, period-accurate 1912 ocean liner, no modern elements; upper-third kept visually quiet for title placement",
+      "negative_prompt": "text, watermark, letters, title, signature, frame, border, modern ships, lifeboats in foreground",
+      "steps": 30,
+      "seed": -1,
+      "reroll_budget": 6
+    },
+    "isbn_keepout": { "w_in": 2.25, "h_in": 1.5, "corner": "bottom_right" }
+  },
+
+  "spine": {
+    "per_page_cream": 0.0025,
+    "per_page_white": 0.002252,
+    "kdp_hardcover_board_add": 0.348,
+    "mixam_board_add": 0.110,
+    "kdp_hardcover_turn_in_in": 0.708,
+    "kdp_hardcover_height_in": 10.417,
+    "kdp_bleed_in": 0.125,
+    "mixam_bleed_in": 0.80,
+    "calibrate_against_previewer": true
+  },
+
+  "kdp_metadata": {
+    "description": "<p><b>April 14, 1912.</b> A sysadmin who has spent his whole life managing the unmanageable wakes inside the maiden voyage of the <i>Titanic</i> - knowing exactly how the night ends, and exactly how little that knowledge is worth.</p><p>What begins as a dream of period detail becomes a reckoning with everything he has ever failed to break: the institution, the performance of unsinkability, the woman he has never told the truth to. As the ship performs its own certainty and the water rises, knowledge curdles into liability, and the only remaining move is to stop managing and let the structure fall.</p><p>A literary time-travel novel about class, catastrophe, and the difference between surviving a night and living through it.</p>",
+    "categories": ["Fiction / Literary", "Fiction / Historical / General", "Fiction / Time Travel"],
+    "keywords": [
+      "titanic time travel novel",
+      "literary historical fiction 1912",
+      "ocean liner disaster fiction",
+      "time loop reckoning story",
+      "class and catastrophe novel",
+      "second person present tense literary",
+      "cinematic historical time travel"
+    ],
+    "bisac": ["FIC019000", "FIC014000", "FIC056000"],
+    "price": { "kindle": 5.99, "paperback": 14.99, "hardcover": 24.99 },
+    "isbn_policy": "kdp_free"
+  },
+
+  "authorship": {
+    "default_class": "C",
+    "per_chapter_overrides": {
+      "part1_the_dissolution": "C",
+      "part2_the_chinese_passengers": "C",
+      "part3_the_dinner": "C",
+      "part4_the_evacuation": "B",
+      "part5_the_dark_and_the_room": "A"
+    }
+  },
+
+  "voice": {
+    "unit_noun": "part",
+    "exemplars_path": "exemplars/",
+    "blacklist": [
+      "delve",
+      "crucial",
+      "leverage",
+      "it could be argued",
+      "to be fair",
+      "in conclusion",
+      "a testament to",
+      "navigate the complexities"
+    ],
+    "greenlist": [
+      "the night was young",
+      "unsinkable",
+      "the performance of the mission"
+    ],
+    "sacred_terms": [
+      "The night was young. | closing refrain, exact wording, never paraphrase",
+      "the room | Tori's door / Bo's floor - the comprehension achieved in the water",
+      "the dissolution | Zhuangzi butterfly frame - never call it 'the dream' in narration"
+    ]
+  }
+}
