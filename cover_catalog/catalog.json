@@ -1,0 +1,16 @@
+{
+  "_comment": "Prerendered SDXL cover-art catalog. Built by _tools/catalog_build.py on a GPU machine; a curated subset ships, the full set fetches on demand. cover_pick.py scores entries against a book's intent (mood/tags/palette) and, when no strong match exists, falls back to hypergen (which renders anywhere). An empty entries[] is fully valid -- hypergen alone gives every machine a cover.",
+  "version": 1,
+  "entry_schema": {
+    "id": "sdxl_000",
+    "source": "sdxl",
+    "file": "covers/sdxl_000.png",
+    "thumb": "thumbs/sdxl_000.png",
+    "mood": "dark_literary",
+    "tags": ["literary", "night", "minimal"],
+    "palette": ["#0b0d14", "#3a4a63"],
+    "description": "a single lit window in a dark facade, painterly, moody",
+    "gen": {"prompt": "...", "seed": 0, "checkpoint": "sd_xl_base_1.0.safetensors"}
+  },
+  "entries": []
+}
