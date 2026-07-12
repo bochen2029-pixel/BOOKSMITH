@@ -7,10 +7,1366 @@
     "file": "covers/sdxl_000.png",
     "thumb": "thumbs/sdxl_000.png",
     "mood": "dark_literary",
-    "tags": ["literary", "night", "minimal"],
-    "palette": ["#0b0d14", "#3a4a63"],
+    "tags": [
+      "literary",
+      "night",
+      "minimal"
+    ],
+    "palette": [
+      "#0b0d14",
+      "#3a4a63"
+    ],
     "description": "a single lit window in a dark facade, painterly, moody",
-    "gen": {"prompt": "...", "seed": 0, "checkpoint": "sd_xl_base_1.0.safetensors"}
+    "gen": {
+      "prompt": "...",
+      "seed": 0,
+      "checkpoint": "sd_xl_base_1.0.safetensors"
+    }
   },
-  "entries": []
+  "entries": [
+    {
+      "id": "sdxl_literary_fiction_dark_literary",
+      "source": "sdxl",
+      "file": "covers/sdxl_literary_fiction_dark_literary.png",
+      "thumb": "thumbs/sdxl_literary_fiction_dark_literary.png",
+      "mood": "dark_literary",
+      "tags": [
+        "literary",
+        "quiet",
+        "painterly",
+        "literary_fiction",
+        "dark_literary"
+      ],
+      "palette": [
+        "#0b0d14",
+        "#1a2233",
+        "#3a4a63",
+        "#c7b299"
+      ],
+      "description": "literary fiction, dark literary: a quiet evocative painterly scene, single figure or empty room, film-grain, negative space up top",
+      "gen": {
+        "prompt": "a quiet evocative painterly scene, single figure or empty room, film-grain, negative space up top",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1000,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_literary_fiction_dark_literary",
+      "source": "hypergen",
+      "file": "covers/hypergen_literary_fiction_dark_literary.png",
+      "thumb": "thumbs/hypergen_literary_fiction_dark_literary.png",
+      "mood": "dark_literary",
+      "tags": [
+        "literary",
+        "quiet",
+        "painterly",
+        "literary_fiction",
+        "dark_literary",
+        "abstract",
+        "horizon"
+      ],
+      "palette": [
+        "#0b0d14",
+        "#1a2233",
+        "#3a4a63",
+        "#c7b299"
+      ],
+      "description": "literary fiction, dark literary: abstract horizon template",
+      "gen": {
+        "style": "horizon",
+        "seed": 8
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_literary_fiction_warm_memoir",
+      "source": "sdxl",
+      "file": "covers/sdxl_literary_fiction_warm_memoir.png",
+      "thumb": "thumbs/sdxl_literary_fiction_warm_memoir.png",
+      "mood": "warm_memoir",
+      "tags": [
+        "literary",
+        "quiet",
+        "painterly",
+        "literary_fiction",
+        "warm_memoir"
+      ],
+      "palette": [
+        "#2b1d14",
+        "#6b4a2f",
+        "#c98a45",
+        "#f0dcae"
+      ],
+      "description": "literary fiction, warm memoir: a quiet evocative painterly scene, single figure or empty room, film-grain, negative space up top",
+      "gen": {
+        "prompt": "a quiet evocative painterly scene, single figure or empty room, film-grain, negative space up top",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1002,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_literary_fiction_warm_memoir",
+      "source": "hypergen",
+      "file": "covers/hypergen_literary_fiction_warm_memoir.png",
+      "thumb": "thumbs/hypergen_literary_fiction_warm_memoir.png",
+      "mood": "warm_memoir",
+      "tags": [
+        "literary",
+        "quiet",
+        "painterly",
+        "literary_fiction",
+        "warm_memoir",
+        "abstract",
+        "horizon"
+      ],
+      "palette": [
+        "#2b1d14",
+        "#6b4a2f",
+        "#c98a45",
+        "#f0dcae"
+      ],
+      "description": "literary fiction, warm memoir: abstract horizon template",
+      "gen": {
+        "style": "horizon",
+        "seed": 10
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_thriller_bold_thriller",
+      "source": "sdxl",
+      "file": "covers/sdxl_thriller_bold_thriller.png",
+      "thumb": "thumbs/sdxl_thriller_bold_thriller.png",
+      "mood": "bold_thriller",
+      "tags": [
+        "thriller",
+        "tense",
+        "shadow",
+        "thriller",
+        "bold_thriller"
+      ],
+      "palette": [
+        "#0a0a0a",
+        "#3a0d0d",
+        "#a11212",
+        "#e8b04b"
+      ],
+      "description": "thriller, bold thriller: a tense cinematic scene, deep shadow, a lone silhouette, high contrast, dramatic rim light",
+      "gen": {
+        "prompt": "a tense cinematic scene, deep shadow, a lone silhouette, high contrast, dramatic rim light",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1004,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_thriller_bold_thriller",
+      "source": "hypergen",
+      "file": "covers/hypergen_thriller_bold_thriller.png",
+      "thumb": "thumbs/hypergen_thriller_bold_thriller.png",
+      "mood": "bold_thriller",
+      "tags": [
+        "thriller",
+        "tense",
+        "shadow",
+        "thriller",
+        "bold_thriller",
+        "abstract",
+        "duotone"
+      ],
+      "palette": [
+        "#0a0a0a",
+        "#3a0d0d",
+        "#a11212",
+        "#e8b04b"
+      ],
+      "description": "thriller, bold thriller: abstract duotone template",
+      "gen": {
+        "style": "duotone",
+        "seed": 12
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_thriller_noir",
+      "source": "sdxl",
+      "file": "covers/sdxl_thriller_noir.png",
+      "thumb": "thumbs/sdxl_thriller_noir.png",
+      "mood": "noir",
+      "tags": [
+        "thriller",
+        "tense",
+        "shadow",
+        "thriller",
+        "noir"
+      ],
+      "palette": [
+        "#050506",
+        "#17181c",
+        "#4a4d55",
+        "#b9bcc4"
+      ],
+      "description": "thriller, noir: a tense cinematic scene, deep shadow, a lone silhouette, high contrast, dramatic rim light",
+      "gen": {
+        "prompt": "a tense cinematic scene, deep shadow, a lone silhouette, high contrast, dramatic rim light",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1006,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_thriller_noir",
+      "source": "hypergen",
+      "file": "covers/hypergen_thriller_noir.png",
+      "thumb": "thumbs/hypergen_thriller_noir.png",
+      "mood": "noir",
+      "tags": [
+        "thriller",
+        "tense",
+        "shadow",
+        "thriller",
+        "noir",
+        "abstract",
+        "duotone"
+      ],
+      "palette": [
+        "#050506",
+        "#17181c",
+        "#4a4d55",
+        "#b9bcc4"
+      ],
+      "description": "thriller, noir: abstract duotone template",
+      "gen": {
+        "style": "duotone",
+        "seed": 14
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_science_fiction_cool_scifi",
+      "source": "sdxl",
+      "file": "covers/sdxl_science_fiction_cool_scifi.png",
+      "thumb": "thumbs/sdxl_science_fiction_cool_scifi.png",
+      "mood": "cool_scifi",
+      "tags": [
+        "scifi",
+        "vast",
+        "geometric",
+        "science_fiction",
+        "cool_scifi"
+      ],
+      "palette": [
+        "#05070f",
+        "#0f2a44",
+        "#1f6f8b",
+        "#7fd8d8"
+      ],
+      "description": "science fiction, cool scifi: a vast luminous alien vista, geometric structures, atmospheric depth, cool light",
+      "gen": {
+        "prompt": "a vast luminous alien vista, geometric structures, atmospheric depth, cool light",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1008,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_science_fiction_cool_scifi",
+      "source": "hypergen",
+      "file": "covers/hypergen_science_fiction_cool_scifi.png",
+      "thumb": "thumbs/hypergen_science_fiction_cool_scifi.png",
+      "mood": "cool_scifi",
+      "tags": [
+        "scifi",
+        "vast",
+        "geometric",
+        "science_fiction",
+        "cool_scifi",
+        "abstract",
+        "arcs"
+      ],
+      "palette": [
+        "#05070f",
+        "#0f2a44",
+        "#1f6f8b",
+        "#7fd8d8"
+      ],
+      "description": "science fiction, cool scifi: abstract arcs template",
+      "gen": {
+        "style": "arcs",
+        "seed": 16
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_science_fiction_noir",
+      "source": "sdxl",
+      "file": "covers/sdxl_science_fiction_noir.png",
+      "thumb": "thumbs/sdxl_science_fiction_noir.png",
+      "mood": "noir",
+      "tags": [
+        "scifi",
+        "vast",
+        "geometric",
+        "science_fiction",
+        "noir"
+      ],
+      "palette": [
+        "#050506",
+        "#17181c",
+        "#4a4d55",
+        "#b9bcc4"
+      ],
+      "description": "science fiction, noir: a vast luminous alien vista, geometric structures, atmospheric depth, cool light",
+      "gen": {
+        "prompt": "a vast luminous alien vista, geometric structures, atmospheric depth, cool light",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1010,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_science_fiction_noir",
+      "source": "hypergen",
+      "file": "covers/hypergen_science_fiction_noir.png",
+      "thumb": "thumbs/hypergen_science_fiction_noir.png",
+      "mood": "noir",
+      "tags": [
+        "scifi",
+        "vast",
+        "geometric",
+        "science_fiction",
+        "noir",
+        "abstract",
+        "arcs"
+      ],
+      "palette": [
+        "#050506",
+        "#17181c",
+        "#4a4d55",
+        "#b9bcc4"
+      ],
+      "description": "science fiction, noir: abstract arcs template",
+      "gen": {
+        "style": "arcs",
+        "seed": 18
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_fantasy_botanical",
+      "source": "sdxl",
+      "file": "covers/sdxl_fantasy_botanical.png",
+      "thumb": "thumbs/sdxl_fantasy_botanical.png",
+      "mood": "botanical",
+      "tags": [
+        "fantasy",
+        "mythic",
+        "landscape",
+        "fantasy",
+        "botanical"
+      ],
+      "palette": [
+        "#0e1a12",
+        "#1f4030",
+        "#4e8d5b",
+        "#e7d9a6"
+      ],
+      "description": "fantasy, botanical: a mythic landscape at dawn, distant towers, painterly, warm rim light, sense of scale",
+      "gen": {
+        "prompt": "a mythic landscape at dawn, distant towers, painterly, warm rim light, sense of scale",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1012,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_fantasy_botanical",
+      "source": "hypergen",
+      "file": "covers/hypergen_fantasy_botanical.png",
+      "thumb": "thumbs/hypergen_fantasy_botanical.png",
+      "mood": "botanical",
+      "tags": [
+        "fantasy",
+        "mythic",
+        "landscape",
+        "fantasy",
+        "botanical",
+        "abstract",
+        "horizon"
+      ],
+      "palette": [
+        "#0e1a12",
+        "#1f4030",
+        "#4e8d5b",
+        "#e7d9a6"
+      ],
+      "description": "fantasy, botanical: abstract horizon template",
+      "gen": {
+        "style": "horizon",
+        "seed": 20
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_fantasy_dark_literary",
+      "source": "sdxl",
+      "file": "covers/sdxl_fantasy_dark_literary.png",
+      "thumb": "thumbs/sdxl_fantasy_dark_literary.png",
+      "mood": "dark_literary",
+      "tags": [
+        "fantasy",
+        "mythic",
+        "landscape",
+        "fantasy",
+        "dark_literary"
+      ],
+      "palette": [
+        "#0b0d14",
+        "#1a2233",
+        "#3a4a63",
+        "#c7b299"
+      ],
+      "description": "fantasy, dark literary: a mythic landscape at dawn, distant towers, painterly, warm rim light, sense of scale",
+      "gen": {
+        "prompt": "a mythic landscape at dawn, distant towers, painterly, warm rim light, sense of scale",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1014,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_fantasy_dark_literary",
+      "source": "hypergen",
+      "file": "covers/hypergen_fantasy_dark_literary.png",
+      "thumb": "thumbs/hypergen_fantasy_dark_literary.png",
+      "mood": "dark_literary",
+      "tags": [
+        "fantasy",
+        "mythic",
+        "landscape",
+        "fantasy",
+        "dark_literary",
+        "abstract",
+        "horizon"
+      ],
+      "palette": [
+        "#0b0d14",
+        "#1a2233",
+        "#3a4a63",
+        "#c7b299"
+      ],
+      "description": "fantasy, dark literary: abstract horizon template",
+      "gen": {
+        "style": "horizon",
+        "seed": 22
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_romance_soft_romance",
+      "source": "sdxl",
+      "file": "covers/sdxl_romance_soft_romance.png",
+      "thumb": "thumbs/sdxl_romance_soft_romance.png",
+      "mood": "soft_romance",
+      "tags": [
+        "romance",
+        "soft",
+        "warm",
+        "romance",
+        "soft_romance"
+      ],
+      "palette": [
+        "#3a2230",
+        "#7d4a63",
+        "#d08aa6",
+        "#f3d9e4"
+      ],
+      "description": "romance, soft romance: soft-focus warm scene, blossoms, gentle bokeh, tender palette, gauzy light",
+      "gen": {
+        "prompt": "soft-focus warm scene, blossoms, gentle bokeh, tender palette, gauzy light",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1016,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_romance_soft_romance",
+      "source": "hypergen",
+      "file": "covers/hypergen_romance_soft_romance.png",
+      "thumb": "thumbs/hypergen_romance_soft_romance.png",
+      "mood": "soft_romance",
+      "tags": [
+        "romance",
+        "soft",
+        "warm",
+        "romance",
+        "soft_romance",
+        "abstract",
+        "gradient"
+      ],
+      "palette": [
+        "#3a2230",
+        "#7d4a63",
+        "#d08aa6",
+        "#f3d9e4"
+      ],
+      "description": "romance, soft romance: abstract gradient template",
+      "gen": {
+        "style": "gradient",
+        "seed": 24
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_romance_warm_memoir",
+      "source": "sdxl",
+      "file": "covers/sdxl_romance_warm_memoir.png",
+      "thumb": "thumbs/sdxl_romance_warm_memoir.png",
+      "mood": "warm_memoir",
+      "tags": [
+        "romance",
+        "soft",
+        "warm",
+        "romance",
+        "warm_memoir"
+      ],
+      "palette": [
+        "#2b1d14",
+        "#6b4a2f",
+        "#c98a45",
+        "#f0dcae"
+      ],
+      "description": "romance, warm memoir: soft-focus warm scene, blossoms, gentle bokeh, tender palette, gauzy light",
+      "gen": {
+        "prompt": "soft-focus warm scene, blossoms, gentle bokeh, tender palette, gauzy light",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1018,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_romance_warm_memoir",
+      "source": "hypergen",
+      "file": "covers/hypergen_romance_warm_memoir.png",
+      "thumb": "thumbs/hypergen_romance_warm_memoir.png",
+      "mood": "warm_memoir",
+      "tags": [
+        "romance",
+        "soft",
+        "warm",
+        "romance",
+        "warm_memoir",
+        "abstract",
+        "gradient"
+      ],
+      "palette": [
+        "#2b1d14",
+        "#6b4a2f",
+        "#c98a45",
+        "#f0dcae"
+      ],
+      "description": "romance, warm memoir: abstract gradient template",
+      "gen": {
+        "style": "gradient",
+        "seed": 26
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_memoir_warm_memoir",
+      "source": "sdxl",
+      "file": "covers/sdxl_memoir_warm_memoir.png",
+      "thumb": "thumbs/sdxl_memoir_warm_memoir.png",
+      "mood": "warm_memoir",
+      "tags": [
+        "memoir",
+        "intimate",
+        "nostalgic",
+        "memoir",
+        "warm_memoir"
+      ],
+      "palette": [
+        "#2b1d14",
+        "#6b4a2f",
+        "#c98a45",
+        "#f0dcae"
+      ],
+      "description": "memoir, warm memoir: an intimate still life, a worn object on a table, window light, nostalgic tone",
+      "gen": {
+        "prompt": "an intimate still life, a worn object on a table, window light, nostalgic tone",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1020,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_memoir_warm_memoir",
+      "source": "hypergen",
+      "file": "covers/hypergen_memoir_warm_memoir.png",
+      "thumb": "thumbs/hypergen_memoir_warm_memoir.png",
+      "mood": "warm_memoir",
+      "tags": [
+        "memoir",
+        "intimate",
+        "nostalgic",
+        "memoir",
+        "warm_memoir",
+        "abstract",
+        "gradient"
+      ],
+      "palette": [
+        "#2b1d14",
+        "#6b4a2f",
+        "#c98a45",
+        "#f0dcae"
+      ],
+      "description": "memoir, warm memoir: abstract gradient template",
+      "gen": {
+        "style": "gradient",
+        "seed": 28
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_memoir_dark_literary",
+      "source": "sdxl",
+      "file": "covers/sdxl_memoir_dark_literary.png",
+      "thumb": "thumbs/sdxl_memoir_dark_literary.png",
+      "mood": "dark_literary",
+      "tags": [
+        "memoir",
+        "intimate",
+        "nostalgic",
+        "memoir",
+        "dark_literary"
+      ],
+      "palette": [
+        "#0b0d14",
+        "#1a2233",
+        "#3a4a63",
+        "#c7b299"
+      ],
+      "description": "memoir, dark literary: an intimate still life, a worn object on a table, window light, nostalgic tone",
+      "gen": {
+        "prompt": "an intimate still life, a worn object on a table, window light, nostalgic tone",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1022,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_memoir_dark_literary",
+      "source": "hypergen",
+      "file": "covers/hypergen_memoir_dark_literary.png",
+      "thumb": "thumbs/hypergen_memoir_dark_literary.png",
+      "mood": "dark_literary",
+      "tags": [
+        "memoir",
+        "intimate",
+        "nostalgic",
+        "memoir",
+        "dark_literary",
+        "abstract",
+        "gradient"
+      ],
+      "palette": [
+        "#0b0d14",
+        "#1a2233",
+        "#3a4a63",
+        "#c7b299"
+      ],
+      "description": "memoir, dark literary: abstract gradient template",
+      "gen": {
+        "style": "gradient",
+        "seed": 30
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_horror_noir",
+      "source": "sdxl",
+      "file": "covers/sdxl_horror_noir.png",
+      "thumb": "thumbs/sdxl_horror_noir.png",
+      "mood": "noir",
+      "tags": [
+        "horror",
+        "dread",
+        "fog",
+        "horror",
+        "noir"
+      ],
+      "palette": [
+        "#050506",
+        "#17181c",
+        "#4a4d55",
+        "#b9bcc4"
+      ],
+      "description": "horror, noir: an unsettling dim interior, creeping fog, muted desaturated palette, dread",
+      "gen": {
+        "prompt": "an unsettling dim interior, creeping fog, muted desaturated palette, dread",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1024,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_horror_noir",
+      "source": "hypergen",
+      "file": "covers/hypergen_horror_noir.png",
+      "thumb": "thumbs/hypergen_horror_noir.png",
+      "mood": "noir",
+      "tags": [
+        "horror",
+        "dread",
+        "fog",
+        "horror",
+        "noir",
+        "abstract",
+        "duotone"
+      ],
+      "palette": [
+        "#050506",
+        "#17181c",
+        "#4a4d55",
+        "#b9bcc4"
+      ],
+      "description": "horror, noir: abstract duotone template",
+      "gen": {
+        "style": "duotone",
+        "seed": 32
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_horror_bold_thriller",
+      "source": "sdxl",
+      "file": "covers/sdxl_horror_bold_thriller.png",
+      "thumb": "thumbs/sdxl_horror_bold_thriller.png",
+      "mood": "bold_thriller",
+      "tags": [
+        "horror",
+        "dread",
+        "fog",
+        "horror",
+        "bold_thriller"
+      ],
+      "palette": [
+        "#0a0a0a",
+        "#3a0d0d",
+        "#a11212",
+        "#e8b04b"
+      ],
+      "description": "horror, bold thriller: an unsettling dim interior, creeping fog, muted desaturated palette, dread",
+      "gen": {
+        "prompt": "an unsettling dim interior, creeping fog, muted desaturated palette, dread",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1026,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_horror_bold_thriller",
+      "source": "hypergen",
+      "file": "covers/hypergen_horror_bold_thriller.png",
+      "thumb": "thumbs/hypergen_horror_bold_thriller.png",
+      "mood": "bold_thriller",
+      "tags": [
+        "horror",
+        "dread",
+        "fog",
+        "horror",
+        "bold_thriller",
+        "abstract",
+        "duotone"
+      ],
+      "palette": [
+        "#0a0a0a",
+        "#3a0d0d",
+        "#a11212",
+        "#e8b04b"
+      ],
+      "description": "horror, bold thriller: abstract duotone template",
+      "gen": {
+        "style": "duotone",
+        "seed": 34
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_business_earthy_nonfiction",
+      "source": "sdxl",
+      "file": "covers/sdxl_business_earthy_nonfiction.png",
+      "thumb": "thumbs/sdxl_business_earthy_nonfiction.png",
+      "mood": "earthy_nonfiction",
+      "tags": [
+        "business",
+        "clean",
+        "geometric",
+        "business",
+        "earthy_nonfiction"
+      ],
+      "palette": [
+        "#1c2016",
+        "#3f4a2e",
+        "#8a9a5b",
+        "#e6e2cf"
+      ],
+      "description": "business, earthy nonfiction: clean minimal abstract composition, confident geometry, restrained palette",
+      "gen": {
+        "prompt": "clean minimal abstract composition, confident geometry, restrained palette",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1028,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_business_earthy_nonfiction",
+      "source": "hypergen",
+      "file": "covers/hypergen_business_earthy_nonfiction.png",
+      "thumb": "thumbs/hypergen_business_earthy_nonfiction.png",
+      "mood": "earthy_nonfiction",
+      "tags": [
+        "business",
+        "clean",
+        "geometric",
+        "business",
+        "earthy_nonfiction",
+        "abstract",
+        "deco"
+      ],
+      "palette": [
+        "#1c2016",
+        "#3f4a2e",
+        "#8a9a5b",
+        "#e6e2cf"
+      ],
+      "description": "business, earthy nonfiction: abstract deco template",
+      "gen": {
+        "style": "deco",
+        "seed": 36
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_business_cool_scifi",
+      "source": "sdxl",
+      "file": "covers/sdxl_business_cool_scifi.png",
+      "thumb": "thumbs/sdxl_business_cool_scifi.png",
+      "mood": "cool_scifi",
+      "tags": [
+        "business",
+        "clean",
+        "geometric",
+        "business",
+        "cool_scifi"
+      ],
+      "palette": [
+        "#05070f",
+        "#0f2a44",
+        "#1f6f8b",
+        "#7fd8d8"
+      ],
+      "description": "business, cool scifi: clean minimal abstract composition, confident geometry, restrained palette",
+      "gen": {
+        "prompt": "clean minimal abstract composition, confident geometry, restrained palette",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1030,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_business_cool_scifi",
+      "source": "hypergen",
+      "file": "covers/hypergen_business_cool_scifi.png",
+      "thumb": "thumbs/hypergen_business_cool_scifi.png",
+      "mood": "cool_scifi",
+      "tags": [
+        "business",
+        "clean",
+        "geometric",
+        "business",
+        "cool_scifi",
+        "abstract",
+        "deco"
+      ],
+      "palette": [
+        "#05070f",
+        "#0f2a44",
+        "#1f6f8b",
+        "#7fd8d8"
+      ],
+      "description": "business, cool scifi: abstract deco template",
+      "gen": {
+        "style": "deco",
+        "seed": 38
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_history_warm_memoir",
+      "source": "sdxl",
+      "file": "covers/sdxl_history_warm_memoir.png",
+      "thumb": "thumbs/sdxl_history_warm_memoir.png",
+      "mood": "warm_memoir",
+      "tags": [
+        "history",
+        "archival",
+        "textured",
+        "history",
+        "warm_memoir"
+      ],
+      "palette": [
+        "#2b1d14",
+        "#6b4a2f",
+        "#c98a45",
+        "#f0dcae"
+      ],
+      "description": "history, warm memoir: a weathered textured surface, archival tone, sepia and ink, aged paper feel",
+      "gen": {
+        "prompt": "a weathered textured surface, archival tone, sepia and ink, aged paper feel",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1032,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_history_warm_memoir",
+      "source": "hypergen",
+      "file": "covers/hypergen_history_warm_memoir.png",
+      "thumb": "thumbs/hypergen_history_warm_memoir.png",
+      "mood": "warm_memoir",
+      "tags": [
+        "history",
+        "archival",
+        "textured",
+        "history",
+        "warm_memoir",
+        "abstract",
+        "contours"
+      ],
+      "palette": [
+        "#2b1d14",
+        "#6b4a2f",
+        "#c98a45",
+        "#f0dcae"
+      ],
+      "description": "history, warm memoir: abstract contours template",
+      "gen": {
+        "style": "contours",
+        "seed": 40
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_history_earthy_nonfiction",
+      "source": "sdxl",
+      "file": "covers/sdxl_history_earthy_nonfiction.png",
+      "thumb": "thumbs/sdxl_history_earthy_nonfiction.png",
+      "mood": "earthy_nonfiction",
+      "tags": [
+        "history",
+        "archival",
+        "textured",
+        "history",
+        "earthy_nonfiction"
+      ],
+      "palette": [
+        "#1c2016",
+        "#3f4a2e",
+        "#8a9a5b",
+        "#e6e2cf"
+      ],
+      "description": "history, earthy nonfiction: a weathered textured surface, archival tone, sepia and ink, aged paper feel",
+      "gen": {
+        "prompt": "a weathered textured surface, archival tone, sepia and ink, aged paper feel",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1034,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_history_earthy_nonfiction",
+      "source": "hypergen",
+      "file": "covers/hypergen_history_earthy_nonfiction.png",
+      "thumb": "thumbs/hypergen_history_earthy_nonfiction.png",
+      "mood": "earthy_nonfiction",
+      "tags": [
+        "history",
+        "archival",
+        "textured",
+        "history",
+        "earthy_nonfiction",
+        "abstract",
+        "contours"
+      ],
+      "palette": [
+        "#1c2016",
+        "#3f4a2e",
+        "#8a9a5b",
+        "#e6e2cf"
+      ],
+      "description": "history, earthy nonfiction: abstract contours template",
+      "gen": {
+        "style": "contours",
+        "seed": 42
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_poetry_dark_literary",
+      "source": "sdxl",
+      "file": "covers/sdxl_poetry_dark_literary.png",
+      "thumb": "thumbs/sdxl_poetry_dark_literary.png",
+      "mood": "dark_literary",
+      "tags": [
+        "poetry",
+        "spare",
+        "minimal",
+        "poetry",
+        "dark_literary"
+      ],
+      "palette": [
+        "#0b0d14",
+        "#1a2233",
+        "#3a4a63",
+        "#c7b299"
+      ],
+      "description": "poetry, dark literary: a spare minimal image, one resonant natural form, lots of stillness and space",
+      "gen": {
+        "prompt": "a spare minimal image, one resonant natural form, lots of stillness and space",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1036,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_poetry_dark_literary",
+      "source": "hypergen",
+      "file": "covers/hypergen_poetry_dark_literary.png",
+      "thumb": "thumbs/hypergen_poetry_dark_literary.png",
+      "mood": "dark_literary",
+      "tags": [
+        "poetry",
+        "spare",
+        "minimal",
+        "poetry",
+        "dark_literary",
+        "abstract",
+        "gradient"
+      ],
+      "palette": [
+        "#0b0d14",
+        "#1a2233",
+        "#3a4a63",
+        "#c7b299"
+      ],
+      "description": "poetry, dark literary: abstract gradient template",
+      "gen": {
+        "style": "gradient",
+        "seed": 44
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_poetry_botanical",
+      "source": "sdxl",
+      "file": "covers/sdxl_poetry_botanical.png",
+      "thumb": "thumbs/sdxl_poetry_botanical.png",
+      "mood": "botanical",
+      "tags": [
+        "poetry",
+        "spare",
+        "minimal",
+        "poetry",
+        "botanical"
+      ],
+      "palette": [
+        "#0e1a12",
+        "#1f4030",
+        "#4e8d5b",
+        "#e7d9a6"
+      ],
+      "description": "poetry, botanical: a spare minimal image, one resonant natural form, lots of stillness and space",
+      "gen": {
+        "prompt": "a spare minimal image, one resonant natural form, lots of stillness and space",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1038,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_poetry_botanical",
+      "source": "hypergen",
+      "file": "covers/hypergen_poetry_botanical.png",
+      "thumb": "thumbs/hypergen_poetry_botanical.png",
+      "mood": "botanical",
+      "tags": [
+        "poetry",
+        "spare",
+        "minimal",
+        "poetry",
+        "botanical",
+        "abstract",
+        "gradient"
+      ],
+      "palette": [
+        "#0e1a12",
+        "#1f4030",
+        "#4e8d5b",
+        "#e7d9a6"
+      ],
+      "description": "poetry, botanical: abstract gradient template",
+      "gen": {
+        "style": "gradient",
+        "seed": 46
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_nature_botanical",
+      "source": "sdxl",
+      "file": "covers/sdxl_nature_botanical.png",
+      "thumb": "thumbs/sdxl_nature_botanical.png",
+      "mood": "botanical",
+      "tags": [
+        "nature",
+        "landscape",
+        "layered",
+        "nature",
+        "botanical"
+      ],
+      "palette": [
+        "#0e1a12",
+        "#1f4030",
+        "#4e8d5b",
+        "#e7d9a6"
+      ],
+      "description": "nature, botanical: a sweeping natural landscape, layered ridgelines, atmospheric haze, soft light",
+      "gen": {
+        "prompt": "a sweeping natural landscape, layered ridgelines, atmospheric haze, soft light",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1040,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_nature_botanical",
+      "source": "hypergen",
+      "file": "covers/hypergen_nature_botanical.png",
+      "thumb": "thumbs/hypergen_nature_botanical.png",
+      "mood": "botanical",
+      "tags": [
+        "nature",
+        "landscape",
+        "layered",
+        "nature",
+        "botanical",
+        "abstract",
+        "contours"
+      ],
+      "palette": [
+        "#0e1a12",
+        "#1f4030",
+        "#4e8d5b",
+        "#e7d9a6"
+      ],
+      "description": "nature, botanical: abstract contours template",
+      "gen": {
+        "style": "contours",
+        "seed": 48
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_nature_earthy_nonfiction",
+      "source": "sdxl",
+      "file": "covers/sdxl_nature_earthy_nonfiction.png",
+      "thumb": "thumbs/sdxl_nature_earthy_nonfiction.png",
+      "mood": "earthy_nonfiction",
+      "tags": [
+        "nature",
+        "landscape",
+        "layered",
+        "nature",
+        "earthy_nonfiction"
+      ],
+      "palette": [
+        "#1c2016",
+        "#3f4a2e",
+        "#8a9a5b",
+        "#e6e2cf"
+      ],
+      "description": "nature, earthy nonfiction: a sweeping natural landscape, layered ridgelines, atmospheric haze, soft light",
+      "gen": {
+        "prompt": "a sweeping natural landscape, layered ridgelines, atmospheric haze, soft light",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1042,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_nature_earthy_nonfiction",
+      "source": "hypergen",
+      "file": "covers/hypergen_nature_earthy_nonfiction.png",
+      "thumb": "thumbs/hypergen_nature_earthy_nonfiction.png",
+      "mood": "earthy_nonfiction",
+      "tags": [
+        "nature",
+        "landscape",
+        "layered",
+        "nature",
+        "earthy_nonfiction",
+        "abstract",
+        "contours"
+      ],
+      "palette": [
+        "#1c2016",
+        "#3f4a2e",
+        "#8a9a5b",
+        "#e6e2cf"
+      ],
+      "description": "nature, earthy nonfiction: abstract contours template",
+      "gen": {
+        "style": "contours",
+        "seed": 50
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_science_nonfiction_cool_scifi",
+      "source": "sdxl",
+      "file": "covers/sdxl_science_nonfiction_cool_scifi.png",
+      "thumb": "thumbs/sdxl_science_nonfiction_cool_scifi.png",
+      "mood": "cool_scifi",
+      "tags": [
+        "science",
+        "pattern",
+        "elegant",
+        "science_nonfiction",
+        "cool_scifi"
+      ],
+      "palette": [
+        "#05070f",
+        "#0f2a44",
+        "#1f6f8b",
+        "#7fd8d8"
+      ],
+      "description": "science nonfiction, cool scifi: an elegant abstract of structure and pattern, clean lines, luminous accents",
+      "gen": {
+        "prompt": "an elegant abstract of structure and pattern, clean lines, luminous accents",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1044,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_science_nonfiction_cool_scifi",
+      "source": "hypergen",
+      "file": "covers/hypergen_science_nonfiction_cool_scifi.png",
+      "thumb": "thumbs/hypergen_science_nonfiction_cool_scifi.png",
+      "mood": "cool_scifi",
+      "tags": [
+        "science",
+        "pattern",
+        "elegant",
+        "science_nonfiction",
+        "cool_scifi",
+        "abstract",
+        "halftone"
+      ],
+      "palette": [
+        "#05070f",
+        "#0f2a44",
+        "#1f6f8b",
+        "#7fd8d8"
+      ],
+      "description": "science nonfiction, cool scifi: abstract halftone template",
+      "gen": {
+        "style": "halftone",
+        "seed": 52
+      },
+      "rendered": false
+    },
+    {
+      "id": "sdxl_science_nonfiction_earthy_nonfiction",
+      "source": "sdxl",
+      "file": "covers/sdxl_science_nonfiction_earthy_nonfiction.png",
+      "thumb": "thumbs/sdxl_science_nonfiction_earthy_nonfiction.png",
+      "mood": "earthy_nonfiction",
+      "tags": [
+        "science",
+        "pattern",
+        "elegant",
+        "science_nonfiction",
+        "earthy_nonfiction"
+      ],
+      "palette": [
+        "#1c2016",
+        "#3f4a2e",
+        "#8a9a5b",
+        "#e6e2cf"
+      ],
+      "description": "science nonfiction, earthy nonfiction: an elegant abstract of structure and pattern, clean lines, luminous accents",
+      "gen": {
+        "prompt": "an elegant abstract of structure and pattern, clean lines, luminous accents",
+        "negative": "text, letters, words, title, watermark, signature, frame, border, ugly, low quality",
+        "seed": 1046,
+        "checkpoint": "sd_xl_base_1.0.safetensors"
+      },
+      "rendered": false
+    },
+    {
+      "id": "hypergen_science_nonfiction_earthy_nonfiction",
+      "source": "hypergen",
+      "file": "covers/hypergen_science_nonfiction_earthy_nonfiction.png",
+      "thumb": "thumbs/hypergen_science_nonfiction_earthy_nonfiction.png",
+      "mood": "earthy_nonfiction",
+      "tags": [
+        "science",
+        "pattern",
+        "elegant",
+        "science_nonfiction",
+        "earthy_nonfiction",
+        "abstract",
+        "halftone"
+      ],
+      "palette": [
+        "#1c2016",
+        "#3f4a2e",
+        "#8a9a5b",
+        "#e6e2cf"
+      ],
+      "description": "science nonfiction, earthy nonfiction: abstract halftone template",
+      "gen": {
+        "style": "halftone",
+        "seed": 54
+      },
+      "rendered": false
+    }
+  ]
 }

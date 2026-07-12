@@ -53,6 +53,11 @@ _tools/_fixplan/
 _refcheck/
 # engine runtime state (engine.py owns it; regenerable, per-machine; never track)
 **/_engine/
+# prerendered cover-catalog IMAGES: large + regenerable (hypergen renders live;
+# SDXL via catalog_build on a GPU box). The manifest cover_catalog/catalog.json IS
+# tracked; a curated image subset ships via make_giftable or `git add -f`.
+cover_catalog/covers/
+cover_catalog/thumbs/
 # public-release scrub: other-project lesson-mining deltas + third-party service
 # PDFs (Mixam guide + dielines). Kept locally for reference; never shipped public.
 docs/_lessons_audit/

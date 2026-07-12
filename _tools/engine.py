@@ -447,10 +447,18 @@ class Engine:
     def stage_cover(self):
         if self.no_cover:
             return "skipped (dry-run / --no-cover)"
+        # Portable art source: try bespoke SDXL (needs a GPU + ComfyUI); on any
+        # failure fall back to cover_pick (hypergen abstract cover / catalog match),
+        # which renders anywhere. A cover is never a hard-stop; art always lands.
         rc, o, e = run([sys.executable, str(TOOLS / "cover_gen.py"),
                         "--config", str(self.config_path)])
-        # cover is best-effort: a missing art stack must not hard-stop the whole run
-        return "cover attempted (rc=%d)" % rc
+        if rc == 0:
+            return "cover art: bespoke SDXL"
+        rc2, o2, e2 = run([sys.executable, str(TOOLS / "cover_pick.py"),
+                           "--config", str(self.config_path), "--auto", "--write"])
+        if rc2 == 0:
+            return "cover art: cover_pick fallback (hypergen/catalog; no GPU art stack)"
+        return "cover art UNRESOLVED (gen rc=%d, pick rc=%d) — place art in cover_art/" % (rc, rc2)
 
     def stage_verify(self):
         rc, o, e = run([sys.executable, str(TOOLS / "verify_build.py"),
