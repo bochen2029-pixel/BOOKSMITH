@@ -198,7 +198,7 @@ def check_requirements():
 def check_dead_script_refs():
     # PORTABILITY_GAP_ANALYSIS.md is a roadmap: it names tools that are future work
     # by design, so it is excluded from the "must already exist" scan.
-    ROADMAP = {"PORTABILITY_GAP_ANALYSIS.md"}
+    ROADMAP = {"PORTABILITY_GAP_ANALYSIS.md", "ROADMAP.md"}
     docs = [ROOT / "CLAUDE.md", ROOT / "KIT_ARCHITECTURE.md", ROOT / "README.md",
             ROOT / "START_HERE.md", ROOT / "INSTALL.md"]
     docs += [d for d in (ROOT / "docs").glob("*.md") if d.name not in ROADMAP]
