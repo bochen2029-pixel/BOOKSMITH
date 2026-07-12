@@ -182,10 +182,16 @@ class Engine:
             steps.append((f"draft:{u['id']}", "draft"))
         steps.append(("integrate", "integrate"))
         steps.append(("assemble", "assemble"))
-        for fmt in self.cfg.get("formats", []):
-            steps.append((f"produce:{fmt}", "produce"))
+        fmts = list(self.cfg.get("formats", []))
+        for fmt in fmts:
+            if fmt != "digital_pdf":
+                steps.append((f"produce:{fmt}", "produce"))
         if not self.no_cover:
             steps.append(("cover", "cover"))
+        if "digital_pdf" in fmts:
+            # digital_pdf composites the front+back covers onto a blank-stripped
+            # interior, so it MUST follow the cover stage (§12 step 9 after step 8).
+            steps.append(("produce:digital_pdf", "produce"))
         steps.append(("verify", "verify"))
         steps.append(("emit", "emit"))
         return steps
@@ -315,25 +321,59 @@ class Engine:
             raise HardStop("assemble", f"assemble exit {rc}: {(out + err).strip()[-300:]}")
         return out.strip().splitlines()[-1] if out.strip() else "assembled"
 
+    PRINT_FMTS = {"kdp_paperback", "kdp_hardcover", "mixam_paperback",
+                  "mixam_hardcover", "blurb_paperback", "blurb_hardcover"}
+
+    def _print_docx(self, fmt: str) -> Path:
+        # mirrors generate_book.js resolveOutPath (the naming is upload-routing-significant)
+        s = self.slug
+        m = {
+            "kdp_paperback": ("kdp_paperback", f"{s}_KDP_PAPERBACK.docx"),
+            "kdp_hardcover": ("kdp_hardcover", f"{s}_KDP_HARDCOVER.docx"),
+            "mixam_paperback": ("mixam_paperback", f"inner_{s}.docx"),
+            "mixam_hardcover": ("mixam_hardcover", f"inner_{s}.docx"),
+            "blurb_paperback": ("blurb_paperback", f"{s}_BLURB_TRADE.docx"),
+            "blurb_hardcover": ("blurb_hardcover", f"{s}_BLURB_TRADE.docx"),
+        }
+        d, f = m[fmt]
+        return self.ws / "outputs" / d / f
+
     def stage_produce(self, fmt: str):
-        # interior
-        if fmt in ("kindle",):
-            rc, o, e = run(["node", str(TOOLS / "generate_kindle.js"),
-                            "--config", str(self.config_path)])
-        elif fmt in ("epub",):
-            rc, o, e = run([sys.executable, str(TOOLS / "build_epub.py"),
-                            "--config", str(self.config_path)])
-        elif fmt in ("digital_pdf",):
-            rc, o, e = run([sys.executable, str(TOOLS / "build_digital_pdf.py"),
-                            "--config", str(self.config_path)])
+        cfgp = str(self.config_path)
+        # --- interior (the real §12 build order, per format family) ---
+        if fmt == "kindle":
+            rc, o, e = run(["node", str(TOOLS / "generate_kindle.js"), "--config", cfgp])
+            if rc != 0:
+                raise HardStop(f"produce:{fmt}", f"generate_kindle exit {rc}: {(o + e).strip()[-300:]}")
+        elif fmt == "epub":
+            rc, o, e = run([sys.executable, str(TOOLS / "build_epub.py"), "--config", cfgp])
+            if rc != 0:
+                raise HardStop(f"produce:{fmt}", f"build_epub exit {rc}: {(o + e).strip()[-300:]}")
+        elif fmt == "digital_pdf":
+            # consumes the print interior PDF, so a print format must run before it
+            rc, o, e = run([sys.executable, str(TOOLS / "build_digital_pdf.py"), "--config", cfgp])
+            if rc != 0:
+                raise HardStop(f"produce:{fmt}", f"build_digital_pdf exit {rc}: {(o + e).strip()[-300:]}")
+        elif fmt in self.PRINT_FMTS:
+            docx = self._print_docx(fmt)
+            pdf = docx.with_suffix(".pdf")
+            rc, o, e = run(["node", str(TOOLS / "generate_book.js"), "--config", cfgp, "--format", fmt])
+            if rc != 0:
+                raise HardStop(f"produce:{fmt}", f"generate_book exit {rc}: {(o + e).strip()[-300:]}")
+            if not docx.exists():
+                raise HardStop(f"produce:{fmt}", f"generator did not write expected docx: {docx}")
+            # idempotent injections (generate_book inline-injects mirror; these are
+            # belt-and-suspenders). Non-fatal: verify_build is the authoritative gate.
+            run(["node", str(TOOLS / "inject_mirror_margins.js"), str(docx)])
+            run(["node", str(TOOLS / "inject_front_matter_valign.js"), str(docx)])
+            pad = ["--pad-multiple", "4"] if fmt.startswith("mixam") else []
+            rc, o, e = run([sys.executable, str(TOOLS / "docx_to_pdf.py"), str(docx), str(pdf), *pad])
+            if rc != 0:
+                raise HardStop(f"produce:{fmt}", f"docx_to_pdf exit {rc}: {(o + e).strip()[-300:]}")
         else:
-            rc, o, e = run(["node", str(TOOLS / "generate_book.js"),
-                            "--config", str(self.config_path), "--format", fmt])
-        if rc != 0:
-            raise HardStop(f"produce:{fmt}", f"interior gen exit {rc}: {(o + e).strip()[-300:]}")
-        # gate: verify_build for this format
-        rc, o, e = run([sys.executable, str(TOOLS / "verify_build.py"),
-                        "--config", str(self.config_path), "--format", fmt])
+            raise HardStop(f"produce:{fmt}", f"unknown format {fmt}")
+        # --- the gate ---
+        rc, o, e = run([sys.executable, str(TOOLS / "verify_build.py"), "--config", cfgp, "--format", fmt])
         if rc != 0:
             raise HardStop(f"produce:{fmt}", f"verify_build FAIL: {(o + e).strip()[-400:]}")
         return "produced + verify_build pass"
@@ -369,10 +409,12 @@ class Engine:
             return self.draft_inputs_sha(unit)
         if kind == "assemble":
             cur = sorted((self.ws / "manuscript" / "current").glob("*_current.md"))
-            return sha_text("|".join(sha_file(p) for p in cur))
+            # config included: assemble stitches config-driven front matter into the master
+            return sha_text(sha_file(self.config_path) + "|" + "|".join(sha_file(p) for p in cur))
         if kind in ("integrate",):
             cur = sorted((self.ws / "manuscript" / "current").glob("*_current.md"))
-            return sha_text("integrate|" + "|".join(sha_file(p) for p in cur))
+            # config included: lint scans config ceremonial/marketing fields too
+            return sha_text("integrate|" + sha_file(self.config_path) + "|" + "|".join(sha_file(p) for p in cur))
         if kind == "produce":
             master = sorted((self.ws / "outputs" / "markdown").glob(f"{self.slug}_v*.md"))
             msha = sha_file(master[-1]) if master else "-"
