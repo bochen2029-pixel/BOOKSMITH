@@ -263,6 +263,7 @@
       "additionalProperties": false,
       "properties": {
         "default_class": { "type": "string", "enum": ["A", "B", "C"], "default": "C" },
+        "quality_gate": { "type": "boolean", "default": false, "description": "If true, the deterministic engine's integrate stage HARD-FAILS on authorial_act.py findings (the single-authorial-act gate: register-uniformity, verbatim cross-unit callbacks, meta-openers, summary boxes, repeated endings). Default false = advisory (the verdict is logged, never blocks). Enable once the manuscript is tuned to read as one continuous authorial act." },
         "per_chapter_overrides": {
           "type": "object",
           "description": "Map of unit_id -> class (e.g. {'prologue':'A','part_ix_grief':'A','epilogue':'A'}).",

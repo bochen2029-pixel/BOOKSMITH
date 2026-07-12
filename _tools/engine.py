@@ -760,7 +760,24 @@ class Engine:
                             "--config", str(self.config_path)])
         if rc != 0:
             raise HardStop("integrate", f"lint_manuscript exit {rc}: {(out + err).strip()[-300:]}")
-        return "lint clean"
+        # The single-authorial-act gate (invariant #2). Advisory by default: the verdict
+        # is logged, never blocks. Set authorship.quality_gate=true to hard-fail on it.
+        verdict = "n/a"
+        aa_rc, aa_o, aa_e = run([sys.executable, str(TOOLS / "authorial_act.py"),
+                                 "--config", str(self.config_path), "--json"])
+        try:
+            aa = json.loads(aa_o.strip().splitlines()[-1]) if aa_o.strip() else {}
+            verdict = ("PASS" if aa.get("pass")
+                       else f"FAIL({aa.get('high', 0)}h/{len(aa.get('findings', []))}f)")
+            self.log("authorial_act", verdict=verdict, score=aa.get("score", 0))
+            if not aa.get("pass") and self.cfg.get("authorship", {}).get("quality_gate"):
+                tells = "; ".join(f"{f['detector']}@{f['unit']}" for f in aa.get("findings", [])[:6])
+                raise HardStop("integrate", f"authorial_act gate FAIL: {tells}")
+        except HardStop:
+            raise
+        except Exception:
+            pass
+        return f"lint clean; authorial_act {verdict}"
 
     def stage_assemble(self):
         rc, out, err = run([sys.executable, str(TOOLS / "assemble_manuscript.py"),

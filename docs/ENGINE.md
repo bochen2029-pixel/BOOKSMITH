@@ -70,7 +70,10 @@ end. An already-architected book (seed.md + units present) skips it untouched.
   count within 0.6-1.6x, no em-dash if `voice.no_em_dashes`, no blacklist term),
   bounded 3-attempt retry with the gate feedback fed back into the prompt.
   Class-A units are never drafted (outline-only, left for the human).
-- **integrate** — the real `lint_manuscript.py` over the whole manuscript.
+- **integrate** — the real `lint_manuscript.py` over the whole manuscript, then the
+  single-authorial-act gate `authorial_act.py` (invariant #2: register-uniformity,
+  verbatim cross-unit callbacks, meta-openers, summary boxes, repeated endings).
+  Advisory by default (verdict logged); `authorship.quality_gate=true` makes it hard-fail.
 - **assemble** — `assemble_manuscript.py` -> the one version-pinned master.
 - **produce:<format>** — the interior generator for the format, then
   `verify_build.py --format <fmt>` as the gate.
