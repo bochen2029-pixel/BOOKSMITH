@@ -41,9 +41,25 @@ holds the loop; the model is a pure function it calls.**
 ## Stages (fixed, deterministic order)
 
 ```
-precheck -> draft:<unit>* -> integrate -> assemble -> produce:<format>* -> [cover] -> verify -> emit
+[ingest] -> [seed] -> precheck -> draft:<unit>* -> integrate -> assemble -> produce:<format>* -> [cover] -> verify -> emit
 ```
 
+The bracketed **[ingest] -> [seed]** front-half is the ARCHITECT preamble: it runs only
+when a book arrives as a *brief* (a `brief.md` gist + optional `intake/` docs) with no
+`seed.md` and no `units` yet. It turns a gist + sources into a full Book Bible + contracts
++ a schema-valid config, so `engine.py --config <brief-config>` runs INTAKE -> EMIT end to
+end. An already-architected book (seed.md + units present) skips it untouched.
+
+- **[ingest]** — (architect; only when a brief arrives with `intake/` docs and no digests)
+  discover + classify the intake files and write one relational digest per source to
+  `canon_refs/_digest_*.md` plus a `_ingest.json` manifest. Gate **GATE-1**.
+- **[seed]** — (architect; only when there is no `seed.md` / no `units`) turn the brief
+  (+ digests) into a structured plan via the model as a pure function, then deterministically
+  write `seed.md` (§1–§7), per-unit `contracts/`, `registry/`, `exemplars/`, and a
+  schema-valid `book_config.json`. Gate **GATE-2** (schema-valid + one contract per unit +
+  seed present). Keyless under `--backend harness`: the plan comes back over the same disk
+  bridge the draft turns use (a `seed.request.json` -> `seed.response.json` handshake). When
+  no model JSON is available (dry-run/mock), a deterministic fallback keeps the spine moving.
 - **precheck** — `book_config.json` validates against the schema; seed/contracts present.
 - **draft:<unit>** — build the Context Pack from disk (this contract + prior unit's
   full prose + seed + registries), call the model as a pure function, write
@@ -64,6 +80,13 @@ precheck -> draft:<unit>* -> integrate -> assemble -> produce:<format>* -> [cove
 ```bash
 # a real one-shot (needs a model backend + a seed + contracts already in place)
 python _tools/engine.py --config book_workspace/<slug>/book_config.json
+
+# a FRESH book from just a brief: drop a minimal schema-valid book_config.json
+# (title/author/slug/is_fiction/formats) + a brief.md (the gist, optionally with
+# "chapters: N" / "words: N" hints, and/or intake/ docs) into the workspace. The
+# engine architects digests + seed.md + units + contracts FIRST, then drafts to a
+# finished folder. Keyless in-session:
+python _tools/engine.py --config book_workspace/<slug>/book_config.json --backend harness
 
 # resume: just run the same command again. It reads state.json and continues.
 # dry-run the machine with the mock model + all real gates, no cost, no Word:
@@ -128,7 +151,12 @@ Builds a tiny synthetic 2-chapter book, drives it with the mock backend through
 the real gates, and asserts: **A** a cold run drafts+lints+assembles; **B**
 re-running is idempotent (every stage skips); **C** deleting a finished chapter
 forces a re-derive-from-disk re-run of exactly that unit; **D** an unpassable
-gate hard-stops loudly and writes `HARDSTOP.json`. No network, no key, no Word.
+gate hard-stops loudly and writes `HARDSTOP.json`; **E** the keyless harness draft
+bridge; **F** the SEED architect stage (a brief with no seed.md/units becomes
+`seed.md` + units + per-unit contracts under GATE-2, idempotent on resume, config
+schema-valid); **G** the INGEST stage (intake docs become relational digests + a
+manifest under GATE-1); **H** the keyless architect turn (the seed plan fulfilled
+over the disk bridge). No network, no key, no Word.
 
 ## What is proven vs. what a real run adds
 

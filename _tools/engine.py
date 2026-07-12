@@ -18,8 +18,15 @@ So this inverts control. This file is the engine: plain, deterministic code that
     on restart it reads state.json, re-derives the next action by hashing inputs,
     and continues. No "let me re-read everything to figure out where I am."
 
-Stages (fixed order):  precheck -> draft:<unit>* -> integrate -> assemble
-                       -> produce:<format>* -> [cover] -> verify -> emit
+Stages (fixed order):  [ingest] -> [seed] -> precheck -> draft:<unit>* -> integrate
+                       -> assemble -> produce:<format>* -> [cover] -> verify -> emit
+
+The bracketed front-half ([ingest], [seed]) is the ARCHITECT phase (roadmap H1.1):
+it runs ONLY when a book arrives as a brief (brief.md + optional intake/ docs) with
+no seed.md and no units yet. It turns a gist + sources into relational digests,
+seed.md, per-unit contracts, registries, and a schema-valid book_config.json
+(GATE-1 / GATE-2), so `engine.py --config <brief-config>` runs INTAKE -> EMIT end to
+end. An already-architected book skips the preamble untouched.
 
 Usage:
   python _tools/engine.py --config <book_config.json> [--backend mock|anthropic|openai]
@@ -193,15 +200,18 @@ class Engine:
         steps.append(("integrate", "integrate"))
         steps.append(("assemble", "assemble"))
         fmts = list(self.cfg.get("formats", []))
+        # Cover-consuming formats MUST follow the cover stage: epub embeds the cover
+        # image (properties="cover-image"), digital_pdf composites front+back covers
+        # onto the interior (§12: covers before the outputs that consume them).
+        cover_dependent = {"epub", "digital_pdf"}
         for fmt in fmts:
-            if fmt != "digital_pdf":
+            if fmt not in cover_dependent:
                 steps.append((f"produce:{fmt}", "produce"))
         if not self.no_cover:
             steps.append(("cover", "cover"))
-        if "digital_pdf" in fmts:
-            # digital_pdf composites the front+back covers onto a blank-stripped
-            # interior, so it MUST follow the cover stage (§12 step 9 after step 8).
-            steps.append(("produce:digital_pdf", "produce"))
+        for fmt in fmts:
+            if fmt in cover_dependent:
+                steps.append((f"produce:{fmt}", "produce"))
         steps.append(("verify", "verify"))
         steps.append(("emit", "emit"))
         return steps
@@ -280,6 +290,355 @@ class Engine:
         if target and (wc < target * 0.6 or wc > target * 1.6):
             problems.append(f"word count {wc} outside 0.6-1.6x of target {target}")
         return (not problems), "; ".join(problems)
+
+    # -- ARCHITECT FRONT-HALF: ingest + seed (produce digests + seed.md + units)
+    # A book can arrive as a BRIEF (a one-line gist + optional intake/ docs) with no
+    # seed.md and no units. These two stages are the code half of the creative
+    # architecting the engine used to assume was done by hand. The model stays a PURE
+    # FUNCTION: it returns a structured plan (JSON) / a relational digest; the engine
+    # deterministically writes seed.md, the per-unit contracts, the registries, the
+    # exemplars, and a schema-valid book_config.json, then GATE-2 must pass. When no
+    # model JSON comes back (dry-run/mock), a deterministic fallback keeps the whole
+    # spine testable without a live model.
+
+    def _brief_path(self) -> Path:
+        return self.ws / "brief.md"
+
+    def _seed_needed(self) -> bool:
+        return (not (self.ws / "seed.md").exists()) or (not self.cfg.get("units"))
+
+    def _ingest_needed(self) -> bool:
+        intake = self.ws / "intake"
+        if not intake.exists() or not any(p.is_file() for p in intake.rglob("*")):
+            return False
+        return not list((self.ws / "canon_refs").glob("_digest_*.md"))
+
+    def _read_brief(self) -> str:
+        p = self._brief_path()
+        if p.exists():
+            return p.read_text(encoding="utf-8", errors="replace")[:8000]
+        bits = [str(self.cfg.get("title", self.slug))]
+        if self.cfg.get("subtitle"):
+            bits.append(str(self.cfg["subtitle"]))
+        if self.cfg.get("genre"):
+            bits.append("Genre: " + str(self.cfg["genre"]))
+        bits.append("Fiction." if self.cfg.get("is_fiction") else "Nonfiction.")
+        return " ".join(bits)
+
+    def _read_digests(self) -> str:
+        digs = sorted((self.ws / "canon_refs").glob("_digest_*.md"))
+        if not digs:
+            return ""
+        per = max(600, 12000 // len(digs))
+        return "\n\n".join(f"## {d.stem}\n{d.read_text(encoding='utf-8', errors='replace')[:per]}"
+                           for d in digs)
+
+    @staticmethod
+    def _extract_json(text: str):
+        s = text.strip()
+        m = re.search(r"```(?:json)?\s*(.+?)```", s, re.S)
+        if m:
+            s = m.group(1).strip()
+        start = s.find("{")
+        if start < 0:
+            return None
+        depth = 0
+        for i in range(start, len(s)):
+            if s[i] == "{":
+                depth += 1
+            elif s[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(s[start:i + 1])
+                    except Exception:
+                        return None
+        return None
+
+    @staticmethod
+    def _num_word(i: int) -> str:
+        w = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven",
+             "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen",
+             "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen", "Twenty"]
+        return w[i] if 0 <= i < len(w) else str(i)
+
+    def _slugify_units(self, raw: list) -> list:
+        out, used = [], set()
+        for i, u in enumerate(raw, 1):
+            if isinstance(u, str):
+                u = {"title": u}
+            if not isinstance(u, dict):
+                continue
+            base = re.sub(r"[^a-z0-9_]+", "_",
+                          str(u.get("id") or f"ch_{i:02d}").lower()).strip("_") or f"ch_{i:02d}"
+            uid, k = base, 2
+            while uid in used:
+                uid, k = f"{base}_{k}", k + 1
+            used.add(uid)
+            item = {"id": uid, "title": str(u.get("title") or f"Chapter {self._num_word(i)}")}
+            if u.get("class") in ("A", "B", "C"):
+                item["class"] = u["class"]
+            tw = u.get("target_words")
+            if isinstance(tw, int) and tw > 0:
+                item["target_words"] = tw
+            out.append(item)
+        return out
+
+    def _fallback_seed_plan(self, brief: str) -> dict:
+        m = re.search(r"(?:chapters|units|parts)\s*[:=]\s*(\d{1,3})", brief, re.I)
+        n = max(1, min(int(m.group(1)) if m else 5, 60))
+        mw = re.search(r"(?:words|target_words)\s*[:=]\s*(\d{2,6})", brief, re.I)
+        tw = int(mw.group(1)) if mw else 1500
+        units = [{"id": f"ch_{i:02d}", "title": f"Chapter {self._num_word(i)}",
+                  "class": "C", "target_words": tw} for i in range(1, n + 1)]
+        first = next((ln.strip() for ln in brief.splitlines() if ln.strip()), "")
+        return {"units": units, "work_intent": first[:300], "_source": "fallback"}
+
+    def _seed_prompt(self, brief: str, digests: str):
+        system = (
+            "You are a book architect. Given a brief (and optional source digests), return ONE "
+            "JSON object and NOTHING else. Keys: units (array of {id,title,class,target_words}), "
+            "work_intent, primary_theme, voice_one_line, division_scheme, refrain, blacklist (array), "
+            "sacred_terms (array), cover_prompt_seed. ids look like ch_01; class is A|B|C (default C); "
+            "target_words is an integer. cover_prompt_seed must contain NO title/author text. "
+            "Choose a natural unit count for the material.")
+        prompt = (f"# Brief\n{brief}\n\n"
+                  + (f"# Source digests (each says how it relates to the core)\n{digests}\n\n" if digests else "")
+                  + "# Task\nReturn the JSON object.")
+        return system, prompt
+
+    def _seed_plan_via_harness(self, brief: str, digests: str) -> dict:
+        """Keyless architect turn: the Claude Code session writes the plan JSON via
+        the same disk bridge the draft turns use. Pause (rc 3) until the response lands."""
+        bridge = self.eng_dir / "bridge"
+        bridge.mkdir(parents=True, exist_ok=True)
+        resp = bridge / "seed.response.json"
+        if resp.exists():
+            raw = resp.read_text(encoding="utf-8", errors="replace")
+            resp.unlink()
+            (bridge / "seed.request.json").unlink(missing_ok=True)
+            data = self._extract_json(raw)
+            if isinstance(data, dict) and isinstance(data.get("units"), list) and data["units"]:
+                data["units"] = self._slugify_units(data["units"])
+                if data["units"]:
+                    data.setdefault("_source", "harness")
+                    return data
+            self.log("seed.harness_unparseable", chars=len(raw))
+            return self._fallback_seed_plan(brief)
+        system, prompt = self._seed_prompt(brief, digests)
+        req = {"stage": "seed", "write_plan_json_to": str(resp), "system": system, "prompt": prompt,
+               "must_return": ("ONE JSON object: units[{id,title,class,target_words}], work_intent, "
+                               "primary_theme, voice_one_line, division_scheme, refrain, blacklist[], "
+                               "sacred_terms[], cover_prompt_seed (NO title/author text in it).")}
+        (bridge / "seed.request.json").write_text(json.dumps(req, indent=2, ensure_ascii=False), encoding="utf-8")
+        directive = (f"[BOOKSMITH harness turn] Architect the book SEED. Read "
+                     f"{bridge / 'seed.request.json'} (brief + digests + the required JSON shape), "
+                     f"write the plan JSON to {resp}, then re-run the engine (same command). The engine "
+                     f"will write seed.md + per-unit contracts + a schema-valid config and gate it (GATE-2).")
+        (self.eng_dir / "NEXT.md").write_text(directive + "\n", encoding="utf-8")
+        self.log("harness.turn_needed", stage="seed",
+                 request=str(bridge / "seed.request.json"), response=str(resp))
+        print("\n" + directive)
+        raise HarnessTurnNeeded("seed", str(resp))
+
+    def _model_seed_plan(self, brief: str, digests: str) -> dict:
+        system, prompt = self._seed_prompt(brief, digests)
+        try:
+            raw = self.model.complete(system, prompt, max_tokens=4096, temperature=0.4)
+        except Exception as e:
+            self.log("seed.model_error", detail=str(e)[:160])
+            return self._fallback_seed_plan(brief)
+        data = self._extract_json(raw)
+        if not isinstance(data, dict) or not isinstance(data.get("units"), list) or not data["units"]:
+            self.log("seed.unparseable_plan", out_chars=len(raw))
+            return self._fallback_seed_plan(brief)
+        data["units"] = self._slugify_units(data["units"])
+        if not data["units"]:
+            return self._fallback_seed_plan(brief)
+        data.setdefault("_source", "model")
+        return data
+
+    def _validate_config(self, cfg: dict) -> None:
+        try:
+            import jsonschema
+        except ImportError:
+            return
+        try:
+            jsonschema.validate(cfg, load_json(TOOLS / "book_config.schema.json"))
+        except Exception as e:
+            raise HardStop("seed", f"seeded config invalid vs schema: {str(e).splitlines()[0][:200]}")
+
+    def _apply_seed_to_config(self, plan: dict) -> None:
+        cfg = load_json(self.config_path)
+        cfg["units"] = plan["units"]
+        auth = cfg.setdefault("authorship", {"default_class": "C", "per_chapter_overrides": {}})
+        auth.setdefault("default_class", "C")
+        ov = auth.setdefault("per_chapter_overrides", {})
+        for u in plan["units"]:
+            if u.get("class") in ("A", "B"):
+                ov[u["id"]] = u["class"]
+        voice = cfg.setdefault("voice", {})
+        voice.setdefault("unit_noun", "chapter")
+        voice.setdefault("no_em_dashes", True)
+        voice.setdefault("exemplars_path", "exemplars/")
+        voice.setdefault("greenlist", voice.get("greenlist", []))
+        if plan.get("blacklist") and not voice.get("blacklist"):
+            voice["blacklist"] = [str(x) for x in plan["blacklist"]][:64]
+        voice.setdefault("blacklist", voice.get("blacklist", []))
+        if plan.get("sacred_terms") and not voice.get("sacred_terms"):
+            voice["sacred_terms"] = [str(x) for x in plan["sacred_terms"]][:64]
+        voice.setdefault("sacred_terms", voice.get("sacred_terms", []))
+        ps = plan.get("cover_prompt_seed")
+        if ps:
+            cfg.setdefault("cover", {}).setdefault("art", {}).setdefault("prompt_seed", str(ps)[:600])
+        self._validate_config(cfg)
+        save_json_atomic(self.config_path, cfg)
+        self.cfg = cfg
+
+    def _write_seed_md(self, plan: dict, brief: str) -> None:
+        tpl_p = ROOT / "templates" / "seed.template.md"
+        tpl = (tpl_p.read_text(encoding="utf-8") if tpl_p.exists()
+               else "# SEED.md - {{TITLE}}\n\n## §1.\n## §2.\n## §3.\n## §4.\n## §5.\n## §6.\n## §7.\n")
+        cfg, units = self.cfg, plan["units"]
+        unit_noun = cfg.get("voice", {}).get("unit_noun", "chapter")
+        idx_rows = "\n".join(
+            f"| {u['id']} | {u.get('title', '')} | {u.get('class', 'C')} |  | {u.get('target_words', 1500)} |"
+            for u in units) or "| (none) |  |  |  |  |"
+        repl = {
+            "{{TITLE}}": str(cfg.get("title", self.slug)),
+            "{{GENRE_FORM}}": str(cfg.get("genre", "book")),
+            "{{WHAT_IT_DOES}}": str(plan.get("work_intent", "")),
+            "{{WHO_IT_SERVES}}": "its intended reader",
+            "{{WHY}}": str(plan.get("work_intent", "")),
+            "{{INTEGRATION_MODE}}": str(cfg.get("integration_mode", "synthesis")),
+            "{{UNIT_COUNT}}": str(len(units)),
+            "{{UNIT_NOUN}}": unit_noun,
+            "{{FORMATS}}": ", ".join(cfg.get("formats", [])),
+            "{{WORD_TARGET}}": str(sum(int(u.get("target_words", 1500)) for u in units)),
+            "{{VOICE_ONE_LINE}}": str(plan.get("voice_one_line", "")),
+            "{{PRIMARY_THEME}}": str(plan.get("primary_theme", "")),
+            "{{DIVISION_SCHEME}}": str(plan.get("division_scheme", f"{len(units)} {unit_noun}s")),
+            "{{UNIT_MAP}}": "; ".join(f"{u['id']}:{u.get('target_words', 1500)}w" for u in units),
+            "{{REFRAIN}}": str(plan.get("refrain", "")),
+            "{{DEFAULT_CLASS}}": str(cfg.get("authorship", {}).get("default_class", "C")),
+            "{{VERSION}}": "1.0-engine",
+        }
+        out = tpl.replace("| {{UNIT_ID}} | {{UNIT_TITLE}} | {{CLASS}} | {{REGISTER}} | {{LENGTH}} |", idx_rows)
+        for k, v in repl.items():
+            out = out.replace(k, v)
+        (self.ws / "seed.md").write_text(out, encoding="utf-8")
+
+    def _seed_registry_and_exemplars(self, plan: dict) -> None:
+        reg = self.ws / "registry"
+        reg.mkdir(parents=True, exist_ok=True)
+        seeds = {
+            "threads.md": "# Thread Registry\n\n*seed -> payoff, callbacks, motifs. One row per thread.*\n\n| id | kind | planted | resolved | status |\n|---|---|---|---|---|\n",
+            "dependencies.md": "# Dependency Registry\n\n*concept A must land before concept B.*\n",
+            "compression_pairs.md": "# Compression Pairs\n\n*mirror / echo unit pairs (e.g. ch_01 <-> ch_N).*\n",
+            "refrain.md": f"# Refrain\n\n**Exact wording (never paraphrase):** {plan.get('refrain', '')}\n\n**Placements:** TBD\n",
+            "canon_refs.md": "# Canon Anchors Index\n\n*files under canon_refs/ each unit derives from.*\n",
+        }
+        for name, body in seeds.items():
+            p = reg / name
+            if not p.exists():
+                p.write_text(body, encoding="utf-8")
+        exd = self.ws / "exemplars"
+        exd.mkdir(parents=True, exist_ok=True)
+        anchor = exd / "anchor.md"
+        if not anchor.exists():
+            anchor.write_text(
+                "# Voice anchor exemplar\n\n*The single passage the whole book's voice is measured "
+                "against. Replace with a real anchor passage from the author's own prose.*\n\n"
+                + str(plan.get("voice_one_line", "")) + "\n", encoding="utf-8")
+
+    def _gate_seed(self) -> None:
+        cfg = load_json(self.config_path)
+        self._validate_config(cfg)
+        units = cfg.get("units") or []
+        if not units:
+            raise HardStop("seed", "GATE-2: no units produced")
+        default_cls = cfg.get("authorship", {}).get("default_class", "C")
+        missing = []
+        for u in units:
+            cls = u.get("class", default_cls)
+            name = f"{u['id']}_outline.md" if cls == "A" else f"{u['id']}.md"
+            if not (self.ws / "contracts" / name).exists():
+                missing.append(name)
+        if missing:
+            raise HardStop("seed", f"GATE-2: missing contract(s): {', '.join(missing[:8])}")
+        seed_p = self.ws / "seed.md"
+        if not seed_p.exists():
+            raise HardStop("seed", "GATE-2: seed.md not written")
+        txt = seed_p.read_text(encoding="utf-8", errors="replace")
+        gaps = [f"§{i}" for i in range(1, 8) if f"## §{i}" not in txt]
+        if gaps:
+            raise HardStop("seed", f"GATE-2: seed.md missing section(s): {', '.join(gaps)}")
+        v = cfg.get("voice", {})
+        if "no_em_dashes" not in v or "unit_noun" not in v:
+            raise HardStop("seed", "GATE-2: voice block incomplete (needs unit_noun + no_em_dashes)")
+
+    def stage_seed(self):
+        brief = self._read_brief()
+        digests = self._read_digests()
+        plan = (self._seed_plan_via_harness(brief, digests)
+                if self.model.backend == "harness"
+                else self._model_seed_plan(brief, digests))
+        self._apply_seed_to_config(plan)
+        self._write_seed_md(plan, brief)
+        rc, o, e = run([sys.executable, str(TOOLS / "init_contracts.py"),
+                        "--config", str(self.config_path)])
+        if rc != 0:
+            raise HardStop("seed", f"init_contracts exit {rc}: {(o + e).strip()[-300:]}")
+        self._seed_registry_and_exemplars(plan)
+        self._gate_seed()
+        return f"seeded {len(plan['units'])} units ({plan.get('_source', 'model')}); GATE-2 pass"
+
+    @staticmethod
+    def _classify_intake(p: Path) -> str:
+        ext = p.suffix.lower()
+        if ext in {".md", ".txt", ".markdown"}:
+            return "canon_text"
+        if ext in {".pdf", ".docx", ".epub"}:
+            return "document"
+        if ext in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+            return "image"
+        if ext in {".mp3", ".wav", ".m4a", ".mp4", ".mov"}:
+            return "media"
+        return "other"
+
+    def stage_ingest(self):
+        intake = self.ws / "intake"
+        canon = self.ws / "canon_refs"
+        canon.mkdir(parents=True, exist_ok=True)
+        files = [p for p in sorted(intake.rglob("*")) if p.is_file()] if intake.exists() else []
+        text_ext = {".md", ".txt", ".markdown"}
+        text_files = [p for p in files if p.suffix.lower() in text_ext]
+        manifest = {"ts": now(), "discovered": [], "digests": []}
+        for p in files:
+            manifest["discovered"].append({
+                "name": p.name, "bytes": p.stat().st_size,
+                "class": self._classify_intake(p),
+                "is_text": p.suffix.lower() in text_ext,
+            })
+        brief = self._read_brief()[:1500]
+        for p in text_files:
+            body = p.read_text(encoding="utf-8", errors="replace")
+            system = ("You write a RELATIONAL source digest for a book kit. In <=250 words, state what "
+                      "this source contains and where it EXTENDS / CONTRADICTS / DEEPENS / BRIDGES the "
+                      "book's core. Prose only, no preamble.")
+            prompt = f"# Book brief\n{brief}\n\n# Source: {p.name}\n{body[:6000]}\n\n# Task\nWrite the relational digest."
+            try:
+                dg = self.model.complete(system, prompt, max_tokens=1200, temperature=0.3).strip()
+            except Exception as ex:
+                dg = f"(auto-digest unavailable: {str(ex)[:120]}) Source {p.name}: {len(body.split())} words."
+            slug = re.sub(r"[^a-z0-9_]+", "_", p.stem.lower()).strip("_") or "src"
+            dpath = canon / f"_digest_{slug}.md"
+            dpath.write_text(f"# Digest - {p.name}\n\n{dg}\n", encoding="utf-8")
+            manifest["digests"].append(dpath.name)
+        save_json_atomic(canon / "_ingest.json", manifest)
+        if text_files and len(manifest["digests"]) < len(text_files):
+            raise HardStop("ingest", "GATE-1: a text source did not produce a digest")
+        return f"ingested {len(files)} file(s); {len(manifest['digests'])} digest(s)"
 
     # -- stages -----------------------------------------------------------
     def stage_precheck(self):
@@ -461,11 +820,19 @@ class Engine:
         return "cover art UNRESOLVED (gen rc=%d, pick rc=%d) — place art in cover_art/" % (rc, rc2)
 
     def stage_verify(self):
-        rc, o, e = run([sys.executable, str(TOOLS / "verify_build.py"),
-                        "--config", str(self.config_path), "--format", "all"])
-        if rc != 0:
-            raise HardStop("verify", f"verify_build --format all FAIL: {(o + e).strip()[-400:]}")
-        return "all formats verified"
+        # Verify ONLY the formats this book actually produces. verify_build's own
+        # "all" spans every possible format; a book that ships a subset must not be
+        # failed for formats it never requested (and never produced on disk).
+        fmts = list(self.cfg.get("formats", []))
+        failed = []
+        for fmt in fmts:
+            rc, o, e = run([sys.executable, str(TOOLS / "verify_build.py"),
+                            "--config", str(self.config_path), "--format", fmt])
+            if rc != 0:
+                failed.append(f"{fmt}: {(o + e).strip()[-200:]}")
+        if failed:
+            raise HardStop("verify", "verify_build FAIL for " + " | ".join(failed))
+        return f"{len(fmts)} configured format(s) verified: {', '.join(fmts)}"
 
     def stage_emit(self):
         manifest = {
@@ -477,6 +844,50 @@ class Engine:
         return "emitted manifest"
 
     # -- the driver -------------------------------------------------------
+    def _run_one(self, key: str, kind: str, arg: str = "", force: bool = False):
+        """Run ONE stage through the standard mark/gate/hard-stop machinery.
+        Returns None to proceed, or an int rc (2 hard-stop / 3 await-model) to bubble up."""
+        isha = self.input_sha(key, kind, arg)
+        if not force and self.satisfied(key, kind, arg, isha):
+            self.log("stage.skip_done", stage=key)
+            return None
+        self.state.mark(key, "running", isha, attempts=self.state.rec(key).get("attempts", 0) + 1)
+        try:
+            detail = self.run_stage(key, kind)
+        except HarnessTurnNeeded as ht:
+            self.state.mark(key, "awaiting_model", isha, gate="await",
+                            detail=f"awaiting harness prose -> {ht.response_file}")
+            self.log("AWAIT_MODEL", stage=key, response=ht.response_file)
+            return 3
+        except HardStop as hs:
+            self.state.mark(key, "failed", isha, gate="fail", detail=hs.detail)
+            save_json_atomic(self.eng_dir / "HARDSTOP.json",
+                             {"stage": hs.stage, "detail": hs.detail, "ts": now()})
+            self.log("HARDSTOP", stage=key, detail=hs.detail)
+            print(f"\n=== HARD-STOP at {key} ===\n{hs.detail}\n"
+                  f"Fix, then re-run the same command; the engine resumes here.")
+            return 2
+        self.state.mark(key, "done", isha, gate="pass", detail=str(detail))
+        self.log("stage.done", stage=key, detail=str(detail))
+        return None
+
+    def _architect(self, only_from: str | None):
+        """Front-half preamble: digests (ingest) + seed.md/units (seed) when a book
+        arrives as a brief. No-op for an already-architected book. Returns None to
+        proceed to the main plan, or an int rc to return immediately."""
+        if only_from not in (None, "ingest", "seed"):
+            return None
+        if self._ingest_needed() and only_from in (None, "ingest"):
+            rc = self._run_one("ingest", "ingest", force=True)
+            if rc is not None:
+                return rc
+        if self._seed_needed() and only_from in (None, "ingest", "seed"):
+            rc = self._run_one("seed", "seed", force=True)
+            if rc is not None:
+                return rc
+            self.cfg = load_json(self.config_path)  # reload: units now exist -> plan() sees drafts
+        return None
+
     def input_sha(self, key: str, kind: str, arg: str) -> str:
         if kind == "draft":
             unit = next(u for u in self.units() if u["id"] == arg)
@@ -493,6 +904,21 @@ class Engine:
             master = sorted((self.ws / "outputs" / "markdown").glob(f"{self.slug}_v*.md"))
             msha = sha_file(master[-1]) if master else "-"
             return sha_text(f"produce|{arg}|{msha}")
+        if kind == "seed":
+            # inputs seed consumes but does NOT mutate (it writes units into config,
+            # so keying on the whole config would make seed perpetually stale)
+            digs = sorted((self.ws / "canon_refs").glob("_digest_*.md"))
+            core = {k: self.cfg.get(k) for k in
+                    ("title", "author", "slug", "is_fiction", "subtitle", "genre",
+                     "formats", "integration_mode")}
+            return sha_text("seed|" + sha_file(self._brief_path()) + "|"
+                            + "|".join(sha_file(p) for p in digs) + "|"
+                            + json.dumps(core, sort_keys=True, ensure_ascii=False))
+        if kind == "ingest":
+            intake = self.ws / "intake"
+            files = [p for p in sorted(intake.rglob("*")) if p.is_file()] if intake.exists() else []
+            sig = "|".join(f"{p.relative_to(self.ws)}:{p.stat().st_size}" for p in files)
+            return sha_text("ingest|" + sig)
         # precheck/cover/verify/emit key off the config
         return sha_text(f"{kind}|{sha_file(self.config_path)}")
 
@@ -507,6 +933,10 @@ class Engine:
             return [masters[-1]] if masters else [self.ws / "outputs" / "markdown" / "__missing__.md"]
         if kind == "emit":
             return [self.ws / "outputs" / "MANIFEST.json"]
+        if kind == "seed":
+            return [self.ws / "seed.md"]
+        if kind == "ingest":
+            return [self.ws / "canon_refs" / "_ingest.json"]
         return []
 
     def satisfied(self, key: str, kind: str, arg: str, isha: str) -> bool:
@@ -518,6 +948,10 @@ class Engine:
         arg = key.split(":", 1)[1] if ":" in key else ""
         if kind == "precheck":
             return self.stage_precheck()
+        if kind == "seed":
+            return self.stage_seed()
+        if kind == "ingest":
+            return self.stage_ingest()
         if kind == "draft":
             unit = next(u for u in self.units() if u["id"] == arg)
             return self.stage_draft(unit)
@@ -536,11 +970,13 @@ class Engine:
         raise HardStop(key, f"unknown stage kind {kind}")
 
     def drive(self, only_to: str | None, only_from: str | None) -> int:
-        plan = self.plan()
-        keys = [k for k, _ in plan]
-        started = only_from is None
         self.log("run.start", slug=self.slug, backend=self.model.backend,
-                 dry_run=self.dry_run, stages=len(plan))
+                 dry_run=self.dry_run)
+        arc = self._architect(only_from)   # ingest + seed if the book arrived as a brief
+        if arc is not None:
+            return arc
+        plan = self.plan()
+        started = only_from is None
         for key, kind in plan:
             if not started:
                 if key == only_from:
