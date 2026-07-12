@@ -180,6 +180,10 @@ def main() -> int:
                 "# Core\nThe central claim: gates and disk beat a model holding state in its head.\n", "utf-8")
             (SEEDWS / "intake" / "satellite.md").write_text(
                 "# Satellite\nA supporting case: every past failure was an unverified-state-advanced bug.\n", "utf-8")
+            # a real DOCUMENT source (not markdown) to exercise manuscript_ingest conversion
+            (SEEDWS / "intake" / "extra.html").write_text(
+                "<html><body><h1>Extra Source</h1><p>A converted document source that must be "
+                "flattened to markdown before it can be digested.</p></body></html>", "utf-8")
 
     def eng_seed(*extra):
         cmd = [PY, ENGINE, "--config", str(SEEDWS / "book_config.json"),
@@ -235,9 +239,11 @@ def main() -> int:
         fails.append(f"G: ingest+seed rc={r.returncode}\n{r.stdout[-800:]}")
     if not (SEEDWS / "canon_refs" / "_ingest.json").exists():
         fails.append("G: _ingest.json manifest not written")
+    if not (SEEDWS / "intake" / "converted" / "extra.md").exists():
+        fails.append("G: extra.html not converted to markdown by manuscript_ingest")
     digs = list((SEEDWS / "canon_refs").glob("_digest_*.md"))
-    if len(digs) < 2:
-        fails.append(f"G: expected >=2 digests from 2 intake docs, got {len(digs)}")
+    if len(digs) < 3:
+        fails.append(f"G: expected >=3 digests (core.md + satellite.md + converted extra.html), got {len(digs)}")
     stG = json.loads((SEEDWS / "_engine" / "state.json").read_text("utf-8"))["stages"]
     if stG.get("ingest", {}).get("status") != "done":
         fails.append("G: ingest stage not marked done")

@@ -610,18 +610,42 @@ class Engine:
         intake = self.ws / "intake"
         canon = self.ws / "canon_refs"
         canon.mkdir(parents=True, exist_ok=True)
-        files = [p for p in sorted(intake.rglob("*")) if p.is_file()] if intake.exists() else []
         text_ext = {".md", ".txt", ".markdown"}
-        text_files = [p for p in files if p.suffix.lower() in text_ext]
-        manifest = {"ts": now(), "discovered": [], "digests": []}
-        for p in files:
+        doc_ext = {".pdf", ".docx", ".epub", ".htm", ".html"}
+        top = [p for p in sorted(intake.iterdir()) if p.is_file()] if intake.exists() else []
+        # 1) normalize any real documents (PDF/DOCX/EPUB/HTML) to markdown first
+        converted_dir = intake / "converted"
+        conv = None
+        if any(p.suffix.lower() in doc_ext for p in top):
+            rc, o, e = run([sys.executable, str(TOOLS / "manuscript_ingest.py"),
+                            "--intake", str(intake), "--out", str(converted_dir)])
+            if rc != 0:
+                raise HardStop("ingest", f"manuscript_ingest exit {rc}: {(o + e).strip()[-300:]}")
+            try:
+                conv = json.loads(o.strip().splitlines()[-1]) if o.strip() else None
+            except Exception:
+                conv = None
+        # 2) the normalized corpus to digest: top-level text + every converted markdown
+        sources = [p for p in top if p.suffix.lower() in text_ext]
+        if converted_dir.exists():
+            sources += sorted(converted_dir.glob("*.md"))
+        manifest = {"ts": now(), "discovered": [], "converted": conv, "digests": []}
+        for p in top:
             manifest["discovered"].append({
                 "name": p.name, "bytes": p.stat().st_size,
                 "class": self._classify_intake(p),
                 "is_text": p.suffix.lower() in text_ext,
+                "convertible": p.suffix.lower() in doc_ext,
             })
+        # 3) one relational digest per source (the model is a pure function)
         brief = self._read_brief()[:1500]
-        for p in text_files:
+        used = set()
+        for p in sources:
+            base = re.sub(r"[^a-z0-9_]+", "_", p.stem.lower()).strip("_") or "src"
+            slug, k = base, 2
+            while slug in used:
+                slug, k = f"{base}_{k}", k + 1
+            used.add(slug)
             body = p.read_text(encoding="utf-8", errors="replace")
             system = ("You write a RELATIONAL source digest for a book kit. In <=250 words, state what "
                       "this source contains and where it EXTENDS / CONTRADICTS / DEEPENS / BRIDGES the "
@@ -631,14 +655,13 @@ class Engine:
                 dg = self.model.complete(system, prompt, max_tokens=1200, temperature=0.3).strip()
             except Exception as ex:
                 dg = f"(auto-digest unavailable: {str(ex)[:120]}) Source {p.name}: {len(body.split())} words."
-            slug = re.sub(r"[^a-z0-9_]+", "_", p.stem.lower()).strip("_") or "src"
             dpath = canon / f"_digest_{slug}.md"
             dpath.write_text(f"# Digest - {p.name}\n\n{dg}\n", encoding="utf-8")
             manifest["digests"].append(dpath.name)
         save_json_atomic(canon / "_ingest.json", manifest)
-        if text_files and len(manifest["digests"]) < len(text_files):
-            raise HardStop("ingest", "GATE-1: a text source did not produce a digest")
-        return f"ingested {len(files)} file(s); {len(manifest['digests'])} digest(s)"
+        if sources and len(manifest["digests"]) < len(sources):
+            raise HardStop("ingest", "GATE-1: a source did not produce a digest")
+        return f"ingested {len(top)} source(s); {len(manifest['digests'])} digest(s)"
 
     # -- stages -----------------------------------------------------------
     def stage_precheck(self):
@@ -916,7 +939,11 @@ class Engine:
                             + json.dumps(core, sort_keys=True, ensure_ascii=False))
         if kind == "ingest":
             intake = self.ws / "intake"
-            files = [p for p in sorted(intake.rglob("*")) if p.is_file()] if intake.exists() else []
+            # hash the TRUE sources only; exclude intake/converted/ (ingest's own
+            # output) so normalizing a doc does not change ingest's input signature.
+            files = ([p for p in sorted(intake.rglob("*"))
+                      if p.is_file() and "converted" not in p.relative_to(intake).parts]
+                     if intake.exists() else [])
             sig = "|".join(f"{p.relative_to(self.ws)}:{p.stat().st_size}" for p in files)
             return sha_text("ingest|" + sig)
         # precheck/cover/verify/emit key off the config

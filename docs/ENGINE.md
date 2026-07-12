@@ -51,8 +51,11 @@ when a book arrives as a *brief* (a `brief.md` gist + optional `intake/` docs) w
 end. An already-architected book (seed.md + units present) skips it untouched.
 
 - **[ingest]** — (architect; only when a brief arrives with `intake/` docs and no digests)
-  discover + classify the intake files and write one relational digest per source to
-  `canon_refs/_digest_*.md` plus a `_ingest.json` manifest. Gate **GATE-1**.
+  normalize real documents (PDF via PyMuPDF, DOCX/EPUB/HTML via stdlib) to markdown with
+  `manuscript_ingest.py` (into `intake/converted/`), then discover + classify every source
+  and write one relational digest per source to `canon_refs/_digest_*.md` plus a
+  `_ingest.json` manifest. Gate **GATE-1**. (`intake/converted/` is excluded from the
+  ingest input-hash, so normalizing a doc never makes the stage look stale.)
 - **[seed]** — (architect; only when there is no `seed.md` / no `units`) turn the brief
   (+ digests) into a structured plan via the model as a pure function, then deterministically
   write `seed.md` (§1–§7), per-unit `contracts/`, `registry/`, `exemplars/`, and a
