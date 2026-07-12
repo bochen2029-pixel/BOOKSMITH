@@ -11,8 +11,9 @@ __pycache__/
 Thumbs.db
 desktop.ini
 
-# --- machine-local (kit_env.json IS tracked — it documents the reference machine;
-#     override locally via kit_env.local.json if that pattern is ever added) ---
+# --- machine-local: kit_env.json holds THIS machine's private paths; never track
+#     it. Copy _tools/kit_env.template.json to _tools/kit_env.json and edit. ---
+_tools/kit_env.json
 
 # --- PRIVATE BOOK WORKSPACES: never track a real book by default.
 #     testvoyage (the generic proof book) is the tracked exception; to publish
@@ -52,6 +53,10 @@ _tools/_fixplan/
 _refcheck/
 # engine runtime state (engine.py owns it; regenerable, per-machine; never track)
 **/_engine/
+# public-release scrub: other-project lesson-mining deltas + third-party service
+# PDFs (Mixam guide + dielines). Kept locally for reference; never shipped public.
+docs/_lessons_audit/
+docs/service_templates/*.pdf
 
 # --- distribution build output (make_giftable.py) ---
 dist/
