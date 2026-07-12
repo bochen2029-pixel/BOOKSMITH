@@ -124,13 +124,42 @@ def main() -> int:
         if "blacklist" not in det.get("detail", "").lower():
             fails.append(f"D: hard-stop detail missing gate reason: {det.get('detail')}")
 
+    # --- E. HARNESS bridge (keyless in-CC handshake; performer simulated) ---
+    build_fixture()
+    bdir = WS / "_engine" / "bridge"
+
+    def canned(title):
+        s = "The line held fast and the work went on, asking nothing but that it be done well."
+        return f"# {title}\n\n" + " ".join([s] * 18)
+
+    def eng_h(*extra):
+        cmd = [PY, ENGINE, "--config", str(WS / "book_config.json"),
+               "--backend", "harness", "--to", "assemble", *extra]
+        return subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
+
+    r = eng_h("--fresh")            # -> pause, requests ch_01
+    if r.returncode != 3:
+        fails.append(f"E: first harness run expected rc=3 (await), got {r.returncode}\n{r.stdout[-400:]}")
+    (bdir / "ch_01.response.md").write_text(canned("The First Movement"), "utf-8")
+    r = eng_h()                    # gate+place ch_01 -> pause, requests ch_02
+    if r.returncode != 3:
+        fails.append(f"E: after ch_01 expected rc=3 (ch_02), got {r.returncode}")
+    if not (WS / "manuscript" / "current" / "ch_01_current.md").exists():
+        fails.append("E: ch_01 not placed into manuscript after gate pass")
+    (bdir / "ch_02.response.md").write_text(canned("The Second Movement"), "utf-8")
+    r = eng_h()                    # gate+place ch_02 -> integrate + assemble -> done
+    print("E/HARNESS final rc=", r.returncode)
+    if r.returncode != 0:
+        fails.append(f"E: final harness run expected rc=0, got {r.returncode}\n{r.stdout[-400:]}")
+
     print("\n" + ("=" * 50))
     if fails:
         print(f"ENGINE SMOKETEST: FAIL ({len(fails)})")
         for f in fails:
             print("  - " + f)
         return 1
-    print("ENGINE SMOKETEST: PASS — drive, idempotent resume, crash/drift recovery all verified.")
+    print("ENGINE SMOKETEST: PASS — drive, idempotent resume, crash/drift recovery, "
+          "loud hard-stop, and the keyless harness bridge all verified.")
     return 0
 
 

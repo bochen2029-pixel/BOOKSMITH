@@ -88,6 +88,35 @@ machine; the engine code never changes.
 - **mock** — deterministic, network-free, cost-free. Emits structure-valid prose
   that honours a title and word target so the real gates can run. Used by
   `--dry-run` and the smoke test.
+- **harness** — NO API KEY. The engine gets prose from the Claude Code session
+  that is running it, via a disk handshake. This is the "just works inside Claude
+  Code, keyless" path, and the recommended way to run for real in-session.
+
+### Running inside Claude Code, keyless (the harness bridge)
+
+Inside Claude Code the model is not missing: the session IS the model. So under
+`--backend harness` the engine becomes the conductor and the session the
+performer. At each draft the engine:
+
+1. writes `_engine/bridge/<unit>.request.json` (system + prompt + the exact gates
+   the output must pass) and `_engine/NEXT.md` (a one-line writing order),
+2. prints the order and exits with code 3 (a PAUSE, not a failure).
+
+The session reads the request, writes the finished chapter markdown to
+`_engine/bridge/<unit>.response.md`, and re-runs the engine (same command). The
+engine GATES that prose with its own gates (H1 == title, word count, no em-dash,
+no blacklist) and either places it into `manuscript/current/` and advances, or
+re-emits the request with the failing gate as feedback and asks for a rewrite
+(bounded to 3 attempts, then a hard-stop). No key, no cost beyond the session.
+
+Because all state is on disk, this also makes the engine the durable brain across
+compaction: a fresh or just-compacted session re-runs the engine and is told
+exactly what to write next. The session is renewable hands; the engine remembers.
+
+```bash
+python _tools/engine.py --config book_workspace/<slug>/book_config.json --backend harness
+# -> exits 3 with a writing order; write the response file; re-run; repeat to done.
+```
 
 ## Verifying the machine without a book run
 

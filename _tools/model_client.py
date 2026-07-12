@@ -103,6 +103,10 @@ class ModelClient:
                     text = self._openai(system, prompt, mt, temp, stop)
                 elif self.backend == "mock":
                     text = self._mock(system, prompt, mt)
+                elif self.backend == "harness":
+                    raise ModelError(
+                        "backend=harness is fulfilled by engine.py's disk bridge (the Claude Code "
+                        "session writes the prose), not by model_client.complete().")
                 else:
                     raise ModelError(f"unknown model backend: {self.backend!r}")
                 err = None

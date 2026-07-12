@@ -127,6 +127,16 @@ class HardStop(Exception):
         super().__init__(f"HARD-STOP at {stage}: {detail}")
 
 
+class HarnessTurnNeeded(Exception):
+    """Not a failure — a PAUSE. Under backend=harness the engine gets prose from
+    the Claude Code session itself (no API key): it writes a request under
+    _engine/bridge/, the session writes the response file, then re-runs the
+    engine, which gates the prose and continues. Exit code 3 = 'model turn'."""
+    def __init__(self, unit: str, response_file: str):
+        self.unit, self.response_file = unit, response_file
+        super().__init__(f"harness turn needed for {unit} -> {response_file}")
+
+
 # ---------------------------------------------------------------------------
 # the engine
 # ---------------------------------------------------------------------------
@@ -294,6 +304,9 @@ class Engine:
             self.log("draft.skip_classA", unit=uid)
             return "class-A: outline-only, left for human"
         system, prompt = self.build_draft_prompt(unit)
+        if self.model.backend == "harness":
+            return self._draft_via_harness(unit, system, prompt, out)
+        # in-process backends (anthropic / openai / mock): retry inline
         last = ""
         for attempt in range(1, 4):
             fb = ("" if attempt == 1
@@ -306,6 +319,59 @@ class Engine:
             last = detail
             self.log("draft.gate_fail", unit=uid, attempt=attempt, detail=detail)
         raise HardStop(f"draft:{uid}", f"gate failed after 3 attempts: {last}")
+
+    # -- the harness bridge: prose from the Claude Code session, no API key -----
+    def _draft_via_harness(self, unit: dict, system: str, prompt: str, out: Path):
+        uid = unit["id"]
+        bridge = self.eng_dir / "bridge"
+        bridge.mkdir(parents=True, exist_ok=True)
+        resp = bridge / f"{uid}.response.md"
+        att_f = bridge / f"{uid}.attempts"
+        attempts = int(att_f.read_text()) if att_f.exists() else 0
+        if resp.exists():
+            text = resp.read_text(encoding="utf-8").strip()
+            ok, detail = self.gate_draft(unit, text)
+            resp.unlink()
+            if ok:
+                out.write_text(text + "\n", encoding="utf-8")
+                att_f.unlink(missing_ok=True)
+                (bridge / f"{uid}.request.json").unlink(missing_ok=True)
+                return f"drafted via harness ({len(text.split())} words, attempt {attempts + 1})"
+            attempts += 1
+            att_f.write_text(str(attempts), encoding="utf-8")
+            if attempts >= 3:
+                raise HardStop(f"draft:{uid}", f"harness prose failed the gate {attempts}x: {detail}")
+            self._emit_harness_request(unit, system, prompt, resp, feedback=detail, attempt=attempts)
+            raise HarnessTurnNeeded(uid, str(resp))
+        self._emit_harness_request(unit, system, prompt, resp, feedback="", attempt=attempts)
+        raise HarnessTurnNeeded(uid, str(resp))
+
+    def _emit_harness_request(self, unit, system, prompt, resp: Path, feedback: str, attempt: int):
+        uid = unit["id"]
+        title = unit.get("title", uid)
+        bridge = self.eng_dir / "bridge"
+        req = {
+            "unit": uid,
+            "title": title,
+            "attempt": attempt + 1,
+            "write_finished_chapter_markdown_to": str(resp),
+            "must_pass_gates": (f"first line exactly '# {title}'; word count within "
+                                f"0.6-1.6x of {int(unit.get('target_words', 1500))}; "
+                                f"{'NO em-dash/en-dash (U+2014/U+2013); ' if self.cfg.get('voice', {}).get('no_em_dashes', True) else ''}"
+                                f"no blacklisted term"),
+            "system": system,
+            "prompt": prompt + (f"\n\n# YOUR PRIOR DRAFT FAILED THESE GATES - fix exactly these:\n{feedback}" if feedback else ""),
+        }
+        (bridge / f"{uid}.request.json").write_text(json.dumps(req, indent=2, ensure_ascii=False), encoding="utf-8")
+        directive = (f"[BOOKSMITH harness turn] Write unit '{uid}' ({title}). "
+                     f"Read the request at {bridge / (uid + '.request.json')} (system + prompt + gates), "
+                     f"write the finished chapter markdown to {resp}, then re-run the engine "
+                     f"(same command). The engine will gate your prose and continue; if it fails a "
+                     f"gate it will ask you to rewrite.")
+        (self.eng_dir / "NEXT.md").write_text(directive + "\n", encoding="utf-8")
+        self.log("harness.turn_needed", unit=uid,
+                 request=str(bridge / (uid + ".request.json")), response=str(resp))
+        print("\n" + directive)
 
     def stage_integrate(self):
         rc, out, err = run([sys.executable, str(TOOLS / "lint_manuscript.py"),
@@ -481,6 +547,11 @@ class Engine:
                 self.state.mark(key, "running", isha, attempts=self.state.rec(key).get("attempts", 0) + 1)
                 try:
                     detail = self.run_stage(key, kind)
+                except HarnessTurnNeeded as ht:
+                    self.state.mark(key, "awaiting_model", isha, gate="await",
+                                    detail=f"awaiting harness prose -> {ht.response_file}")
+                    self.log("AWAIT_MODEL", stage=key, response=ht.response_file)
+                    return 3
                 except HardStop as hs:
                     self.state.mark(key, "failed", isha, gate="fail", detail=hs.detail)
                     save_json_atomic(self.eng_dir / "HARDSTOP.json",
@@ -505,7 +576,8 @@ class Engine:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Deterministic BOOKSMITH engine (control inversion).")
     ap.add_argument("--config", required=True)
-    ap.add_argument("--backend", choices=["mock", "anthropic", "openai"], default=None)
+    ap.add_argument("--backend", choices=["mock", "anthropic", "openai", "harness"], default=None,
+                    help="harness = get prose from THIS Claude Code session via the disk bridge (no API key)")
     ap.add_argument("--to", dest="to", default=None, help="stop after this stage key")
     ap.add_argument("--from", dest="from_", default=None, help="resume from this stage key")
     ap.add_argument("--dry-run", action="store_true",
