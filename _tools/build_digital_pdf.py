@@ -179,9 +179,9 @@ def ensure_interior_pdf(cfg, ws: str) -> str:
             f"kdp_paperback format first.")
 
     out_pdf = os.path.join(pb_dir, f"{slug}_KDP_PAPERBACK.pdf")
-    import docx_to_pdf as _docx_to_pdf  # lazy: Word COM, Windows-only
-    pages, words = _docx_to_pdf.docx_to_pdf(docx, out_pdf)
-    print(f"  Rendered interior via Word COM: {pages} pages, {words} words",
+    import docx_to_pdf as _docx_to_pdf  # lazy: Word COM (or Tier-2 LibreOffice), Windows-first
+    pages, words, renderer = _docx_to_pdf.docx_to_pdf(docx, out_pdf)
+    print(f"  Rendered interior via {renderer}: {pages} pages, {words} words",
           file=sys.stderr)
     return out_pdf
 

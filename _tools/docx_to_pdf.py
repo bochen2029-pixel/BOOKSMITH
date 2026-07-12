@@ -2,10 +2,11 @@
 docx_to_pdf.py — The only trustworthy docx->PDF path (Microsoft Word COM).
 
 BOOKSMITH toolchain component. Renders a DOCX to a page-faithful PDF via Word
-COM automation. Pandoc / LibreOffice-headless / cloud converters all break
-fonts, TOC hyperlinks, and pagination, so Word COM is a hard platform
-dependency (Windows + installed Microsoft Word). Also returns the authoritative
-page count + word count that downstream spine math and parity checks depend on.
+COM automation (the primary, page-faithful path). Pandoc / cloud converters
+break fonts, TOC hyperlinks, and pagination; LibreOffice is close but not
+guaranteed page-faithful, so it is a TIER-2 FALLBACK used only when Word is
+absent (Mac / Linux / no-Word), never in preference to Word. Also returns the
+authoritative page + word count that downstream spine math and parity checks use.
 
 PORTED FROM:
   - C:\\BOOK\\_tools\\docx_to_pdf.py            (the base Dispatch/SaveAs shape)
@@ -31,6 +32,7 @@ On success prints a single JSON object on stdout:
 import sys
 import os
 import json
+import shutil
 
 try:
     import win32com.client
@@ -45,10 +47,10 @@ def _require_word():
     if win32com is None:
         print(json.dumps({
             "error": "word_com_unavailable",
-            "detail": "Print-faithful docx->PDF requires Microsoft Word COM "
-                      "(pywin32) on Windows. On this machine produce EPUB / "
-                      "Kindle DOCX instead (Tier 2), or render the DOCX to PDF "
-                      "externally and feed that PDF to the downstream steps.",
+            "detail": "Print docx->PDF needs Microsoft Word COM (pywin32, page-faithful) "
+                      "OR LibreOffice ('soffice' on PATH, Tier-2 best-effort). Neither was "
+                      "found. Produce EPUB / Kindle DOCX here (Tier 2), install LibreOffice "
+                      "for print PDFs off Windows, or render the DOCX externally.",
             "import_error": str(_WIN32COM_IMPORT_ERROR),
         }))
         raise SystemExit(3)
@@ -120,8 +122,52 @@ def update_fields_by_index(doc):
             pass
 
 
+def _soffice_bin():
+    """Locate a LibreOffice/OpenOffice 'soffice' binary for the Tier-2 fallback."""
+    for name in ("soffice", "libreoffice", "soffice.bin"):
+        p = shutil.which(name)
+        if p:
+            return p
+    for c in (r"C:\Program Files\LibreOffice\program\soffice.exe",
+              r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
+              "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+              "/usr/bin/soffice", "/usr/bin/libreoffice", "/snap/bin/libreoffice"):
+        if os.path.exists(c):
+            return c
+    return None
+
+
+def _docx_to_pdf_libreoffice(soffice: str, docx_path: str, pdf_path: str):
+    """Tier-2 (no Word): render via 'soffice --headless --convert-to pdf'. Best-effort,
+    NOT guaranteed page-faithful (fonts/TOC/pagination can drift vs Word), so it runs
+    only when Word COM is unavailable. Page + word counts are read back from the
+    rendered PDF with PyMuPDF. An isolated user-profile dir avoids the soffice lock."""
+    import subprocess
+    import tempfile
+    import glob
+    outdir = tempfile.mkdtemp(prefix="bs_lo_")
+    try:
+        profile = "-env:UserInstallation=file:///" + outdir.replace("\\", "/") + "/profile"
+        cmd = [soffice, "--headless", "--norestore", profile,
+               "--convert-to", "pdf:writer_pdf_Export", "--outdir", outdir, docx_path]
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        produced = glob.glob(os.path.join(outdir, "*.pdf"))
+        if not produced:
+            raise RuntimeError(f"LibreOffice produced no PDF (rc={r.returncode}): "
+                               f"{(r.stdout + r.stderr).strip()[-300:]}")
+        shutil.move(produced[0], pdf_path)
+    finally:
+        shutil.rmtree(outdir, ignore_errors=True)
+    import fitz
+    with fitz.open(pdf_path) as d:
+        pages = d.page_count
+        words = sum(len(pg.get_text("text").split()) for pg in d)
+    return pages, words
+
+
 def docx_to_pdf(docx_path: str, pdf_path: str):
-    """Convert DOCX -> PDF via Word COM. Returns (pages, words)."""
+    """Convert DOCX -> PDF. Primary: Word COM (page-faithful). Fallback: LibreOffice
+    (Tier-2, best-effort) only when Word is unavailable. Returns (pages, words, renderer)."""
     docx_path = os.path.abspath(docx_path)
     pdf_path = os.path.abspath(pdf_path)
 
@@ -132,7 +178,26 @@ def docx_to_pdf(docx_path: str, pdf_path: str):
     if out_dir and not os.path.isdir(out_dir):
         os.makedirs(out_dir, exist_ok=True)
 
-    _require_word()
+    if win32com is not None:
+        try:
+            pages, words = _docx_to_pdf_word(docx_path, pdf_path)
+            return pages, words, "word"
+        except Exception:
+            soffice = _soffice_bin()
+            if soffice:
+                pages, words = _docx_to_pdf_libreoffice(soffice, docx_path, pdf_path)
+                return pages, words, "libreoffice_after_word_error"
+            raise
+    soffice = _soffice_bin()
+    if soffice:
+        pages, words = _docx_to_pdf_libreoffice(soffice, docx_path, pdf_path)
+        return pages, words, "libreoffice"
+    _require_word()  # emits the structured error + SystemExit(3)
+
+
+def _docx_to_pdf_word(docx_path: str, pdf_path: str):
+    """The page-faithful Word COM path. Returns (pages, words). Paths are already
+    absolute and the output dir exists (the docx_to_pdf dispatcher guarantees that)."""
     word = _make_word()
     word.Visible = False
     try:
@@ -209,7 +274,7 @@ def main() -> int:
               file=sys.stderr)
         return 2
     docx_path, pdf_path = positional
-    pages, words = docx_to_pdf(docx_path, pdf_path)
+    pages, words, renderer = docx_to_pdf(docx_path, pdf_path)
     final_pages = pages
     if pad_multiple:
         final_pages = pad_pdf_to_multiple(os.path.abspath(pdf_path), pad_multiple)
@@ -218,6 +283,7 @@ def main() -> int:
         "pdf": os.path.abspath(pdf_path),
         "pages": final_pages,
         "words": words,
+        "renderer": renderer,
     }
     if pad_multiple:
         out["pages_before_pad"] = pages

@@ -58,6 +58,23 @@ def detect_comfy_app():
     return first_existing([str(c) for c in cands if c])
 
 
+def probe_comfy_server():
+    """Probe for a LIVE ComfyUI on the two ports it actually uses: :8000 (the desktop
+    app) and :8188 (the portable / manual launch). Returns (base_url, port) for the
+    first that answers ComfyUI's /system_stats, else (None, None). Fixes the kit_env
+    default that assumed :8188 while the desktop app serves :8000."""
+    import urllib.request
+    for port in (8000, 8188):
+        base = f"http://127.0.0.1:{port}"
+        try:
+            with urllib.request.urlopen(base + "/system_stats", timeout=1.5) as r:
+                if getattr(r, "status", 200) == 200:
+                    return base, port
+        except Exception:
+            continue
+    return None, None
+
+
 def detect_checkpoints(comfy_app):
     home = Path.home()
     cands = []
@@ -96,8 +113,13 @@ def build():
         found.append("platform win32 -> Word COM print tier assumed (run doctor.py to confirm Word is installed)")
     else:
         env["word"]["backend"] = "none"
-        gaps.append(f"platform {sys.platform}: no Word COM -> Tier 2 only (EPUB/Kindle/digital); "
-                    "print PDFs need Windows + Word (or a future LibreOffice fallback)")
+        soff = which("soffice") or which("libreoffice")
+        if soff:
+            found.append(f"platform {sys.platform}: no Word COM, but LibreOffice present ({soff}) "
+                         "-> Tier-2 print PDFs via the docx_to_pdf soffice fallback (best-effort, not page-faithful)")
+        else:
+            gaps.append(f"platform {sys.platform}: no Word COM -> Tier 2 (EPUB/Kindle/digital). "
+                        "Install LibreOffice for best-effort print PDFs (docx_to_pdf auto-detects 'soffice').")
 
     # --- fonts (vendored, repo-relative) ---
     env["fonts_dir"] = "fonts"
@@ -110,7 +132,12 @@ def build():
     cg = env.get("cover_gen", {})
     cg["run_workflow"] = "_tools/comfy_client.py"
     cg["workflows_dir"] = "_tools/workflows"
-    cg["comfyui_server"] = cg.get("comfyui_server") or "http://127.0.0.1:8188"
+    srv, port = probe_comfy_server()
+    if srv:
+        cg["comfyui_server"] = srv
+        found.append(f"ComfyUI server: LIVE on {srv} (probed :8000 desktop / :8188 portable)")
+    else:
+        cg["comfyui_server"] = cg.get("comfyui_server") or "http://127.0.0.1:8188"
     app = detect_comfy_app()
     if app:
         cg["comfyui_app"] = app
