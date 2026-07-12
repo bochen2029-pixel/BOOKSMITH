@@ -76,6 +76,35 @@ def _iter_inflight(cwd):
             continue
 
 
+def _print_first_run():
+    """Injected on a fresh, unconfigured copy: onboard the operator."""
+    tools = Path(__file__).resolve().parent
+    bar = "=" * 74
+    out = [
+        bar,
+        "  BOOKSMITH — FIRST RUN (fresh copy: no _tools/kit_env.json yet)",
+        bar,
+        "This machine is not configured yet. Onboard the operator:",
+        "",
+        "  1. Configure this machine (one command):",
+        "       python %s" % (tools / "autoconfig.py"),
+        "     detects Node/Python/Word/ComfyUI/GPU/fonts -> writes kit_env.json;",
+        "     keyless defaults (model=harness: prose from THIS session, no API key).",
+        "  2. Preflight capabilities + tier:  python %s" % (tools / "doctor.py"),
+        "  3. Read START_HERE.md and follow it.",
+        "",
+        "To start a book: drop a gist + source docs into intake/ and say `init` --",
+        "or just say hi and walk the operator through it. Greet them, offer to run",
+        "step 1, and help them begin. Full flow: INSTALL.md / CLAUDE.md / docs/ENGINE.md.",
+        bar,
+    ]
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+    sys.stdout.write("\n".join(out) + "\n")
+
+
 def main():
     payload = _load_stdin()
     source = (payload.get("source") or payload.get("trigger") or "").lower()
@@ -85,11 +114,19 @@ def main():
     flag_exists = flag.exists()
 
     inflight = list(_iter_inflight(cwd))
-    if not inflight:
-        return 0
-
     # Only force recovery on compaction/resume, or when a precompact flag is set.
     trigger = (source in ("compact", "resume")) or flag_exists
+
+    # First-run onboarding: a fresh copy (never configured) with NO in-flight book
+    # and an ordinary startup (not a compaction/resume). Non-disruptive to recovery.
+    if not inflight and not trigger:
+        kit_env = Path(__file__).resolve().parent / "kit_env.json"
+        if not kit_env.exists() and source in ("startup", "clear", ""):
+            _print_first_run()
+        return 0
+
+    if not inflight:
+        return 0
     if not trigger:
         return 0
 
