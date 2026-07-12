@@ -123,6 +123,11 @@ def check_kit_env_parity():
     if not tmpl.exists():
         add("kit_env_parity", WARN, "kit_env.template.json missing")
         return
+    if not live.exists():
+        add("kit_env_parity", PASS,
+            "kit_env.json not created yet; copy kit_env.template.json to kit_env.json "
+            "and edit for your machine (key parity is enforced once it exists)")
+        return
     try:
         lk = _keys(json.load(open(live, encoding="utf-8"))) if live.exists() else set()
         tk = _keys(json.load(open(tmpl, encoding="utf-8")))
@@ -205,6 +210,8 @@ def check_dead_script_refs():
             continue
         for m in pat.finditer(doc.read_text(encoding="utf-8", errors="ignore")):
             script = m.group(1)
+            if script == "kit_env.json":
+                continue  # user-created from kit_env.template.json; absent in a fresh clone by design
             if not (TOOLS / script).exists():
                 missing.setdefault(script, set()).add(rel(doc))
     if missing:
