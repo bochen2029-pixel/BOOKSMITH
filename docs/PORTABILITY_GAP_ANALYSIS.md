@@ -73,6 +73,8 @@ The architecture was already portable — the kit_env seam exists and is read by
 
 ## Wave 2 — open (ordered)
 
+> **UPDATE 2026-07-12 (kit-hardening campaign; branch `kit-hardening-2026-07-12`, commit 45f27e2):** CLOSED this pass: cover_gen.py graceful no-stack failure ✅ · CLAUDE.md/README nine-format consistency ✅ · format_spec_sheet Kindle 1600×2400 (matches code) ✅ · `.gitattributes` ✅ · PyPDF2→pypdf migration ✅ · book_config.example.json author neutralized ✅ · examples/ pointer fixed ✅ · FONTS.md count ✅. ALSO shipped: NEW `_tools/selfcheck.py` (the kit self-consistency meta-gate, wired into SUPERSTRUCTURE §6 + CLAUDE.md §10); a single-source-of-truth KDP wrap-math dedup (verify_build + composite_cover both delegate to preset_lookup). STILL OPEN below: small-context profile; Tier-2 LibreOffice print fallback; config-driven ornament/code/math fonts; generator `--help` polish.
+
 | # | Item | Notes |
 |---|---|---|
 | ⬜ | **CLAUDE.md generalization pass** | Organ invocations → "optional accelerators + portable fallbacks" (§1.5 boot, §3 init/ingest, tool-invocation table); five→nine formats (§0, produce-format list, §12); "Bo" → "the author" in operational text (grammar intro, pauses, escalations) while keeping `[BO-WRITES]` as the literal marker token (document it as "the author-writes marker") or make it configurable via `voice`; "64-rule constitution" → unfrozen phrasing; add a **MAINTAIN mode** to §1 mode detection (kit-polish sessions — currently verbal-override only); point boot at `doctor.py`/`INSTALL.md` on fresh machines; vision default text → auto |

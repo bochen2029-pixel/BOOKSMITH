@@ -169,7 +169,7 @@
   const finalBuffer = await zip.generateAsync({ type:"nodebuffer", compression:"DEFLATE" });
   ```
   Pipeline order: `node generate_book_kdp.js && node _tools/inject_mirror_margins.js OUT.docx && python _tools/docx_to_pdf.py OUT.docx OUT.pdf`.
-- Verify (mechanical): unzip and grep — `'<w:mirrorMargins' in settings.xml` must be True; AND confirm per-section `<w:pgMar>` emits the wider gutter on the correct side (e.g. `left=1260 right=720`) — the flag alone is insufficient if `pgMar` hard-codes `left=900 right=720` and overrides mirror logic. Rendered check: pypdfium2 dark-column scan at 1.5× → verso `left=54px,right=67px`, recto `left=67px,right=54px` (the 13px delta = the 0.125" gutter-vs-outside difference).
+- Verify (mechanical): unzip and grep — `'<w:mirrorMargins' in settings.xml` must be True; AND confirm per-section `<w:pgMar>` emits the wider gutter on the correct side (e.g. `left=1260 right=720`) — the flag alone is insufficient if `pgMar` hard-codes `left=900 right=720` and overrides mirror logic. Automated verifier: `check_gutter_side()` in `_tools/verify_build.py` reads each section's `<w:pgMar>` from `document.xml` and asserts in dxa/twips that the inside margin (`w:left`) is >= the outside margin (`w:right`) and >= the configured gutter floor (`interior.gutter_in`, default 0.75in = 1080 dxa). A rendered pixel scan (e.g. a verso/recto dark-column delta) is an optional manual spot-check only, not an implemented step.
 
 ### 3.5 Every header/footer-free section needs EXPLICIT EMPTY Header/Footer objects
 - Rule: Attach explicit empty `Header` AND `Footer` objects (`emptyHeadersFooters()`) to EVERY header/footer-free section — front matter, TOC, preface/reader's-note, and the trailing EVEN_PAGE blank. Sections immediately after a body section are highest-risk (Word inherits forward).
@@ -223,7 +223,7 @@
 - Rule: KDP paperback (DXA): top **720** (0.5"), bottom **900** (0.625"), gutter/left **1080** (0.75"), outside/right **720** (0.5"), `header 0, footer 360, gutter 0, mirror true`.
 - Why / symptom if violated: **Gutter is 0.75" (1080), NOT the 0.625" minimum**, to absorb two invisible overshoot sources into an exact gutter: justified-line trailing-space bbox extends ~2.7pt past the last glyph, and italic letters (esp. `f`, swashes) render ~2pt left of origin (side-bearing). At 0.625" exact these still trip "insufficient gutter." Bumping to 0.75" grows the text block to 4.75" and page count ~5% → recompute spine after regen.
 - Exact params/code: The 0.5/0.625 pair confirmed across Night Was Young, City, Second Notebook. KDP minimums are 0.5" gutter / 0.25" others; these exceed for aesthetics + overshoot safety.
-- Verify: pypdfium2 `textpage.get_charbox()` scan confirms no glyph box crosses the gutter edge.
+- Verify (mechanical): `check_gutter_side()` in `_tools/verify_build.py` asserts in dxa that the inside margin clears the gutter floor. (A pypdfium2 `textpage.get_charbox()` pixel scan confirming no glyph box crosses the gutter edge is an optional MANUAL spot-check, not an implemented step — pypdfium2 is not a kit dependency.)
 
 ### 4.2 Mixam interior margins (looser, hardcover comfort)
 - Rule: Mixam interior (DXA): top **900** (0.625"), bottom **1080** (0.75"), gutter **1260** (0.875"), outside **900** (0.625"); body **12pt Georgia**, line 340 (~1.4×). Do NOT mix with the KDP set.
@@ -474,7 +474,7 @@
 - Verify: PDF opens with intact TOC hyperlinks + correct pagination; `ComputeStatistics(2)` returns the page count that feeds spine math.
 
 ### 10.2 Verify by SEEING without burning context
-- Rule: Prefer mechanical checks that don't spend image tokens: XML zipfile inspection (mirror flags in `settings.xml`, empty headers in `header*.xml`), pypdfium2 dark-column / charbox scans (gutter overshoot), Word-COM `ComputeStatistics(2)` (page count), and the KDP Print Previewer (external validator). Use vision only for the perceptual cover/interior proofread.
+- Rule: Prefer mechanical checks that don't spend image tokens: XML zipfile inspection (mirror flags in `settings.xml`, empty headers in `header*.xml`), the `check_gutter_side()` dxa/twips margin comparison in `verify_build.py` (gutter on the inside and adequate), Word-COM `ComputeStatistics(2)` (page count), and the KDP Print Previewer (external validator). Use vision only for the perceptual cover/interior proofread.
 - Why / symptom if violated: A prior session DIED because too many inline screenshot tool-calls filled the context window.
 - Exact params/code: Image discipline — user/kit drops files in an `image_input/` dir; Read from DISK path; write outputs to a subdir; NO image bytes go back into chat. Render suspect print pages to PNG (`_overflow_p*.png`, `_check_p*.png`, `_back_with_isbn_zone.png`) and vision-inspect for text overflow / bleed / ISBN-zone.
 - Verify: Each format run prints its computed dims banner (target vs actual inches) before upload; KDP Previewer is the gate ("if it passes the previewer, it passes review").
