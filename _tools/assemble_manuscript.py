@@ -40,9 +40,16 @@ Per-unit file resolution under manuscript/current/:
 Usage:
   python assemble_manuscript.py --config book_config.json [--workspace <dir>]
                                 [--version N]   # force a specific version number
+                                [--overwrite]   # permit replacing an existing vN
+                                                # (required if --version N already
+                                                #  exists; append-only otherwise)
 
 Prints a JSON summary on stdout including the total word count (the baseline):
-  {"master":..., "version":N, "words":W, "units":[{"id":...,"words":w}], ...}
+  {"master":..., "version":N, "words":W, "parts_word_sum":S, "parity_ok":bool,
+   "units":[{"id":...,"words":w}], ...}
+and, on its own final stdout line, `TOTAL_WORDS=W` (the parity baseline a stdout
+parser can read). parts_word_sum is an INDEPENDENT re-read of each source file
+from disk, so parity_ok is a real cross-check, not a tautology.
 """
 import sys
 import os
@@ -139,7 +146,7 @@ def next_version(markdown_dir, slug, forced=None):
     return highest + 1
 
 
-def assemble(config_path, workspace_arg, forced_version):
+def assemble(config_path, workspace_arg, forced_version, overwrite=False):
     cfg = load_json(config_path)
     slug = cfg["slug"]
     ws = resolve_workspace(cfg, workspace_arg)
@@ -153,6 +160,10 @@ def assemble(config_path, workspace_arg, forced_version):
 
     pieces = []
     notes = []
+    # Disk paths of every source piece, in stitch order; re-read at parity time
+    # for an INDEPENDENT word count (not the same in-memory pieces the master was
+    # built from), so parity is a real cross-check rather than a tautology.
+    source_paths = []
 
     # --- Front matter (ordered, ceremonial; missing files skipped with a note) ---
     front_report = []
@@ -170,6 +181,7 @@ def assemble(config_path, workspace_arg, forced_version):
             continue
         text = read_text(fpath).rstrip()
         pieces.append(text)
+        source_paths.append(fpath)
         front_report.append({"type": fm_type, "file": os.path.basename(fpath),
                              "words": word_count(text)})
 
@@ -184,6 +196,7 @@ def assemble(config_path, workspace_arg, forced_version):
             continue
         text = read_text(fpath).rstrip()
         pieces.append(text)
+        source_paths.append(fpath)
         unit_report.append({"id": unit_id, "file": os.path.basename(fpath),
                             "words": word_count(text)})
 
@@ -204,13 +217,23 @@ def assemble(config_path, workspace_arg, forced_version):
         # Defensive: append-only means we never clobber. Bump past any race.
         version = next_version(markdown_dir, slug, None)
         master_path = os.path.join(markdown_dir, f"{slug}_v{version}.md")
+    elif forced_version is not None and os.path.exists(master_path) and not overwrite:
+        # A forced --version must NOT silently clobber a pinned master (the
+        # docstring promises append-only). Require an explicit --overwrite.
+        raise SystemExit(
+            f"refusing to overwrite {master_path} without --overwrite "
+            f"(the master is append-only; pass --overwrite to replace v{version}).")
 
     with open(master_path, "w", encoding="utf-8") as f:
         f.write(master_text)
 
-    # Parity integrity: sum of unit word counts vs stitched master (§1.3).
-    parts_sum = sum(u["words"] for u in unit_report) + \
-        sum(fr["words"] for fr in front_report)
+    # Parity integrity (§1.3): an INDEPENDENT re-read of each source file from
+    # disk, summed. This is a genuine cross-check: a whitespace .join can never
+    # merge/split tokens, so summing the SAME in-memory pieces would always equal
+    # total_words (a tautology). Re-reading catches a source that changed on disk
+    # mid-run, or a piece that was dropped/duplicated between stitch and report.
+    parts_sum = sum(word_count(read_text(p).rstrip()) for p in source_paths)
+    parity_ok = parts_sum == total_words
 
     summary = {
         "master": master_path,
@@ -220,12 +243,19 @@ def assemble(config_path, workspace_arg, forced_version):
         "units": unit_report,
         "unit_count": len(unit_report),
         "parts_word_sum": parts_sum,
+        "parity_ok": parity_ok,
         "notes": notes,
     }
     print(json.dumps(summary, indent=2))
-    # Also print the bare word count on its own line — the parity baseline that
-    # every format is checked against (mirrors `wc -w` in the ledger).
-    print(f"TOTAL_WORDS={total_words}", file=sys.stderr)
+    if not parity_ok:
+        print(f"[WARN] parity mismatch: re-read source sum {parts_sum} != "
+              f"stitched master {total_words} (a source file changed on disk "
+              f"during assembly, or a piece was dropped/duplicated).",
+              file=sys.stderr)
+    # Also print the bare word count on its own line: the parity baseline that
+    # every format is checked against (mirrors `wc -w` in the ledger). On STDOUT
+    # per the module docstring's promise, so a stdout parser can read it.
+    print(f"TOTAL_WORDS={total_words}")
     return summary
 
 
@@ -234,6 +264,7 @@ def main() -> int:
     config_path = None
     workspace_arg = None
     forced_version = None
+    overwrite = False
     i = 0
     while i < len(args):
         a = args[i]
@@ -243,14 +274,16 @@ def main() -> int:
             workspace_arg = args[i + 1]; i += 2; continue
         if a == "--version":
             forced_version = int(args[i + 1]); i += 2; continue
+        if a == "--overwrite":
+            overwrite = True; i += 1; continue
         i += 1
 
     if not config_path:
         print("Usage: python assemble_manuscript.py --config book_config.json "
-              "[--workspace <dir>] [--version N]", file=sys.stderr)
+              "[--workspace <dir>] [--version N] [--overwrite]", file=sys.stderr)
         return 2
 
-    assemble(config_path, workspace_arg, forced_version)
+    assemble(config_path, workspace_arg, forced_version, overwrite)
     return 0
 
 

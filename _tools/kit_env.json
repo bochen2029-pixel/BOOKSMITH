@@ -6,8 +6,11 @@
     "note": "docx->PDF via win32com Dispatch('Word.Application'), SaveAs FileFormat=17. Requires installed Microsoft Word. No cross-platform fallback wired."
   },
 
-  "node": { "bin": "node", "packages": ["docx@9.6.1", "jszip@3.10.1"] },
-  "python": { "bin": "python", "packages": ["pywin32", "Pillow", "PyMuPDF", "PyPDF2", "python-docx", "numpy", "pypdfium2", "requests", "jsonschema"] },
+  "node": { "bin": "node", "packages": ["docx@9.6.1", "jszip@3.10.1"],
+            "note": "REQUIRED (interior DOCX generators). Any Node >= 14. Dependencies ship vendored in _tools/node_modules; if that folder is absent run: npm install --prefix _tools" },
+  "python": { "bin": "python",
+              "packages": ["Pillow", "PyMuPDF", "PyPDF2", "pywin32", "requests", "tiktoken", "jsonschema"],
+              "note": "Canonical audited list: requirements.txt at the repo root. pywin32 = Windows-only (Word COM, Tier-1 print). requests / tiktoken / jsonschema are optional (KEEL vision / token counts / GATE-2 config validation)." },
 
   "fonts_dir": "fonts",
 

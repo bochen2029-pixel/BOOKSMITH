@@ -1,0 +1,13 @@
+# BOOKSMITH Python dependencies — the canonical, audited list (2026-07-11).
+# Install:   pip install -r requirements.txt
+# (Node deps are separate and vendored: see _tools/package.json / _tools/node_modules.)
+
+Pillow>=10.0            # cover compositing, digital PDF, image resize guard
+PyMuPDF>=1.23           # exact-MediaBox cover PDFs, blank-strip, page counts
+pypdf>=4.0              # digital PDF assembly (replaces EOL PyPDF2; build_digital_pdf prefers pypdf, falls back to PyPDF2 only if still installed)
+pywin32>=306; sys_platform == "win32"   # Word COM: print-faithful PDFs + recto parity (Tier 1, Windows-only)
+
+# --- optional (each unlocks one capability; everything degrades gracefully without them) ---
+requests>=2.31          # local KEEL vision backend only (--backend keel); Claude vision needs nothing
+tiktoken>=0.5           # exact token counts in rehydrate.py (falls back to chars/4)
+jsonschema>=4.0         # book_config.json validation at GATE-2

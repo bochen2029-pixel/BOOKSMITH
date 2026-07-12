@@ -8,12 +8,15 @@ This README is for a human. If you are the harness (Claude Code), your operating
 
 ## What you get
 
-From one intake drop, BOOKSMITH produces five upload-ready deliverables plus a cover:
+From one intake drop, BOOKSMITH produces nine upload-ready deliverables plus a cover:
 
 - **Kindle** — reflowable DOCX for direct KDP upload + a 1600×2560 front-cover JPG.
+- **EPUB 3** — standards-valid (with EPUB 2 compat) for Apple Books / Kobo / Google Play / Nook / Draft2Digital — and KDP's now-preferred reflowable upload.
 - **KDP paperback** — interior DOCX + page-faithful PDF + a single `[back│spine│front]` cover wrap.
 - **KDP hardcover** — the same interior + a hardcover wrap (case-board turn-in, board-added spine).
+- **Mixam paperback** — ÷4-padded interior + a 0.125"-bleed wrap at Mixam geometry.
 - **Mixam hardcover** — `inner_*.pdf` interior + three separate cover PDFs (`front_cover.pdf`, `back_cover.pdf`, `spine.pdf`).
+- **Blurb trade paperback** and **Blurb ImageWrap hardcover** — interiors + wraps on Blurb's 6.125×9.25 page model (calculator-probed spine tables).
 - **Digital PDF** — covers + a blank-stripped interior, for email/Drive (not for upload).
 
 Each is checked against the production gates before the folder is surfaced — the mirror-margin flags, the empty-header fix, recto parity, spine math, cover legibility, ISBN keep-out, Kindle/print word-count parity.
@@ -33,7 +36,7 @@ You do not need to organize the folder or name files a particular way. The harne
 
 ### 2. Boot the harness
 
-Open Claude Code in `C:\BOOKSMITH\` and say, in plain language, what you want. The harness matches intent, not syntax:
+Open Claude Code in the BOOKSMITH folder and say, in plain language, what you want. (First time on this machine? Read `INSTALL.md` and run `python _tools/doctor.py` first.) The harness matches intent, not syntax:
 
 - `init` — ingest and orient on the intake drop.
 - `generate seed` — architect the book (Book Bible, contracts, registries, voice exemplars, config).
@@ -63,36 +66,40 @@ Every hard-won production fix — the mirror-margin XML injection, the empty-hea
 
 ---
 
-## Requirements (a hard platform dependency)
+## Requirements (see `INSTALL.md` for the walkthrough; `python _tools/doctor.py` checks your machine)
 
-- **Windows 11 + Microsoft Word installed.** Word COM is the only reliable DOCX→PDF path; Pandoc, LibreOffice-headless, and cloud converters all break fonts, TOC hyperlinks, or pagination. This is not portable to Mac/Linux without a substitute renderer.
-- **Node 18+** with `docx@9.6.1` + `jszip@3.10.1` (interior generation).
-- **Python 3.10+** with `pywin32`, `Pillow`, `PyMuPDF`, `PyPDF2`, `python-docx`, `numpy`, `pypdfium2`, `requests`, `jsonschema`.
-- **GPU for cover art** — RTX-class, ~16 GB VRAM. Default cover checkpoint is SDXL base (~6.5 GB); Flux-dev-fp8 (~12 GB) is opt-in. The checkpoint is fetched once before the first cover generation (`ComfyUI/models/checkpoints/` ships empty).
-- **Optional local vision** — a KEEL Qwen `llama-server` for on-box, $0/token cover verification. Claude vision is the alternate backend.
+- **Python 3.10+** — `pip install -r requirements.txt` (the canonical dep list).
+- **Node 18+** (any ≥14 works) — `docx` + `jszip` ship vendored in `_tools/node_modules`.
+- **Tier 1 (full print pipeline): Windows + Microsoft Word.** Word COM is the only page-faithful DOCX→PDF path; Pandoc/LibreOffice/cloud converters break fonts, TOC hyperlinks, or pagination. **Without Word (Tier 2)** you still get EPUB, Kindle DOCX, cover compositing, and verification — print PDFs then need a Windows+Word box.
+- **Optional — GPU for cover art**: RTX-class, ≥8 GB VRAM for SDXL base (~6.5 GB checkpoint, self-downloaded via `python _tools/fetch_weights.py sdxl`). No GPU? Put your own art in the book's `cover_art/` — typography compositing and verification run everywhere.
+- **Optional — local vision**: a llama.cpp multimodal server for on-box, $0/token cover verification. The default (`--backend auto`) uses the harness's own vision — zero setup.
 
-All machine paths live in `_tools/kit_env.json` — the one file you edit when moving the kit to another box.
+All machine paths live in `_tools/kit_env.json` (copy `kit_env.template.json` and fill for your box) — the one file that changes when the kit moves machines.
 
 ---
 
 ## Layout
 
 ```
-C:\BOOKSMITH\
+BOOKSMITH\
 ├── CLAUDE.md              the orchestrator (the harness's operating contract)
 ├── README.md              this file
+├── INSTALL.md             stranger onboarding: prerequisites, setup, first run
+├── START_HERE.md          the first-session initialization prompt (paste into Claude Code)
 ├── KIT_ARCHITECTURE.md    the invariant design spec
+├── requirements.txt       Python deps (pip install -r requirements.txt)
 ├── docs/
 │   ├── LESSONS_LEDGER.md      the enforceable production-rules ledger
 │   ├── vibe_writing_method.md the seed/contract/registry/handoff writing discipline
-│   ├── format_spec_sheet.md   the 5-format exact-numbers cheat sheet
-│   └── cover_pipeline.md      art-gen prompt rules + composite + perceptual verify
-├── _tools/                the portable toolchain + book_config schema/example + kit_env
-├── fonts/                 vendored cover TTFs (Cormorant Garamond Light + Bold)
+│   ├── format_spec_sheet.md   the exact-numbers cheat sheet (all formats)
+│   ├── cover_pipeline.md      art-gen prompt rules + composite + perceptual verify
+│   ├── COMPACTION_SURVIVAL.md session-survival: jsonl→md rehydration + hooks
+│   └── VALIDATION.md          the loop-test proof record
+├── _tools/                the portable toolchain + schemas + kit_env.template.json
+├── fonts/                 vendored OFL TTFs + per-family licenses (fonts/LICENSES/)
 ├── templates/             blank scaffolds the seed builder fills per book
 ├── intake/                DROP ZONE — your gist + source docs go here
-├── examples/              one or two filled reference books
-└── book_workspace/<slug>/ created per book; holds seed, manuscript, outputs
+└── book_workspace/<slug>/ created per book; testvoyage/ is the shipped example
 ```
 
 ## Per book

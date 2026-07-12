@@ -9,6 +9,7 @@
   "trim": { "w": 6, "h": 9 },
   "paper": "cream",
   "finish": "matte",
+  "min_pages": 1,
   "interior": {
     "body_font": "Georgia",
     "body_pt": 12,
@@ -81,6 +82,7 @@
     "exemplars_path": "exemplars/",
     "blacklist": ["delve", "tapestry", "crucial"],
     "greenlist": ["The night was young."],
-    "sacred_terms": []
+    "sacred_terms": [],
+    "no_em_dashes": false
   }
 }

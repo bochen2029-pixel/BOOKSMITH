@@ -38,8 +38,9 @@ I/O contract (batch):
     --out-dir cover_art/ [--config ...] [--kit-env ...]
   -> {"status":"success","pngs":[...], "count":N}
 
-SOURCE: hermes skill C:\Users\user\AppData\Local\hermes\hermes-agent\skills\creative\comfyui\
-        (run_workflow.py, run_batch.py, workflows\sdxl_txt2img.json, flux_dev_txt2img.json).
+SOURCE: a hermes-style ComfyUI runner skill (run_workflow.py, run_batch.py,
+        workflows\sdxl_txt2img.json, flux_dev_txt2img.json) — every path is
+        resolved via kit_env.cover_gen (historical provenance, not a runtime path).
 """
 
 from __future__ import annotations
@@ -58,16 +59,32 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# The default negative prompt mandated by the kit — always includes the
-# text-suppression tokens so no lettering is baked into the art.
+# COMMERCIAL-USE PROVENANCE: the shipped default checkpoint resolves to
+# SDXL-base 1.0 (sd_xl_base_1.0.safetensors), released under the permissive
+# CreativeML Open RAIL++-M license — generated art may be sold (e.g. KDP covers).
+# Do NOT default this to FLUX.1-dev: its weights are NON-commercial. See
+# docs/cover_pipeline.md for the full provenance/license note (fonts + art).
 DEFAULT_NEGATIVE = "text, watermark, letters, title, signature, frame, border"
 
 # Prompt-safety: tokens that signal the caller is asking the model to render
 # words. These are rejected so a title/author string never gets painted in.
+# NOTE: bare 'title'/'subtitle'/'author'/'text'/'word(s)' were removed — they
+# collide with compositional idioms the kit's own shipped seeds use ("room for
+# the title", "negative space for a title", "no text"). The remaining tokens are
+# unambiguous requests to paint lettering. The config-driven check below (the
+# book's literal title/author strings) stays as the real anti-baking guard.
 TEXT_SIGNAL_TOKENS = (
-    "title", "subtitle", "author", "byline", "text ", " text", "lettering",
-    "typography", "caption", "word ", " words", "writing", "inscription",
+    "byline", "lettering", "typography", "caption", "writing", "inscription",
     "signage", "book cover text", "cover text", "logo text", "nameplate",
+)
+
+# Negated / compositional phrases that must NOT trip the guard even though they
+# contain a signal substring. Negated spans are stripped before scanning; the
+# whitelist phrases suppress a flag on the surviving word 'title'.
+_NEGATED_TEXT_SPANS = ("no text", "without text", "no lettering", "no title")
+_TITLE_COMPOSITION_PHRASES = (
+    "for a title", "for title placement", "title placement",
+    "room for the title", "for the title", "quiet for title",
 )
 
 
@@ -98,14 +115,23 @@ def check_prompt_no_text(prompt: str, config: dict | None) -> list[str]:
     violations: list[str] = []
     low = prompt.lower()
 
+    # Strip negated spans so "no text" / "no title" cannot trip the guard.
+    for span in _NEGATED_TEXT_SPANS:
+        low = low.replace(span, "")
+
     for tok in TEXT_SIGNAL_TOKENS:
         if tok in low:
             violations.append(f"prompt contains text-signal token {tok.strip()!r}")
 
     if config:
+        # If the prompt uses a compositional "…for the title" idiom, don't let a
+        # book whose literal title happens to be that idiom's word false-fire.
+        composition_ok = any(ph in low for ph in _TITLE_COMPOSITION_PHRASES)
         for key in ("title", "subtitle", "author"):
             val = (config.get(key) or "").strip()
             if val and len(val) >= 3 and val.lower() in low:
+                if key == "title" and composition_ok and val.lower() in " ".join(_TITLE_COMPOSITION_PHRASES):
+                    continue
                 violations.append(f"prompt contains the book {key} {val!r} (would bake it as text)")
 
     return violations
@@ -330,16 +356,27 @@ def _resolve_cover_gen_paths(env: dict) -> dict:
     workflows_dir = cg.get("workflows_dir")
     if not run_workflow or not workflows_dir:
         raise KeyError("kit_env.cover_gen must define run_workflow + workflows_dir")
-    run_workflow_p = Path(run_workflow)
+
+    # Anchor non-absolute kit_env paths under the kit root (not the CWD), so a
+    # relative workflows_dir/run_workflow (e.g. the vendored '_tools/…' defaults)
+    # resolves the same from any working directory. Mirrors composite_cover.py's
+    # FONTS_DIR anchoring. SCRIPT_DIR is _tools/; the kit root is its parent.
+    def _anchor(p):
+        if not p:
+            return None
+        pp = Path(p)
+        return pp if pp.is_absolute() else (SCRIPT_DIR.parent / pp)
+
+    run_workflow_p = _anchor(run_workflow)
     # run_batch.py sits next to run_workflow.py in the skill's scripts/ dir.
     run_batch_p = run_workflow_p.parent / "run_batch.py"
     return {
         "run_workflow": run_workflow_p,
         "run_batch": run_batch_p,
-        "workflows_dir": Path(workflows_dir),
+        "workflows_dir": _anchor(workflows_dir),
         "server": cg.get("comfyui_server", "http://127.0.0.1:8188"),
         "comfyui_app": cg.get("comfyui_app"),
-        "checkpoints_dir": cg.get("checkpoints_dir"),
+        "checkpoints_dir": _anchor(cg.get("checkpoints_dir")),
         "default_checkpoint": cg.get("default_checkpoint", "sd_xl_base_1.0.safetensors"),
     }
 
@@ -374,12 +411,46 @@ def _require_prompt(args) -> bool:
     return True
 
 
+def _cover_gen_env_error(e: KeyError) -> int:
+    """Structured status-error for a misconfigured kit_env.cover_gen (task 11)."""
+    print(json.dumps({
+        "status": "error",
+        "error": str(e),
+        "hint": "Fill kit_env.cover_gen.run_workflow + workflows_dir (the vendored "
+                "defaults point at _tools/comfy_client.py + _tools/workflows), or "
+                "skip AI art generation and place your own cover art in the book's "
+                "cover_art/ folder — composite_cover.py and vision_verify.py still work.",
+    }, indent=2))
+    return 1
+
+
+def _apply_art_defaults(args, config: dict | None) -> None:
+    """Default any unset CLI knob from book_config.cover.art (task 10), so
+    prompt_seed/negative_prompt/steps/seed in the config drive generation when
+    the corresponding CLI flag is omitted (single source of knobs)."""
+    art = ((config or {}).get("cover") or {}).get("art") or {}
+    if not art:
+        return
+    if not args.prompt and art.get("prompt_seed"):
+        args.prompt = art["prompt_seed"]
+    if args.negative == DEFAULT_NEGATIVE and art.get("negative_prompt"):
+        args.negative = art["negative_prompt"]
+    if getattr(args, "steps", None) == 30 and "steps" in art:
+        args.steps = art["steps"]
+    if getattr(args, "seed", None) == -1 and "seed" in art:
+        args.seed = art["seed"]
+
+
 def do_single(args) -> int:
+    env = load_kit_env(args.kit_env)
+    config = load_json(Path(args.config)) if args.config else None
+    _apply_art_defaults(args, config)
     if not _require_prompt(args):
         return 2
-    env = load_kit_env(args.kit_env)
-    paths = _resolve_cover_gen_paths(env)
-    config = load_json(Path(args.config)) if args.config else None
+    try:
+        paths = _resolve_cover_gen_paths(env)
+    except KeyError as e:
+        return _cover_gen_env_error(e)
 
     # ---- prompt safety ----
     violations = check_prompt_no_text(args.prompt, config)
@@ -408,9 +479,12 @@ def do_single(args) -> int:
         if not launch_server(paths["server"]):
             print(json.dumps({
                 "status": "error",
-                "error": f"ComfyUI server not reachable at {paths['server']} and could not launch it",
-                "hint": "Ensure comfy-cli is installed (`comfy launch --background`) and a checkpoint "
-                        f"is present in {paths['checkpoints_dir']}.",
+                "error": f"ComfyUI server not reachable at {paths['server']} and could not "
+                         "auto-launch it (comfy-cli not on PATH). Start ComfyUI so it serves "
+                         f"{paths['server']}, or install comfy-cli, or pass --no-launch once it "
+                         "is running. Note: the vendored comfy_client.py is a CLIENT only and "
+                         "cannot start a server.",
+                "hint": f"A checkpoint must be present in {paths['checkpoints_dir']}.",
             }, indent=2))
             return 1
     elif not server_up(paths["server"]):
@@ -467,11 +541,15 @@ def do_single(args) -> int:
 
 
 def do_batch(args) -> int:
+    env = load_kit_env(args.kit_env)
+    config = load_json(Path(args.config)) if args.config else None
+    _apply_art_defaults(args, config)
     if not _require_prompt(args):
         return 2
-    env = load_kit_env(args.kit_env)
-    paths = _resolve_cover_gen_paths(env)
-    config = load_json(Path(args.config)) if args.config else None
+    try:
+        paths = _resolve_cover_gen_paths(env)
+    except KeyError as e:
+        return _cover_gen_env_error(e)
 
     violations = check_prompt_no_text(args.prompt, config)
     if violations:
@@ -497,7 +575,11 @@ def do_batch(args) -> int:
         if not launch_server(paths["server"]):
             print(json.dumps({
                 "status": "error",
-                "error": f"ComfyUI server not reachable at {paths['server']} and could not launch it",
+                "error": f"ComfyUI server not reachable at {paths['server']} and could not "
+                         "auto-launch it (comfy-cli not on PATH). Start ComfyUI so it serves "
+                         f"{paths['server']}, or install comfy-cli, or pass --no-launch once it "
+                         "is running. Note: the vendored comfy_client.py is a CLIENT only and "
+                         "cannot start a server.",
             }, indent=2))
             return 1
     elif not server_up(paths["server"]):

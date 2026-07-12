@@ -6,9 +6,9 @@
 
 **This file is the invariant.** It governs structural design. `CLAUDE.md` (the orchestrator) governs session behavior and must be revised to match this file if they conflict — never the reverse. A per-book `seed.md` is an *instantiation*; this spec is the *machine*.
 
-**Target runtime.** Windows 11 + Microsoft Word installed (Word COM is the only reliable docx→PDF path — a hard platform dependency). GPU: RTX 4070 Ti SUPER, 16 GB VRAM. The **default cover checkpoint is SDXL base** (~6.5 GB, fits comfortably); Flux-dev-fp8 (~12 GB) is opt-in when VRAM is free. Node 18+ with `docx@9.6.1` + `jszip@3.10.1`; Python 3.10+ with `pywin32`, `Pillow`, `PyMuPDF (fitz)`, `PyPDF2`, `python-docx`, `numpy`, `pypdfium2`.
+**Target runtime.** Tier 1 (full print pipeline): Windows + Microsoft Word installed (Word COM is the only page-faithful docx→PDF path). Tier 2 (no Word / other OS): EPUB, Kindle DOCX, cover compositing + verification. GPU (optional, cover art only): ≥8 GB VRAM. The **default cover checkpoint is SDXL base** (~6.5 GB); Flux-dev-fp8 (~12 GB) is opt-in when VRAM allows. Node 18+ with `docx@9.6.1` + `jszip@3.10.1`; Python 3.10+ with `pywin32`, `Pillow`, `PyMuPDF (fitz)`, `PyPDF2` (plus optional `requests`, `tiktoken`, `jsonschema`).
 
-**Machine environment (`_tools/kit_env.json`).** Absolute machine paths are NOT hard-coded in scripts; they live in `_tools/kit_env.json` (machine-level, separate from the per-book `book_config.json`). Every tool that needs an external resource reads it: `word` (COM), `comfyui_skill` (the hermes `creative/comfyui` runner), `comfyui_server` (host:port), `checkpoints_dir`, `fetcher`, `imguard`, `chunker`, and the KEEL vision backend (`llama_server`, `qwen_model`, `mmproj`, `vision_port`, `start_cmd`). This machine's known-good values ship as `kit_env.json`; moving the kit to another box means editing this one file, not grepping scripts. This is the portability seam.
+**Machine environment (`_tools/kit_env.json`).** Absolute machine paths are NOT hard-coded in scripts; they live in `_tools/kit_env.json` (machine-level, separate from the per-book `book_config.json`). Every tool that needs an external resource reads it: `word` (COM), `cover_gen` (a ComfyUI runner — the vendored `_tools/comfy_client.py` by default — plus `comfyui_server`, `checkpoints_dir`, checkpoint URL), the optional local `vision` backend (`llama_server`, `qwen_model`, `mmproj`, host/port, `start_cmd`), `fonts_dir`, and the optional `organs` accelerators. A template ships as `kit_env.template.json` (copy → `kit_env.json`, fill for the machine); moving the kit to another box means editing this one file, not grepping scripts. This is the portability seam.
 
 ---
 
@@ -20,8 +20,12 @@ The kit runs as a linear pipeline of eight stages. **Every stage ends in a gate.
 INTAKE            gist + docs folder land in intake/
    │  GATE-0  intake manifest exists; every file classified; duplicates flagged
    ▼
-INGEST / ORIENT   discover → size → chunk large inputs → reconcile duplicate canon versions
+INGEST / ORIENT   discover → size → reconcile duplicate canon versions → CORE-FIRST GESTALT
+                  (main loop reads the core in full + skims every satellite) → relational
+                  digest fan-out → integration mode declared (asked when core+satellites)
    │  GATE-1  every relevant doc is in context or chunked; a reconciled canon set is named;
+   │          the core was read by the MAIN loop (satellites skimmed) BEFORE any digest
+   │          fan-out; digests are relational; integration_mode declared;
    │          no blind-read of any file >8K tokens
    ▼
 BUILD SEED        emit seed.md (Book Bible) + contracts/ + registry/ + exemplars/ from intake
@@ -35,9 +39,10 @@ DRAFT MANUSCRIPT  chapter/part loop: load Context Pack → draft → self-assess
    ▼
 SEAM / INTEGRATION cross-unit: check seams, audit threads/dependencies/canon/voice/refrain
    │  GATE-4  no orphan seeds/payoffs; refrain at exact placements; registries in sync
-   │          with contracts; reads as one continuous authorial act
+   │          with contracts; reads as one continuous authorial act; synthesis mode:
+   │          no unit maps ~1:1 onto a single source (the anthology signature)
    ▼
-PRODUCE FORMATS   one interior authored once → per-format transforms → 5 upload-ready artifacts
+PRODUCE FORMATS   one interior authored once → per-format transforms → 9 upload-ready artifacts
    │  GATE-5  MECHANICAL (verify_build.py): mirror flags present in settings.xml; every
    │          header-free section empty; recto parity holds (check_part_pages.py); page
    │          count ÷2 (KDP) / ÷4 (Mixam); spine math matches re-derived PAGES; lint clean;
@@ -65,15 +70,17 @@ EMIT FINISHED FOLDER   outputs/ populated; per-format upload checklist + dimensi
 ### Kit-level (ships in the repo, book-agnostic)
 
 ```
-C:\BOOKSMITH\
+BOOKSMITH\                    (the kit folder — location-independent)
 ├── CLAUDE.md                 Orchestrator: boot sequence + command grammar + autonomy + gates
 ├── README.md                 Human-facing: what it is, how to drop intake, how to run
 ├── KIT_ARCHITECTURE.md       THIS FILE — the invariant design spec
 ├── docs/                     Methodology + the crown-jewel gotcha corpus
-│   ├── PRODUCTION_LESSONS_LEARNED.md   the canonical symptom→cause→fix ledger
+│   ├── LESSONS_LEDGER.md               the canonical symptom→cause→fix ledger (the constitution)
 │   ├── vibe_writing_method.md          seed/contract/registry/handoff discipline
-│   ├── format_spec_sheet.md            the 5-format exact-numbers cheat sheet
-│   └── cover_pipeline.md               art-gen prompt rules + composite + verify loop
+│   ├── format_spec_sheet.md            the exact-numbers cheat sheet (all formats + service presets)
+│   ├── cover_pipeline.md               art-gen prompt rules + composite + verify loop
+│   ├── COMPACTION_SURVIVAL.md          jsonl→md rehydration + hooks (session survival)
+│   └── VALIDATION.md                   the loop-test report (what was proven green)
 ├── _tools/                   The portable toolchain (see (c)) — ported from proven scripts
 ├── fonts/                    VENDORED TTFs, repo-relative (never C:\Claude-Titanic\fonts\)
 │   ├── CormorantGaramond-Light.ttf     house cover default (variable, wght 300–700)
@@ -89,14 +96,15 @@ C:\BOOKSMITH\
 │   ├── seed.template.md
 │   ├── contract.template.md
 │   ├── handoff.template.md
+│   ├── digest.template.md
 │   ├── threads.template.md
 │   ├── state.template.md
 │   └── WRONG.template.md
 ├── intake/                   DROP ZONE — user places gist + source docs here, then steps away
-└── examples/                 One or two filled reference books (config + a few contracts)
+└── book_workspace/testvoyage/  ships as the filled reference book (config + contracts + all outputs)
 ```
 
-**Portability rules baked into the taxonomy:** fonts are vendored repo-relative and every compositor references `fonts/` via a path computed from the script location — the cross-repo `C:\Claude-Titanic\fonts\` dependency that bit every prior book is designed out. The gotcha corpus (`docs/PRODUCTION_LESSONS_LEARNED.md`) ships *with* the kit so the first upload passes rather than being rediscovered per book.
+**Portability rules baked into the taxonomy:** fonts are vendored repo-relative and every compositor references `fonts/` via a path computed from the script location — the cross-repo `C:\Claude-Titanic\fonts\` dependency that bit every prior book is designed out. The gotcha corpus (`docs/LESSONS_LEDGER.md`) ships *with* the kit so the first upload passes rather than being rediscovered per book.
 
 ### Per-book working structure (created at build time)
 
@@ -116,12 +124,16 @@ book_workspace/<slug>/
 │   ├── drafts/               versioned, append-only: ch{N}_v1.md, v2.md, …
 │   └── current/              latest-approved pointer/copy: ch{N}_current.md
 ├── cover_art/                AI-generated SOURCE art at full res — NEVER overwritten; composites derive from it
-├── outputs/                  the upload-ready deliverables
+├── outputs/                  the upload-ready deliverables (9 formats)
 │   ├── markdown/             stitched version-pinned master (the single source for all generators)
 │   ├── kindle/               *_KINDLE.docx + cover JPG
+│   ├── epub/                 <slug>.epub (EPUB 3 — Apple/Kobo/Google/Nook + KDP-preferred upload)
 │   ├── kdp_paperback/        interior DOCX+PDF + cover_wrap.pdf/.jpg
 │   ├── kdp_hardcover/        (same interior) + cover_wrap_hardcover.pdf/.jpg
+│   ├── mixam_paperback/      interior (÷4-padded) + 0.125" wrap at Mixam geometry
 │   ├── mixam_hardcover/      inner_*.pdf + front_cover.pdf + back_cover.pdf + spine.pdf (+ previews)
+│   ├── blurb_paperback/      trade softcover interior + wrap (Blurb 6.125×9.25 page model)
+│   ├── blurb_hardcover/      ImageWrap interior + wrap (visible-face typography)
 │   └── digital/              *_DIGITAL.pdf (covers + blank-stripped interior)
 ├── WRONG.md                  append-only position-revision ledger (5-field entries)
 ├── CHANGELOG.md              append-only mechanical action log
@@ -198,14 +210,14 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 **`cover_gen.py`** — *AI cover-art generator (ComfyUI via the hermes skill).*
 - PURPOSE: generate front-cover art from a Book-Bible-derived prompt. **Rule: no title/author text in the image** (typography is composited afterward). Default checkpoint SDXL base; Flux-dev-fp8 opt-in.
 - I/O: `python cover_gen.py --prompt "<art prompt>" --negative "text, watermark, letters" --workflow sdxl_txt2img.json --seed -1 --steps 30 --out cover_art/<slug>_src.png` → shells to the hermes comfyui skill `run_workflow.py` (`comfy launch --background` on :8188; `run_workflow.py --workflow workflows/sdxl_txt2img.json --args '{…}' --output-dir …`); returns the PNG path as JSON. `run_batch.py --count 8 --randomize-seed` for variations.
-- REQUIRES: one checkpoint in `ComfyUI\models\checkpoints\` (empty by default) — default `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors` (~6.5 GB), fetched via `C:\fetcher\fetch.py hf …` or `comfy model download`.
-- SOURCE: hermes skill `C:\Users\user\AppData\Local\hermes\hermes-agent\skills\creative\comfyui\` (`run_workflow.py`, `workflows/sdxl_txt2img.json`, `flux_dev_txt2img.json`).
+- REQUIRES: one checkpoint in `ComfyUI\models\checkpoints\` (empty by default) — default `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors` (~6.5 GB), fetched via `comfy model download` or any downloader (the `default_checkpoint_url` in `kit_env.cover_gen`).
+- SOURCE: a hermes-style ComfyUI runner skill (`run_workflow.py`, `workflows/sdxl_txt2img.json`, `flux_dev_txt2img.json`) — all paths resolved via `kit_env.cover_gen` (historical provenance, not a runtime dependency).
 
 ### Verification (the two-verifier model)
 
 **`vision_verify.py`** — *Perceptual verifier (image + rubric → verdict JSON).*
 - PURPOSE: the perceptual half of the cover loop — judge an image against a rubric a mechanical check cannot see: art has no baked text / subject + palette match the Bible / focal room for the title; and on the composited wrap: title+author legible + spelled right, tracking clean, spine centered, bleed-safe, ISBN keep-out clear.
-- I/O: `python vision_verify.py --image <png> --rubric <rubric.txt|inline> [--backend keel|claude]` → resizes via imguard <2000px first, then POSTs a `{text-rubric + image_url data-URI}` to the backend; returns `{"verdict":"PASS|FAIL","issues":[…],"ocr":"…"}` as JSON. **Backends:** (default) KEEL local Qwen — `llama-server.exe --model C:\models\Qwen3.5-9B-Q5_K_M.gguf --mmproj C:\models\mmproj-F16.gguf --host 127.0.0.1 --port 8080 --jinja --n-gpu-layers 99 --ctx-size 16384`, POST `/v1/chat/completions`, read `choices[0].message.content`; or Claude vision via the harness. Optionally constrain output with a `json_schema`.
+- I/O: `python vision_verify.py --image <png> --rubric <rubric.txt|inline> [--backend auto|keel|claude]` → resizes ≤2000px first, then POSTs a `{text-rubric + image_url data-URI}` to the backend; returns `{"verdict":"PASS|FAIL","issues":[…],"ocr":"…"}` as JSON. **Backends** (`auto` is the default): a local KEEL-style Qwen server when `kit_env.vision` configures one (`<llama_server> --model <qwen_model> --mmproj <mmproj> --host 127.0.0.1 --port 8080 --jinja --n-gpu-layers 99 --ctx-size 16384`, POST `/v1/chat/completions`, read `choices[0].message.content`); else Claude vision via the harness — the portable zero-setup path. Optionally constrain output with a `json_schema`.
 - SOURCE: `C:\Claude-Titanic\_kit_research\mechanisms\vision_keel.md` (§1.B PowerShell block) + `_tools/resize_image_safe.py`.
 
 **`verify_build.py`** — *Mechanical verifier (spec checks → pass/fail JSON).*
@@ -221,7 +233,7 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 **`resize_image_safe.py`** — *2000px ingestion guard.*
 - PURPOSE: prevent the non-recoverable session crash from reading an image >2000px in any dimension. Run before ANY `Read`/vision ingest of a screenshot or cover.
 - I/O: `python resize_image_safe.py <img>` → echoes the source path unchanged if ≤2000px both dims; else LANCZOS-downsamples into a 2000×2000 box, saves with `_r2k` suffix, prints the safe path. Safe to run unconditionally.
-- SOURCE: `C:\Claude-Titanic\_tools\resize_image_safe.py` (global `C:\imguard\imguard.py` organ mirrors it).
+- SOURCE: ported from a prior kit's resize guard (the reference machine's global imguard organ mirrors it) — fully self-contained here, PIL only.
 
 ### Scaffolding
 
@@ -261,13 +273,13 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 
 ### Command grammar ("match intent, not syntax" — plain language dispatches to these)
 
-- **Init / ingest:** `init` | `ingest` — run INTAKE + INGEST/ORIENT (GATE-0, GATE-1): discover the drop folder, size-then-chunk large inputs, reconcile duplicate canon versions. Auto-loads: `intake/` manifest. Gate: intake manifest complete, no blind reads.
+- **Init / ingest:** `init` | `ingest` — run INTAKE + INGEST/ORIENT (GATE-0, GATE-1): discover the drop folder, size-then-chunk large inputs, reconcile duplicate canon versions, then core-first gestalt (main loop reads the core + skims every satellite BEFORE fan-out), relational digests, and the one-time integration question (`synthesis` default | `anthology` | `reforge`). Auto-loads: `intake/` manifest. Gate: intake manifest complete, core read by the main loop pre-delegation, digests relational, mode declared, no blind reads.
 - **Generate seed:** `generate seed` — run BUILD SEED (GATE-2): emit `seed.md` §1–§7, `contracts/`, `registry/`, `exemplars/`, and a validated `book_config.json`. Auto-loads: reconciled canon set + intake gist. Gate: schema-valid config + one contract per unit + thread registry seeded.
 - **Generate unit:** `generate {chapter|part} N` (unit noun from `book_config.voice`/structure) — draft one unit. Auto-loads the **Context Pack** (below). Gate GATE-3: voice + continuity + contract gates, bounded 3-iteration fix loop. `generate prologue|epilogue|coda|appendix X` respect authorship class (Class A → outline only).
 - **Revise:** `revise {chapter|part} N [with <note>]` — re-draft to a new version (append-only `v{M+1}`). Same Context Pack + the note. Same gate.
 - **Audit:** `audit {chapter|part} N` — adversarial review (steelman always; skeptic on select units) → `reviews/`. `audit threads|dependencies|canon|voice|refrain` — registry-drift audits (these are load-bearing, not decorative: they catch orphan seeds and contract↔registry drift).
 - **Check seams:** `check seams` | `check refrain` | `check compression-pairs` — cross-unit continuity (GATE-4).
-- **Produce format:** `produce format <kindle|kdp_paperback|kdp_hardcover|mixam_hardcover|digital>` — run that format's transform + GATE-5 (`verify_build.py`). Auto-loads: version-pinned `outputs/markdown/` + `book_config.json`.
+- **Produce format:** `produce format <kindle|epub|kdp_paperback|kdp_hardcover|mixam_paperback|mixam_hardcover|blurb_paperback|blurb_hardcover|digital_pdf>` — run that format's transform + GATE-5 (`verify_build.py`). Auto-loads: version-pinned `outputs/markdown/` + `book_config.json`.
 - **Generate cover:** `generate cover [<format>]` — run COVER (GATE-6): `cover_gen.py` → `composite_cover.py` → `vision_verify.py`, bounded re-roll loop.
 - **Verify:** `verify [all]` — full mechanical + perceptual sweep (GATE-7).
 - **Export:** `export v1.0` — the one big final pass: fan out ALL formats + covers in parallel from the single version-pinned source, run every gate, emit the finished folder. **Gated on a ship-at-90% confirm** ("Ship at 90%? canon is append-only; v1.1 exists"). This is the only sanctioned human checkpoint (see (e)).
@@ -284,7 +296,7 @@ Each command runs to its gate and **loops until the gate passes**:
 ```
 run stage → run gate (mechanical, else perceptual)
    pass → advance / report
-   fail → diagnose against docs/PRODUCTION_LESSONS_LEARNED.md → apply fix → retry
+   fail → diagnose against docs/LESSONS_LEDGER.md → apply fix → retry
           (bounded: max 3 iterations per gate for content, re-roll budget per config for covers)
    still failing after the bound → HARD STOP: write the failure + diagnosis to CHANGELOG,
           surface to the human with the exact rejection detail and options

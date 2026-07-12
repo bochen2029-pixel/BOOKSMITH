@@ -27,7 +27,7 @@ Generation is AI; **compositing is 100% deterministic PIL** (no AI at composite 
 
 ### The hookup
 
-The production hookup is a hermes skill, NOT FERRYMAN (FERRYMAN only spec'd ComfyUI as a deferred backend; its only on-disk image path is a 1-step sd-turbo diffusers smoke test — too weak for covers). The skill lives at `kit_env.cover_gen.comfyui_skill_dir` (`…\hermes-agent\skills\creative\comfyui\`, v5.1.0, MIT). Two layers: `comfy-cli` (launch/stop/install/download) and the REST/WS runner scripts. Ready API-format graphs sit in `workflows/`: `sdxl_txt2img.json`, `flux_dev_txt2img.json`, `sdxl_img2img.json`, `sdxl_inpaint.json`, `upscale_4x.json`.
+The production hookup is a hermes skill, NOT FERRYMAN (FERRYMAN only spec'd ComfyUI as a deferred backend; its only on-disk image path is a 1-step sd-turbo diffusers smoke test — too weak for covers). The skill lives at `kit_env.cover_gen.comfyui_skill_dir` (`…\hermes-agent\skills\creative\comfyui\`, v5.1.0, MIT). Two layers: `comfy-cli` (launch/stop/install/download) and the REST/WS runner scripts. Ready API-format graphs ship in `_tools/workflows/`: `sdxl_txt2img.json`, `flux_dev_txt2img.json`. (The upstream hermes skill also carries img2img/inpaint/upscale graphs, not vendored here.)
 
 ### Invocation
 
@@ -46,11 +46,16 @@ python scripts/run_workflow.py \
 
 ### The one missing piece — a checkpoint
 
-`ComfyUI\models\checkpoints\` (`kit_env.cover_gen.checkpoints_dir`) ships EMPTY (`put_checkpoints_here`). Fetch one before the first gen, via `comfy model download --url <URL> --relative-path models/checkpoints` OR `C:\fetcher\fetch.py`:
+`ComfyUI\models\checkpoints\` (`kit_env.cover_gen.checkpoints_dir`) ships EMPTY (`put_checkpoints_here`). Fetch one before the first gen, via the vendored downloader `python _tools/fetch_weights.py sdxl` (resumable, retrying) or `comfy model download --url <URL> --relative-path models/checkpoints`:
 
-- **SDXL base ~6.5 GB** — `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors` (`kit_env.cover_gen.default_checkpoint` + `default_checkpoint_url`). Needs ≥8 GB VRAM; huge fine-tune ecosystem. **The default** (fits the 16 GB 4070 Ti SUPER comfortably).
+- **SDXL base ~6.5 GB** — `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors` (`kit_env.cover_gen.default_checkpoint` + `default_checkpoint_url`). Needs ≥8 GB VRAM; huge fine-tune ecosystem. **The default** (fits a 16 GB GPU comfortably).
 - **Flux-dev fp8 ~12 GB** — `Comfy-Org/flux1-dev/flux1-dev-fp8.safetensors`. Needs ≥12 GB VRAM; markedly better composition, can render legible text if ever wanted. Opt-in when VRAM is free.
 - **SD 1.5 ~4 GB** — lightest, weakest. Fallback only. (sd-turbo diffusers 1-step 512² exists as a last-resort in-process fallback — gate-quality only.)
+
+### Commercial-use provenance (art AND fonts; covers get sold on KDP)
+
+- **Generated art license:** the shipped default resolves to **SDXL base 1.0**, released under the **CreativeML Open RAIL++-M** license, which **permits commercial use** of the outputs; selling KDP covers made from it is in-bounds. **FLUX.1-dev is NON-commercial** (FLUX.1 dev Non-Commercial License) and therefore is opt-in ONLY, never the shipped default; do not sell a cover generated from flux-dev without a commercial FLUX license. SD 1.5 is likewise Open RAIL-M (commercial OK). Whichever checkpoint you swap in, confirm its license clears commercial output before selling the cover.
+- **Font license:** the composited typography uses Cormorant Garamond (vendored `fonts/`) plus the `fonts/library/` faces, all under the **SIL Open Font License (OFL)**; commercial embedding and print use are permitted, and the OFL only forbids selling the font files themselves. So both halves of the printed cover (AI art plus typography) are cleared for commercial sale under the shipped defaults.
 
 ### Prompt rules
 
@@ -62,7 +67,7 @@ python scripts/run_workflow.py \
 
 ### Resolution + color
 
-For 6×9 @ 300 DPI + 0.125" bleed the art needs **≥ 1999×2775 px** (the higher of the two recorded bars; general minimum 1875×2775). SDXL emits 1024×1536 or 2048×3072 → upscale (Real-ESRGAN / `upscale_4x.json` / Topaz) before compositing; keep the raw + upscaled source untouched. Convert sRGB→CMYK (FOGRA39 EU / GRACoL2006 NA) before print submission.
+For 6×9 @ 300 DPI + 0.125" bleed the art needs **≥ 1999×2775 px** (the higher of the two recorded bars; general minimum 1875×2775). SDXL emits 1024×1536 or 2048×3072 → upscale (Real-ESRGAN / Topaz) before compositing; keep the raw + upscaled source untouched. Convert sRGB→CMYK (FOGRA39 EU / GRACoL2006 NA) before print submission.
 
 ---
 
@@ -97,11 +102,11 @@ Shared PIL toolkit + the load-bearing rules (full numbers in `format_spec_sheet.
 
 ### Backends
 
-**Default = KEEL local Qwen vision** ($0/token, on-box; `kit_env.vision`). Start (or reuse) the server, then POST OpenAI-format:
+**`--backend auto` resolves the backend**: a local KEEL-style Qwen vision server when `kit_env.vision` configures one ($0/token, on-box), else the harness's own vision (the portable zero-setup default). To run the local server, start (or reuse) it from the kit_env values, then POST OpenAI-format:
 
 ```
-C:\llama.cpp\llama-server.exe --model C:\models\Qwen3.5-9B-Q5_K_M.gguf \
-  --mmproj C:\models\mmproj-F16.gguf --host 127.0.0.1 --port 8080 --jinja \
+<kit_env.vision.llama_server> --model <kit_env.vision.qwen_model> \
+  --mmproj <kit_env.vision.mmproj> --host 127.0.0.1 --port 8080 --jinja \
   --n-gpu-layers 99 --ctx-size 16384
 ```
 

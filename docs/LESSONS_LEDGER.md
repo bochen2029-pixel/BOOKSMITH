@@ -26,6 +26,7 @@
 12. AUDIOBOOK (bonus stage)
 13. UNRESOLVED NUMERIC CONFLICTS
 14. FIRST-PASS DEFAULTS CHECKLIST
+15. SESSION SURVIVAL & COMPACTION
 
 ---
 
@@ -54,6 +55,24 @@
 - Why / symptom if violated: Stale defaults (e.g. an old board-add value) get treated as current.
 - Exact params/code: `Get-Date -Format "yyyy-MM-dd HH:mm:ss K (dddd)"`.
 - Verify: The status report cites the anchored date.
+
+### 1.5 Core-first gestalt — skim-then-delegate, never delegate-blind
+- Rule: Before ANY digest fan-out, the MAIN loop identifies the CORE source (the book's spine) and reads it in full (sliced if large), and skims every satellite itself (headings + roughly the first/last 500 words). Only a loop that holds the gestalt may set structure; subagents add depth afterward — one per satellite, one model tier down, write-then-return.
+- Why / symptom if violated: The first real intake run (2026-07-11) fanned digest subagents straight from the file list; the main loop never formed a gestalt, so the source-file boundaries leaked into the book structure and the drafting read as tacked-on recombination — the author watched it happen and aborted the run. Whoever holds the gestalt owns the architecture; delegate-blind means nobody holds it.
+- Exact params/code: ingest order = classify → reconcile → core read (full) → all satellites skimmed → THEN digest fan-out. Subagents provide depth; they NEVER provide structure.
+- Verify: GATE-1 — the intake manifest names the core, and the session record shows the core read + every skim before the first agent spawn.
+
+### 1.6 Digests are relational, never standalone
+- Rule: Every `canon_refs/_digest_*.md` follows `templates/digest.template.md` and must state where its source EXTENDS / CONTRADICTS / DEEPENS / BRIDGES the core, plus chapter-usable synthesis hooks, retrieval anchors, and a do-not-import list. A digest that merely summarizes its source in isolation is rejected and re-run.
+- Why / symptom if violated: Standalone summaries arrive structureless and get stapled into chapters — pre-chewed anthology, the tacked-on tell. Relational digests return half-woven: the collision points and bridges are exactly what the drafting loop composes with.
+- Exact params/code: template sections — Source / Key content (with retrieval anchors) / RELATION TO THE CORE / Synthesis hooks / Voice notes / Do NOT import.
+- Verify: grep each digest for the "RELATION TO THE CORE" section; missing → the digest agent re-runs.
+
+### 1.7 Integration mode is asked, never assumed (synthesis is the default)
+- Rule: When the drop holds a core + satellites, ask the author ONCE, in plain language: weave into one new book grown from the core (**synthesis** — the default), or keep the parts distinct (**anthology**)? An existing manuscript to be reborn is **reforge**. Record the answer as `book_config.integration_mode`. Synthesis = re-derived from first principles, satellites dissolved in; the book must be better than the sum, never the sum.
+- Why / symptom if violated: The machine once resolved this ambiguity silently and chose recombination — the outcome perhaps 1 author in 10 wants. The unasked structural assumption cost a full drafting run. Recombination is not synthesis; if concatenation were the goal, a script would do.
+- Exact params/code: one intake question → `integration_mode` in book_config (schema enum: synthesis | anthology | reforge, default synthesis); GATE-4 then enforces it: in synthesis mode no unit may map ~1:1 onto a single source document (check each unit's canon-anchor distribution — the anthology signature).
+- Verify: `integration_mode` present in book_config at GATE-2; the GATE-4 provenance check passes per unit.
 
 ---
 
@@ -298,7 +317,7 @@
 ## 6. COVER ART GEN & VERIFY
 
 ### 6.1 Default generation path — ComfyUI via the hermes skill + SDXL base
-- Rule: Generate cover art programmatically via the hermes `comfyui` skill (`C:\Users\user\AppData\Local\hermes\hermes-agent\skills\creative\comfyui\`, v5.1.0). Default checkpoint = **SDXL base ~6.5 GB** (fits the 16 GB 4070 Ti SUPER comfortably). Flux-dev-fp8 ~12 GB is opt-in for best composition when VRAM is free.
+- Rule: Generate cover art programmatically via a ComfyUI runner skill — every path read from `kit_env.cover_gen` (reference machine: the hermes `creative/comfyui` skill v5.1.0). Default checkpoint = **SDXL base ~6.5 GB** (fits a 16 GB GPU comfortably). Flux-dev-fp8 ~12 GB is opt-in for best composition when VRAM is free.
 - Why / symptom if violated: `ComfyUI\models\checkpoints\` ships EMPTY (`put_checkpoints_here`) — a checkpoint MUST be fetched before any gen. FERRYMAN does NOT drive ComfyUI (its only on-disk image path is an sd-turbo diffusers smoke test — 1-step, 512-native, too weak for covers).
 - Exact params/code:
   ```bash
@@ -308,7 +327,7 @@
     --args '{"prompt":"<COVER PROMPT>","negative_prompt":"text, watermark, letters","seed":-1,"steps":30}' \
     --output-dir ./outputs
   ```
-  Fetch checkpoint: `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors` (SDXL) or `Comfy-Org/flux1-dev/flux1-dev-fp8.safetensors` (Flux) via `comfy model download` or `C:\fetcher\fetch.py`. `run_batch.py --count 8 --randomize-seed` for variations. (sd-turbo diffusers path exists as a last-resort in-process fallback: `AutoPipelineForText2Image.from_pretrained(sd-turbo, torch_dtype=fp16)`, `num_inference_steps=1`, `guidance_scale=0.0`, 512² — gate-quality only.)
+  Fetch checkpoint: `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors` (SDXL) or `Comfy-Org/flux1-dev/flux1-dev-fp8.safetensors` (Flux) via the vendored `python _tools/fetch_weights.py sdxl` (resumable) or `comfy model download`. `run_batch.py --count 8 --randomize-seed` for variations. (sd-turbo diffusers path exists as a last-resort in-process fallback: `AutoPipelineForText2Image.from_pretrained(sd-turbo, torch_dtype=fp16)`, `num_inference_steps=1`, `guidance_scale=0.0`, 512² — gate-quality only.)
 - Verify: `run_workflow.py` stdout JSON `{"status":"success","outputs":[{"file":...}]}`; the PNG exists.
 
 ### 6.2 NO title/author text in the generated image
@@ -332,9 +351,9 @@
 ### 6.5 Perceptual vision verify — Claude vision default, KEEL Qwen sovereign fallback
 - Rule: After generating art AND after rendering the full wrap, run a perceptual verify: resize ≤2000px, then vision-read for composition / no-text / subject accuracy / focal room (art) and title legibility / correct spelling / tracking / spine centering / bleed-safe / ISBN keep-out clear (wrap). Fail → re-roll (new seed / adjusted prompt); pass → lock.
 - Why / symptom if violated: This is the loop that makes it true point-and-shoot — the AI catching its own layout defects before the human uploads. UE5-render vs real was told apart by too-uniform mist/star density and uniform window color temp.
-- Exact params/code: **Default** = imguard resize + Claude vision/OCR. **Sovereign fallback** (if the API image path fails / is unavailable, or for $0 on-box): KEEL Qwen vision —
+- Exact params/code: **Default** (`--backend auto`) = `resize_image_safe.py` + the harness's own vision/OCR. **Sovereign alternative** (for $0 on-box, when `kit_env.vision` configures one): a KEEL-style Qwen vision server —
   ```
-  C:\llama.cpp\llama-server.exe --model C:\models\Qwen3.5-9B-Q5_K_M.gguf --mmproj C:\models\mmproj-F16.gguf --host 127.0.0.1 --port 8080 --jinja --n-gpu-layers 99 --ctx-size 16384
+  <kit_env.vision.llama_server> --model <kit_env.vision.qwen_model> --mmproj <kit_env.vision.mmproj> --host 127.0.0.1 --port 8080 --jinja --n-gpu-layers 99 --ctx-size 16384
   ```
   `--mmproj` is THE vision switch (omit it and the server is silently text-only). Poll `GET /health` before the first call. POST OpenAI-format to `/v1/chat/completions` with a text rubric part + `{"type":"image_url","image_url":{"url":"data:image/png;base64,..."}}`; read `choices[0].message.content`. Port 8080 is shared with cognition — confirm the running server was launched WITH `--mmproj`. `--jinja` required for the thinking toggle. grammar/json_schema ⊕ thinking are mutually exclusive (a GBNF/schema forces thinking off; supplying both 400s). Model id in the JSON is cosmetic.
 - Verify: Vision returns PASS (title legible + correctly spelled + inside quiet zone) or a specific FAIL reason to re-roll.
@@ -403,7 +422,7 @@
 - Rule: Externalize all per-book metadata into one config object, injected everywhere (not hard-coded across 3+ scripts). Fields: `title, subtitle, author, license, trim, paper, finish, body_font, src_md[], cover_art, palette, blurb, tagline, categories[≤3 BISAC], keywords[7 ≤50 chars], description ≤4000 chars, kdp_order_opts, mixam_order_opts, isbn_handling`.
 - Why / symptom if violated: Literal blurb/tagline/keyword strings are hard-coded per book today (prime parameterization targets). No repo ships a `kdp_metadata.yaml` — that absence is a gap.
 - Exact params/code: Categories max 3 at submit (more via Author Central); Philosophy is NOT top-level in KDP's picker (nest under Politics & Social Sciences). Keywords: 7 slots, ≤50 chars, long-tail, no quotes/commas. Description: HTML (`<p><b><i>` allowed), target just under 4000 (Inside-the-Region tuned to 3,991/4,000). Some KDP fields reject the em-dash → substitute " - ".
-- Verify: Config validates; description ≤ 4000 chars; ≤ 3 categories; 7 keywords ≤ 50 chars each.
+- Verify: Config validates; description ≤ 4000 chars; 2–3 categories (floor 2; up to 3 where the live picker offers them — see §18.1/§19.3); 7 keywords ≤ 50 chars each.
 
 ### 9.2 Paper / finish / trim defaults by register
 - Rule: **6×9 trim** all formats. **Cream** paper = literary/premium; **white** = technical. **Matte** finish for literary. **KDP hardcover is white-only** (cream not offered) → its spine uses the white multiplier.
@@ -463,7 +482,7 @@
 ### 10.3 Image ingestion 2000px hard cap
 - Rule: Pre-resize EVERY image to ≤2000px in both dimensions before ANY `Read`/vision call.
 - Why / symptom if violated: An image >2000px in any dimension aborts the conversation non-recoverably: *"An image in the conversation exceeds the dimension limit for many-image requests (2000px)."* Cover wraps are ~4255×3125 (HC) / ~3801×2775 (PB) and always trip it.
-- Exact params/code: `resize_image_safe.py` — echoes the path unchanged if ≤2000px both dims; else LANCZOS-downsamples into a 2000² box, saves with a `_r2k` suffix, prints the safe path. Safe to run unconditionally. (Mirrors `C:\imguard\imguard.py`.) For covers specifically: PIL `Image.thumbnail` to ≤1800×1800, save `_preview_*.jpg`, Read the preview, then clean up.
+- Exact params/code: `_tools/resize_image_safe.py` — echoes the path unchanged if ≤2000px both dims; else LANCZOS-downsamples into a 2000² box, saves with a `_r2k` suffix, prints the safe path. Safe to run unconditionally. (A vendored equivalent of the reference machine's imguard organ.) For covers specifically: PIL `Image.thumbnail` to ≤1800×1800, save `_preview_*.jpg`, Read the preview, then clean up.
 - Verify: Every path handed to `Read` is confirmed ≤2000px.
 
 ### 10.4 Canonical build order
@@ -475,7 +494,7 @@
 ### 10.5 Turn every gotcha into a build-time assert
 - Rule: Before declaring ANY format done, assert: mirror flags present; non-body sections have empty headers/footers; page count meets the format multiple; gutter ≥ 0.75"; cover filenames carry routing keywords; Kindle + print read the same version; cover MediaBox 4-decimal-exact; ISBN keep-out clear.
 - Why / symptom if violated: A fix rediscovered ≥3× MUST be promoted to a persistent reference and a build-time assert at solve time — inline fixes die with the project (Inside-the-Region cost 4 rejected hardcover rounds because fixes weren't pre-baked).
-- Exact params/code: `_tools/run_all_invariants.py` pattern — run all asserts, report green/red.
+- Exact params/code: the invariant runners that already exist — `_tools/verify_build.py --config book_config.json --format <p>` (per-format mechanical gate; runs the mirror/empty-header/page-multiple/gutter/cover-dimension asserts), `_tools/check_part_pages.py` (recto parity), and `_tools/selfcheck.py` (the kit self-consistency meta-gate) — each reports green/red and exits nonzero on FAIL.
 - Verify: All asserts green (the FIRST-PASS DEFAULTS CHECKLIST, §14).
 
 ---
@@ -483,7 +502,7 @@
 ## 11. CROSS-PLATFORM / RUNTIME
 
 ### 11.1 Hard Windows + Word dependency; document it
-- Rule: The pipeline is Windows 11 + installed Microsoft Word (COM) locked. Python 3.10+ with `win32com, PIL, PyMuPDF (fitz), PyPDF2, numpy, pypdfium2`; Node 18+ with `docx@9.6.1` + `jszip@3.10.1`.
+- Rule: The pipeline is Windows 11 + installed Microsoft Word (COM) locked. Python 3.10+ with `win32com, PIL, PyMuPDF (fitz), PyPDF2`; Node 18+ with `docx@9.6.1` + `jszip@3.10.1`.
 - Why / symptom if violated: Word COM has no faithful cross-platform equivalent; Mac/Linux would need a portable DOCX→PDF fallback (not implemented — the Edge-headless path renders from HTML, not docx).
 - Exact params/code: For FERRYMAN subprocesses (and any CJK-printing stage), set `PYTHONUTF8=1` + `PYTHONIOENCODING=utf-8` — a CJK print inside a stage can crash a cp1252 console and silently skip work with exit 0.
 - Verify: `win32com.client.Dispatch("Word.Application")` succeeds; UTF-8 env set for image/text subprocesses.
@@ -584,7 +603,7 @@ Recorded with provenance; safe default stated. The overriding rule for all of th
 - [ ] Digital PDF: front+back covers (exact 6×9-pt) + blank-stripped interior; preview thumbnails render.
 
 **Metadata / runtime**
-- [ ] `book_config`/`kdp_metadata` validates: ≤3 categories, 7 keywords ≤50 chars, description ≤4000, paper/finish/trim set, em-dash-free where KDP rejects it.
+- [ ] `book_config`/`kdp_metadata` validates: 2–3 categories (floor 2, max 3; §19.3), 7 keywords ≤50 chars, description ≤4000, paper/finish/trim set, em-dash-free where KDP rejects it.
 - [ ] Only 2 free ISBNs assumed (PB+HC); no Kindle ISBN; no ISBN hardcoded.
 - [ ] No same-name nested manuscript; "Book 1" out of subtitle; fiction disclaimer on copyright page.
 - [ ] No secrets in command strings (`gh auth` keyring).
@@ -592,4 +611,157 @@ Recorded with provenance; safe default stated. The overriding rule for all of th
 - [ ] KDP Print Previewer dry-run accepts paperback + hardcover before publish.
 
 *When every box is checked and the internal loop is one-shot-clean, surface the finished folder to the user.*
-```
+
+---
+
+## 15. SESSION SURVIVAL & COMPACTION
+
+*Added 2026-07-11 from the first real book run ("The Unfinished Mirror", `book_workspace/unfinished_mirror/`), which survived a mid-book overnight quota exhaustion and a cross-project resume with zero lost words. Mechanism spec: `docs/COMPACTION_SURVIVAL.md`.*
+
+### 15.1 Unit-atomic write-to-disk (the survival primitive)
+- Rule: Write every completed unit to disk the instant it is done — chapter prose to `manuscript/current/`, subagent digests to `canon_refs/_digest_*.md` — and rewrite `_CONTINUITY.md` immediately after. Subagents write their output file BEFORE returning their summary (write-then-return). Finished work never lives only in context.
+- Why / symptom if violated: A quota exhaustion killed the proving session mid-book overnight; ZERO words were lost because every chapter and digest was already on disk — including files left by digest subagents that themselves died at the quota. Context is volatile; disk is the only durable layer.
+- Exact params/code: One file per unit (`ch_NN_current.md`); `_CONTINUITY.md` carries a RESUME PROTOCOL at the top plus STATUS / DONE / NEXT / live invariants, rewritten after EVERY unit (header counts included — a stale DONE line is a resume hazard).
+- Verify: After each unit: the file exists nonzero on disk, and `_CONTINUITY.md`'s DONE list matches `manuscript/current/` exactly (count, names, and word totals).
+
+### 15.2 Rehydrate from the session's own transcript, never from a summary (the compaction primitive)
+- Rule: On any compact/resume with an in-flight book, reconstitute from the session `.jsonl` via `_tools/rehydrate.py` (tiers: strip-thinking → +no-tools → +tail-turns, escalating only as far as needed to fit the token budget), and READ `_REHYDRATION.md` + `_CONTINUITY.md` + `seed.md` before writing any prose. The converted transcript is higher-fidelity than any summary because it *is* the record (~10× smaller than the raw jsonl).
+- Why / symptom if violated: Hand summaries lose the specifics that voice and continuity depend on. Measured: a 6.26 MB session jsonl → ~156K tokens at Tier 1 (tools preserved). The hooks make recovery automatic: `PreCompact` snapshots the ledger and pre-bakes `_REHYDRATION.md`; `SessionStart` injects a hard STOP block on compact/resume.
+- Exact params/code: `.claude/settings.json` hooks → `_tools/on_precompact.py` / `_tools/on_session_start.py`. CROSS-PROJECT resumes need an explicit `--session <path>` — auto-find targets the current project's (possibly empty) transcript; the proving book's 8-chapter history lived under a different project's slug than the kit's own (record the exact `--session` path in the workspace's `_RESUME_NOTES.md`).
+- Verify: `rehydrate.py` prints the tier chosen + token count; `_REHYDRATION.md` exists in the workspace; the SessionStart STOP block fires on `compact`/`resume` whenever any `_CONTINUITY.md` STATUS != COMPLETE.
+
+### 15.3 Model policy under fan-out (prose in the main loop; subagents one tier down)
+- Rule: Book prose is written by the MAIN loop only (whatever premium model the session runs). Every fan-out subagent — source digestion, tool-building, audit passes — runs **opus or sonnet, never the premium main-loop model**, unless explicitly overridden by the user.
+- Why / symptom if violated: The proving run exhausted its quota overnight; premium-model subagent fleets multiply burn on work that does not need the top model. And prose drafted by many hands breaks the single-authorial-act illusion — the main loop holds the whole book in context; subagents do not.
+- Exact params/code: Agent calls pass an explicit `model:` (sonnet for digestion; opus for judgment-heavy audits). The policy is stated in `START_HERE.md` §0 and in each book's `_CONTINUITY.md` MODEL POLICY block.
+- Verify: Spot-check spawned agents' models in the transcript; digests exist on disk even when an agent dies mid-run (15.1 write-then-return).
+
+---
+
+## 16. LATE-CAPTURED IDIOSYNCRASIES (2026-07-12 — Bo's post-first-book review)
+
+*These were solved repeatedly in Bo's hand-built books but MISSED by the original transcript mine that seeded this ledger. The mine was **grep-keyed to loud KDP REJECTION phrases** ("insufficient gutter", "text outside margins", "Mixam", "spine width") — and every rule below is a quiet **convention/aesthetic** with no rejection vocabulary to light it up, so the keyword sweep never surfaced it.*
+
+**META-RULE for any future lessons-scan:** hunt conventions and aesthetics, not only rejections. Grep for `spine font` / `too small` / `centered` / `page number` / `contents` / `TOC` / `looks` / `no TOC` / `binder` — not just error strings. A fix that shipped without an Amazon complaint (the author just said "make it bigger / center it / drop the TOC") is invisible to a rejection-keyed miner and is exactly where the residual idiosyncrasies hide.
+
+### 16.1 Spine text font is a DYNAMIC function of page count — thin books get an illegible spine  ✅ CODED (2026-07-12)
+- Rule: Spine font size scales with spine width, which scales with page count (`spine_in = pages × per_page + board_add`). A thin book → thin spine → tiny, unreadable spine title. `composite_cover.py` sets spine font ≈ `int(spine_px × 0.42)` (KDP) / `× 0.28` (Mixam); at a 0.185" spine (74pp cream) that renders far too small.
+- Why/symptom: Bo repeatedly enlarged the spine font by hand on thin books; **the #1 idiosyncrasy Bo flagged as missed.** A spine title too small to read is unprofessional.
+- Fix (in `composite_cover.py` `render_spine`): clamp spine font to a legible floor, AND — because KDP only permits spine text at **≥0.0625" spine width (KDP's page-count form is ~79–80pp; the code gates on width, not pages — see §18.1)** — render a BLANK spine (no text) below that threshold rather than an illegible one. The 75-page floor (§16.5) keeps most books out of the ugly-thin-spine zone but does not by itself guarantee legibility; the clamp is still required.
+- Coded: module constant `SPINE_TEXT_MIN_IN = 0.0625`; `render_spine` computes `spine_in = spine_w_px / DPI` and returns a solid dark face (no text) below it — placed INSIDE the shared renderer so it also guards the KDP-wrap / KDP-hardcover / Mixam-3-panel paths, which (unlike `build_flat_wrap`'s stricter 0.25" `spine_blank_below_in`) had no per-profile blank rule. Legible floor: title fill fraction 0.40 → **0.55** and the overflow-prone fixed `max(24, …)` px floor REMOVED (a constant px floor can exceed a thin spine's width and overflow the rotate; the fraction keeps the glyph inside the spine at any legal width, and sub-threshold is already blank). Author/ornament scale off the title via `measure_block()`.
+- Verify: `vision_verify` the spine — text legible OR intentionally blank; never tiny. **Tested 2026-07-12 on testvoyage**: 18pp (0.0433" spine) → BLANK (0/8325 core px above text luminance, uniform dark ~24); 120pp (0.30"/90px spine) → legible title, 35px glyph band centered on the 90px spine.
+
+### 16.2 Page numbers CENTERED at the foot, not outer-edge (house style)  ✅ CODED (`interior.page_number_align`, default center)
+- Rule: House style puts the page number **bottom-center on every page** (confirmed: *The Autotelic Disposition* p.217 → "217" centered). BOOKSMITH's `generate_book.js` right-aligned recto / left-aligned verso (outer corner) — wrong for this house.
+- Fix: `generate_book.js` footer factory (~line 678) — `AlignmentType.CENTER` for the page-number paragraph on both recto and verso. Config knob added: `interior.page_number_align` (enum center|outer, default **center**).
+- Verify: rendered spot-check — page number bottom-center on both recto and verso.
+
+### 16.3 The print TOC must not garble — long tracked-caps titles wrap and collide with leaders  ✅ CODED (2026-07-12)
+- Rule: Chapter titles rendered in wide-tracked ALL-CAPS ("CHAPTER ONE — THE VIEW FROM SOMEWHERE") wrap to two lines in the Contents and collide with the dot-leaders + page numbers → a garbled TOC. Bo's nonfiction uses **title-case** headings ("Chapter 13: The Entropy Engineer"), single line, moderate tracking.
+- Fix (in `generate_book.js`): (a) TOC entries title-case at normal tracking, NOT wide-tracked all-caps; (b) a proper right tab stop with dot leader so the page number aligns cleanly even if a title wraps; (c) gate the whole TOC behind `interior.include_toc` (default true). Also consider restyling the chapter *heading* itself to title-case + colon (not wide-caps + em-dash), which both fixes the TOC and reads better.
+- Coded: Word's auto-`TableOfContents` copies the Heading-1 *text* verbatim, so the fix lives at the HEADING, not a separate TOC style. `createUnitHeading` now renders `unitHeadingText(title)` — drops `.toUpperCase()` (keeps the manuscript's own title-case) and swaps a spaced em/en-dash separator for a colon via `.replace(/\s+[—–]\s+/, ": ")` — at light `characterSpacing: 20` (was 60). Word's built-in TOC style supplies the right-tab dot leader automatically once entries are single-line. The section is gated by `const includeToc = !(config.interior && config.interior.include_toc === false)`. Recto parity is unaffected: `check_part_pages.py` default discovery enumerates Heading-1 *outline-level* paragraphs (casing/text-independent), not a text Find.
+- Verify: rendered Contents page — each entry clean, number right-aligned, no collision, no ugly wrap. **Tested 2026-07-12 on testvoyage**: Contents shows three single-line title-case entries ("Chapter One: Departure … 1", "… Two: The Crossing … 3", "… Three: Landfall … 5") with aligned dot leaders + right-aligned page numbers; body heading renders "Chapter One: Departure" (title-case, centered) with the centered page number intact.
+
+### 16.4 KINDLE / some ebook upload paths: NO manual TOC page AND NO page numbers  ✅ CODED (2026-07-12)
+- Rule: For Kindle / reflowable uploads, Amazon builds navigation from the Heading-1 structure itself; a **manual "CONTENTS" page + TableOfContents field is redundant and, for some KDP upload paths, must be OMITTED** (it renders as a broken/blank screen or a dead page-numbered list — page numbers are meaningless in reflow). Page numbers must ALSO be absent. BOOKSMITH already suppresses Kindle page numbers (`generate_kindle.js` header:0 footer:0 ✓) but STILL injected a manual CONTENTS + TableOfContents (~lines 375–381).
+- Why/symptom: Bo flagged this explicitly — *"for some versions of kindle upload you specifically do NOT put TOC and do NOT put page number."*
+- Fix: gate the CONTENTS + TableOfContents block behind `kindle_include_toc` (default **FALSE** — rely on Amazon's H1 auto-nav; set true only for an upload path that wants an embedded TOC). NEVER add page numbers to Kindle.
+- Coded: `generate_kindle.js` — `const includeToc = config.kindle_include_toc === true` gates the PageBreak + CONTENTS heading + `TableOfContents` block; `features.updateFields` is also gated on `includeToc` (with no TOC there is no field to fill). Chapter headings stay Heading-1 (unchanged casing — reflow has no TOC-collision problem, so §16.3's de-garble is print-only).
+- Verify: Kindle DOCX has no page numbers (✓) and, by default, no manual CONTENTS page; H1 headings present for Amazon auto-nav. **Tested 2026-07-12 on testvoyage**: `document.xml` has 0 "CONTENTS" occurrences, 0 TOC field, 3 Heading-1 paragraphs.
+
+### 16.5 MINIMUM 75-PAGE FLOOR  ✅ CODED (`verify_build.py` `check_book_min_pages`, `book_config.min_pages` default 75)
+- Rule: No book ships under **75 interior pages** unless explicitly approved. Thinner → illegible spine (§16.1), reads as a pamphlet, undersells the work. Enforced as a HARD `verify_build` check (fails the print gate); override only by setting `book_config.min_pages` lower (a recorded, deliberate exception) or 0 to disable.
+- Why/symptom: *The Unfinished Mirror* (2026-07-12) came out 74pp — just under, dense-by-design — and Bo set a hard floor so no future instance ships thin by accident. Prevention is upstream: the DRAFT stage should target ~28–34K words for 6×9 (~250–320 words/page → ~110–135pp).
+- Verify: `verify_build --format <print>` → `book_min_pages` pass, or a recorded `min_pages` override.
+
+*Status key: ✅ coded · ⬜ generator TODO. As of 2026-07-12 all of §16.1–§16.5 are CODED and tested on `book_workspace/testvoyage/`: §16.1 spine blank-below-0.0625" + legible 0.55 fill (`composite_cover.py` `render_spine`), §16.2 centered page numbers (`generate_book.js`), §16.3 de-garbled title-case auto-TOC gated by `interior.include_toc` (`generate_book.js`), §16.4 Kindle TOC omitted by default via `kindle_include_toc` (`generate_kindle.js`), §16.5 75-page floor (`verify_build.py`).*
+
+---
+
+## 17. AUTHOR VOICE — the idiosyncrasies that live in the author's MEMORY, not the sources (2026-07-12)
+
+*The failure that forced this section: the first book the kit produced (The Unfinished Mirror) was saturated with em-dashes — Bo's explicitly named "AI signature that is blatantly obvious" — because (a) the rule lived only as prose guidance and a per-book blacklist nobody set, and (b) the kit's ingest read the SOURCE documents but never read the AUTHOR'S accumulated voice/feedback memory, where the rule actually lives. Four OPUS agents then READ (not grepped) the whole voice canon; the result is `docs/author_voice/AUTHOR_VOICE_Bo_Chen.md` + four `_voiceprofile_*.md` detail files.*
+
+**THE META-RULE (root cause).** At INGEST/SEED the harness MUST READ the author's voice canon — `docs/author_voice/AUTHOR_VOICE_<author>.md` AND the author's accumulated memory/feedback files (`~/.claude/projects/*/memory/feedback_*.md`, soul/voice/house-style docs) — BEFORE writing the voice spec. Voice preferences do NOT live in the source documents; matching a source's punctuation (the theory doc's heavy em-dashes) instead of the author's voice is exactly the error that shipped. A language-agent fan-out that greps for keywords instead of READING this corpus defeats its own purpose — the whole point of an Opus reader is contextual understanding, not keyword extraction a script could do.
+
+### 17.1 NO em-dashes / en-dashes — ✅ HARD GATE (`lint_manuscript.py`, `voice.no_em_dashes` default true)
+- Rule: zero U+2014 (—) / U+2013 (–) in prose. Bo's #1 named AI-tell (2026-04-22; corroborated in ≥3 separate memories). Strip at DRAFT time, not revision time. Route the pause to a comma / colon / period / semicolon / parentheses — **the semicolon is Bo's real substitute** (~110 per 10k words in his reference book). Compound-adjective hyphens (U+002D) are fine.
+- Empirical (measured, not asserted): The Autotelic Disposition = 0 em-dashes / 124,933 words; ASTRA-7 = 0 / 44,876. Inside the Region (older) had 598 — do NOT use it as the voice reference. The ban is a house rule Bo already meets; target the Autotelic register.
+- Enforce: the hard em-dash gate in `lint_manuscript.py` (exit 1) + `book_config.voice.blacklist` atoms + the `Grep "[—–]"` backstop over the assembled master, headers, and `[BO-WRITES]` markers. VERIFIED 2026-07-12: the gate fires on every chapter of The Unfinished Mirror (it would have blocked the ship).
+
+### 17.2 Other author HARD rules (from the read corpus)
+NO interior images (text only between the covers). NO bullets / sub-headers / summary-boxes / "Key Takeaways" inside prose. NO meta-openers ("In this chapter we will explore…") / content-warnings / author's-notes. NO hedging. NO ascending three-part parallels (tricolons — a Bo-named tell; "crap no human would write"). Forbidden-phrase blacklist: delve, crucial, landscape, paradigm, holistic, cutting-edge, game-changer, empower, leverage/harness-as-verb, tapestry, nuanced, multifaceted, journey, unpack, "key takeaways", "it's important to note", "moreover". Refrain + sacred lines verbatim-locked (exact wording + placement count). Class-A units = outline only. Do NOT "correct" Bo's own-voice misspellings (they are fingerprints in `[BO-WRITES]`/informal passages). The single load-bearing spec: *"the book must read as one person wrote it with continuous attention across a single creative act."*
+
+### 17.3 The voice fingerprint (a verifier can measure)
+F1 em/en-dash == 0 (HARD) · F2 semicolon density ≥ 40/10k · F3 no bullets/meta artifacts (HARD) · F4 the hammer (≥ ~12% sentences ≤ 5 words; long-accumulate → short-land) · F5 idiolect markers present ("which is to say", "in the sense that", "not X, not Y", colon-thesis openers) · F6 no tricolons. Full profile + drop-in `book_config.voice` block: `docs/author_voice/AUTHOR_VOICE_Bo_Chen.md`.
+
+---
+
+## 18. DELTAS FROM THE READ-NOT-GREPPED SWEEP (2026-07-12) — what the grep-built kit missed
+
+*Bo flagged that the kit's original build grep-mined and SKIPPED the crystallized memory (esp. `~/.claude/projects/C--Claude-Titanic/memory`, 25 files). Four OPUS agents then READ that memory + every `PRODUCTION_LESSONS_LEARNED.md` + `C:\BOOK\BUILD_LOG.md` IN FULL and diffed against §1–§17. Verdict: the loud mechanical gotchas WERE captured (the kit is not junk; several ledger values are deliberately STRONGER than the sources — 0.75" gutter, page-count-band board-add, repo-relative fonts, the em-dash gate — do NOT revert those). The real deltas cluster in the QUIET-CONVENTION layer (§16's blind spot) and the WRITING-CRAFT layer grep is blind to. Detail with verbatim quotes + sources: `docs/_lessons_audit/_delta_*.md`.*
+
+### 18.1 Corrections — the kit had these WRONG or imprecise
+- **KDP categories at submit: safe floor 2, but 3 is attested for nonfiction (ATD shipped 3) — anchor to the LIVE KDP picker on the run date; see §9.1 and §19.3.**
+- **KDP spine-text floor = 80 pages**, not 79 (Second Notebook cleared "80 spine-text"). §16.1 said ≥79 — a ±1 boundary that can mis-blank a thin spine. Co-locate the three KDP floors: **paperback ≥24 · hardcover ≥75 · spine text ≥80.**
+- **KDP hardcover 0.767" spine (186pp) footnote:** reachable as cream+0.302 (old) OR white+0.348 (new); HC is WHITE-only, so white+0.348 is the operative form. Do NOT "reconcile" back to a cream 0.813" — that is rejected.
+- **Em-dash gate carve-out (a bug this pass introduced):** a table "(n/a)" `—` placeholder is legitimate per `feedback_no_em_dashes.md`; the hard gate must not false-positive-block it. FIXED in `lint_em_dashes` — em-dash inside a markdown table row is exempt; prose em-dashes still block.
+
+### 18.2 Print/production additions (quiet conventions the grep could not surface)
+- **Mixam free custom ENDPAPERS** (smyth-sewn hardcover): a 4th uploadable PDF beyond front/back/spine/inner — a free premium feature the Mixam path silently omits.
+- **Mixam interior safe/quiet area = 0.25"** (distinct from the 0.80" cover bleed and 0.125" interior bleed).
+- **Spine-side quiet-zone pad:** add ~0.10–0.15" on the spine-facing edges beyond the uniform bleed+0.25" (ASTRA §5.4).
+- **Manual "F9 the TOC" finisher:** on shipped books the TOC/page-number fields sometimes need a manual Word F9 update or page numbers ship stale — doubly relevant now that `docx_to_pdf.py` skips TOC update on a late-bind failure; a TOC-bearing book must be re-verified in the rendered PDF.
+- **License is register-split:** treatises → CC-BY-4.0; novels → All Rights Reserved. §9.4 defaulting everything to CC-BY would mis-license a novel — select by `is_fiction`.
+- **§3.9 LaTeX→Unicode glyph coverage** (append the exact tables): subscripts missing `b c d f g q w y z` + all caps; superscripts mostly letters missing; `\dot{}` missing `I J K L Q U V` → combining U+0307; matrices / integrals-with-bounds / `\mathcal`(→italic not script) are out of scope → OMML or image.
+- **Kindle cover ratio 1.6:1** (1600×2560) — a shipped Kindle cover slipped to 1.491:1; enforce the ratio.
+
+### 18.3 Writing/craft additions (the layer grep is wholly blind to)
+- **THE CLINICAL-DISTANCE FAILURE MODE — the biggest miss.** Over-correcting against cliché/sentimentality renders emotional peaks FLAT and analytical — fluent but dead. *The Autotelic Disposition* needed a dedicated **"peak-aliveness rendering" pass** to amp the load-bearing beats back to the thesis's altitude, gated by an anti-flatness checklist. §7 technique AND a "never do": anti-cliché discipline must not flatten the peaks. (Directly relevant: *The Unfinished Mirror* reads clinically in places — dense argument, few felt peaks.)
+- **Parallel / out-of-order drafting hazard:** a callback written before its source unit exists is only CONCEPTUAL; a mandatory **concretization pass** must swap in the real, varied phrasing once the source lands. §2.7 has "vary wording" but not the ordering hazard or its gate.
+- **Single-authorial-act methodology (ASTRA §1–4), under-captured:** the soul-doc load, the two-voice convergence test, single-axis multi-pass revision with a fixed pass order, the Mode A/B prose taxonomy, and a COLD parallel-instance adversarial audit (cross-model review outranks self-audit).
+- **De-concretize / name-scrub** is a real whole-repo operation (strip personal specifics, fill `[BO-WRITES]` impersonally, rename entities across every registry, keep anonymized empirical anchors) — pair with a per-book `voice.forbidden_proper_nouns[]` grep gate.
+- **Extend the hedge blacklist:** "to be fair", "it could be argued", "that said", "at the end of the day".
+- **Refrain leakage audit:** the sacred phrase leaking into ordinary prose is a recurring in-review catch — verify it appears ONLY at its designated placements, not merely at the right count.
+
+---
+
+## 19. THE EXHAUSTIVE READ-SWEEP (2026-07-12) — 13 Opus readers, the whole corpus, read-in-full not grepped
+
+*Bo's standard, stated absolutely: not one lesson, across dozens of books, ever relearned. 13 OPUS readers read the FULL corpus in full — every project `memory/` folder, Inside-the-Region's 91KB SESSION_MEMORY, the ASTRA book-production dump, BOOK3's 93KB SEED + 72KB WRONG, the template seeds, the superseded PRODUCTION_LESSONS set, the cover-prompt recipes, and the prior build's own `_kit_research/` — each diffing against §1–§18. Verdict: production is well-captured (several ledger values are deliberately STRONGER than the sources — do not revert); the deltas concentrate in WRITING-CRAFT, THREAD-REGISTRY DISCIPLINE, and a few production fences. Full detail with verbatim quotes + sources: `docs/_lessons_audit/_delta_*.md` (13 files).*
+
+### 19.1 Writing / craft — the engine of "one authorial act" (the layer grep is blind to)
+- **The earned-peak mechanic — the fix for clinical flatness (§18.3):** pre-designate 1–2 register-lift HINGES per book (the thesis fulcrum + the close); LIFT ONLY THOSE; hold everything else sober. Over-lifting is the mirror failure. (Directly diagnoses *The Unfinished Mirror*'s flatness: dense argument, no designated peaks.)
+- **"Perturb, don't admire" (HIGH):** agreement is the failure mode; a synthesis that feels clean and complete is a WARNING. Load-bearing because synthesis books grow from source theory authored by earlier Claude/Fable instances — the drafter RESONATES with in-network prose and mistakes fluency for truth. Ingest + authorship rule; the cold cross-model audit is its mechanism.
+- **The accumulation ladder:** a mechanic introduced in unit N becomes a NAMED category in N+1 and plural-self texture in N+2 — the actual engine of continuous authorship. §7 technique.
+- **Render-and-stop:** at the peak, render the act and STOP; explaining/annotating it is the AI-tell.
+- **Reader-clock sets unit length:** length is set by reader-time, not the story's calendar; a deliberately thin unit is fine but must carry a `thinned` flag so it doesn't false-fail the ±20% gate.
+- **Voice-fidelity has a CEILING:** Bo accepted the analytical "Claude-doing-Bo" blend on the reference book; do NOT over-inject idiolect into pastiche (tempers §17's maximize-everything).
+- **The leakage test (per-sentence):** would the author literally say "my terminal value is X, who [specific fact]"? If not, a personal specific has leaked — the preventive form of §18.3's whole-repo scrub.
+- **Greenlist = a scarce curated instrument** (a signature move ~once per book-stretch, not everywhere); **sacred-terms = a 3-column "Never / Say / Instead" contract.** Register-map + compression-pair + transition-seam grammar (lift/seam/move) are BUILDABLE specs the seed must carry, not just command names.
+
+### 19.2 Thread-registry / continuity / process discipline
+- **DISK IS TRUTH, LEDGER IS A HINT (HIGH):** the moment more than one hand touches the files, the continuity ledger must RE-DERIVE state from disk (`ls manuscript/current`, read the actual chapters) and NEVER trust its own last write — a prior instance was one "continue" from resuming off a stale map. Bake into COMPACTION_SURVIVAL/§15 as a mandatory reconcile-against-disk step; a RECALL/`_CONTINUITY` read reconciles against disk first.
+- **Thread Immunity flag (HIGH):** each registry thread carries a mutability bit (refrain/sacred motifs = `Immunity: true`); without it a revise-pass silently reshapes a load-bearing motif.
+- **Concept-introduction-order is a DISTINCT registry** from seed→payoff, with a `brief-forward-allowed` carve-out — this is what reconciles "flash-forward liberally" (§7) with GATE-3 "no forward references."
+- **A contract/canon edit MUST trigger a same-pass registry re-audit (HIGH):** "no registry update needed" was asserted and wrong every time; §11's manuscript-drift keystone needs a scaffolding twin.
+- **`audit canon` spans 3 surfaces:** YAML frontmatter + prose + Must-Plant fields (a YAML-only check let a Must-Plant drift ship).
+- **reforge method (fills the mode gap):** adversarially re-read the prior work vs newer canon → each overturned position a WRONG.md entry → old text preserved untouched → new prose re-derived (never line-edited).
+- **Ship on book-specific audits + an `architecture.template.md`:** the audit set is not fixed; each book declares its own ship-gates in its ARCHITECTURE — but the kit ships NO architecture template though its taxonomy names one. Add it. SEED must also carry a writing-ORDER plan (anchor/voice-defining chapter FIRST, intro/conclusion LAST); contract needs a `Must Flash-Forward` field.
+
+### 19.3 Print / production — corrections, fences, additions
+- **STALE-NUMBER FENCE (do NOT reintroduce), §5.5 footnote:** `+0.302` board-add (known-wrong); the 186pp `0.767` reached as cream+0.302 is a latent trap (HC is WHITE-only → operative white+0.348); the broken white formula `×0.002252+0.302=0.721`; `10.416` height (validator wants 10.417); "cream for white-only KDP HC"; `0.625"` PB gutter (hardened to 0.75").
+- **Board-add is per-title, page-count-driven, reverse-derived from KDP's rejection widths — NEVER a formula** (the 412→426pp Inside-the-Region chain 0.302→0.246→0.241 is the §13 primary evidence).
+- **Gutter for thick books: default 0.875" for ≳350pp** interiors (Inside the Region shipped 0.875" at 412–426pp); flat 0.75" understates thick books.
+- **KDP categories = 2 (floor), 3 attested for nonfiction — anchor to the live picker** (Previewer-wins style); §9.1's "≤3" corrected to 2 (§18.1).
+- **MARKETING/CEREMONIAL COPY needs the voice gate (HIGH — was a live leak):** the em-dash/blacklist gate scanned `manuscript/current` only; the back-cover blurb, `kdp_metadata.description`, `epigraph`, `about_the_author`, `dedication`, `subtitle` render into the book/listing and bypassed it. (Verified: the Unfinished Mirror epigraph attribution shipped an em-dash.) FIXED this pass — `lint_manuscript.py` now scans those config fields.
+- Hardcover front-panel **spine-hinge intrusion ~0.4"** can clip a CENTERED title (inset from the hinge); halo is **two-tone/contrast-adaptive per element**, not one direction; **AI-authorship disclosure is now mandatory** on KDP.
+
+### 19.4 Cover / art / vision — mechanisms that thinned in consolidation
+- **`cover_generation_prompts.md` is a reusable prompt-recipe ENGINE** (Style Bible + per-image Concept/Mood/Avoid/Reference schema + generator param tables) — vendor it; period-accuracy + photographic-realism cues + reference-artist anchors are load-bearing vision-verify checkpoints.
+- **KEEL vision `:8080` squatter trap:** the resolver reuses any live server on 8080/1234/11434, so a non-vision squatter silently breaks the perceptual gate — probe that it was launched WITH `--mmproj`. Recover the ComfyUI cold-run kit (health/hardware/ws_monitor + img2img/inpaint/upscale graphs) and the FERRYMAN sd-turbo fallback (`PYTHONUTF8`/`PYTHONIOENCODING` or it silent-exits 0) into the cover-pipeline doc.
+
+### 19.5 Model / working-style (repeated across projects = load-bearing)
+- **Fan-out READERS are OPUS, "not fable class"** — §15.3's "opus or sonnet" under-states it; a canon read is judgment-heavy → OPUS.
+- **Primary source dominates model convergence (×5):** agreement across N LLM outputs is shared-prior co-hallucination, NOT corroboration → `audit canon` must trace every citation to a primary source.
+- **Land every deliverable on disk, never only in chat (×4). "--help / it opens" is NOT a smoke test — deep-probe the real chain (×2 = GATE-5). Re-tighten at the packaging phase (×2)** (where KDP rejections historically lived). **Tool-tinkering feels like progress; shipping is the metric (×2)** — warns MAINTAIN off endless kit-polishing. Corroborations to hold: autonomy/never-block (×8), anti-sycophancy / non-LLM oracle beats convergence (×6), trust-artifact-over-recall (×4), terse one-sentence-correction register (×5).

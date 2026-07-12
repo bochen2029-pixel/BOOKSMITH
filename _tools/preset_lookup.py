@@ -61,11 +61,23 @@ CONTRACT
     preset_lookup.mixam_paperback_spine(200, "cream")            -> 0.5
     preset_lookup.mixam_paperback_wrap_dims(6, 9, 0.5)
       -> {"spine": 0.5, "cover_w": 12.75, "cover_h": 9.25, "bleed_in": 0.125}
+    preset_lookup.kdp_paperback_wrap_dims(6, 9, 200, "cream")
+      -> {"spine": 0.5, "cover_w": 12.75, "cover_h": 9.25, "bleed_in": 0.125, ...}
+    preset_lookup.kdp_hardcover_wrap_dims(6, 9, 200)
+      -> {"spine": ..., "cover_w": ..., "cover_h": 10.417, "turn_in_in": 0.708, ...}
+
+    (kdp_paperback_wrap_dims / kdp_hardcover_wrap_dims are the single source of
+    truth for KDP wrap dims, called by BOTH composite_cover.build_kdp_wrap and
+    verify_build._expected_wrap; the same shared-path discipline as blurb/mixam.
+    Every geometry knob is a parameter defaulted to a KDP_* constant, so the
+    caller passes book_config.spine.* straight through; spine_override_in wins.)
 
     Debug CLI:
       python preset_lookup.py blurb-softcover  --trim 6x9 --pages 100
       python preset_lookup.py blurb-imagewrap  --trim 6x9 --pages 200
       python preset_lookup.py mixam-paperback  --trim 6x9 --pages 200 [--paper cream]
+      python preset_lookup.py kdp-paperback    --trim 6x9 --pages 200 [--paper cream]
+      python preset_lookup.py kdp-hardcover    --trim 6x9 --pages 200
 """
 from __future__ import annotations
 
@@ -84,6 +96,14 @@ MIXAM_PB_SPINE_CREAM_PER_PAGE = 0.0023    # spine_fit: cream 50lb (calc series �
 MIXAM_PB_SPINE_CREAM_BASE = 0.04
 MIXAM_PB_SPINE_WHITE_PER_PAGE = 0.00215   # INFERRED: single-point fit, uncoated 50lb
 MIXAM_PB_SPINE_WHITE_BASE = 0.01          #   200pp -> 0.44; cart canonical — verify at upload
+
+# ---- KDP defaults (book_config.spine overrides ALL of these; LESSONS_LEDGER §5.x)
+KDP_PB_BLEED_IN = 0.125                    # KDP paperback wrap bleed each side
+KDP_PER_PAGE_CREAM = 0.0025               # per_page_cream (spine paper thickness)
+KDP_PER_PAGE_WHITE = 0.002252             # per_page_white
+KDP_HC_BOARD_ADD_IN = 0.348               # kdp_hardcover_board_add (Previewer-calibrated)
+KDP_HC_TURN_IN_IN = 0.708                 # case-board turn-in each side (NOT bleed)
+KDP_HC_HEIGHT_IN = 10.417                 # hardcoded case height (validator > arithmetic)
 
 _PRESETS_CACHE: dict | None = None
 
@@ -270,6 +290,82 @@ def mixam_paperback_wrap_dims(trim_w: float, trim_h: float,
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# KDP paperback / hardcover wrap geometry
+#   The SINGLE source of truth for KDP wrap dims, shared by composite_cover.py
+#   (BUILD) and verify_build.py (RECOMPUTE); same as blurb/mixam above. Every
+#   knob is a parameter defaulted to the KDP_* constant so a caller passes the
+#   book_config.spine.* values straight through and NOTHING that belongs in
+#   book_config is hard-coded on either side. spine_override_in (a stated
+#   KDP/Previewer value) always wins over the formula.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def kdp_paperback_spine(pages: int, paper: str = "cream",
+                        per_page_cream: float = KDP_PER_PAGE_CREAM,
+                        per_page_white: float = KDP_PER_PAGE_WHITE,
+                        spine_override_in=None) -> float:
+    """KDP paperback spine = pages * per_page (NO board add). paper selects the
+    per-page thickness (cream vs white). spine_override_in (a stated KDP value)
+    wins when present."""
+    if spine_override_in is not None:
+        return round(float(spine_override_in), 4)
+    per_page = float(per_page_cream) if str(paper).lower() == "cream" \
+        else float(per_page_white)
+    return round(pages * per_page, 4)
+
+
+def kdp_paperback_wrap_dims(trim_w: float, trim_h: float, pages: int,
+                            paper: str = "cream",
+                            per_page_cream: float = KDP_PER_PAGE_CREAM,
+                            per_page_white: float = KDP_PER_PAGE_WHITE,
+                            bleed_in: float = KDP_PB_BLEED_IN,
+                            spine_override_in=None) -> dict:
+    """KDP paperback single wrap [back|spine|front]:
+        W = 2*trim_w + spine + 2*bleed ; H = trim_h + 2*bleed ; no board add."""
+    spine = kdp_paperback_spine(pages, paper, per_page_cream, per_page_white,
+                                spine_override_in)
+    b = float(bleed_in)
+    return {
+        "binding": "kdp_paperback",
+        "spine": spine,
+        "cover_w": round(2 * float(trim_w) + spine + 2 * b, 4),
+        "cover_h": round(float(trim_h) + 2 * b, 4),
+        "bleed_in": b,
+    }
+
+
+def kdp_hardcover_spine(pages: int,
+                        per_page_white: float = KDP_PER_PAGE_WHITE,
+                        board_add_in: float = KDP_HC_BOARD_ADD_IN,
+                        spine_override_in=None) -> float:
+    """KDP hardcover spine = pages * per_page_white + board_add. KDP hardcover is
+    WHITE-ONLY regardless of book paper. spine_override_in wins when present."""
+    if spine_override_in is not None:
+        return round(float(spine_override_in), 4)
+    return round(pages * float(per_page_white) + float(board_add_in), 4)
+
+
+def kdp_hardcover_wrap_dims(trim_w: float, trim_h: float, pages: int,
+                            per_page_white: float = KDP_PER_PAGE_WHITE,
+                            board_add_in: float = KDP_HC_BOARD_ADD_IN,
+                            turn_in_in: float = KDP_HC_TURN_IN_IN,
+                            height_in: float = KDP_HC_HEIGHT_IN,
+                            spine_override_in=None) -> dict:
+    """KDP hardcover case wrap [back|spine|front] with case-board turn-in:
+        W = 2*turn_in + 2*trim_w + spine ; H = height_in (hardcoded case height).
+    White-only spine math + board add. See LESSONS_LEDGER §5.3."""
+    spine = kdp_hardcover_spine(pages, per_page_white, board_add_in,
+                                spine_override_in)
+    edge = float(turn_in_in)
+    return {
+        "binding": "kdp_hardcover",
+        "spine": spine,
+        "cover_w": round(2 * edge + 2 * float(trim_w) + spine, 4),
+        "cover_h": round(float(height_in), 4),   # hardcoded case height
+        "turn_in_in": edge,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # debug CLI
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -278,7 +374,8 @@ def _cli(argv=None) -> int:
     ap = argparse.ArgumentParser(
         description="Debug CLI over print_presets.json geometry (BOOKSMITH).")
     ap.add_argument("what",
-                    choices=["blurb-softcover", "blurb-imagewrap", "mixam-paperback"])
+                    choices=["blurb-softcover", "blurb-imagewrap", "mixam-paperback",
+                             "kdp-paperback", "kdp-hardcover"])
     ap.add_argument("--trim", default="6x9", help='Trim key, e.g. "6x9".')
     ap.add_argument("--paper", default=None,
                     help="Blurb paper key, or cream/white for Mixam.")
@@ -292,6 +389,13 @@ def _cli(argv=None) -> int:
         out = softcover_dims(tkey, a.paper or DEFAULT_BLURB_PAPER, a.pages)
     elif a.what == "blurb-imagewrap":
         out = imagewrap_dims(tkey, a.paper or DEFAULT_BLURB_PAPER, a.pages)
+    elif a.what == "kdp-paperback":
+        out = kdp_paperback_wrap_dims(tw, th, a.pages, a.paper or "cream",
+                                      spine_override_in=a.override)
+        out.update({"pages": a.pages, "paper": a.paper or "cream"})
+    elif a.what == "kdp-hardcover":
+        out = kdp_hardcover_wrap_dims(tw, th, a.pages, spine_override_in=a.override)
+        out.update({"pages": a.pages, "paper": "white (KDP HC is white-only)"})
     else:
         spine = mixam_paperback_spine(a.pages, a.paper or "cream", a.override)
         out = mixam_paperback_wrap_dims(tw, th, spine)

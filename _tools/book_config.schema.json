@@ -11,8 +11,26 @@
     "subtitle": { "type": "string", "description": "Optional subtitle. Keep 'Book 1' OUT of the subtitle (Amazon compilation-detector signal)." },
     "author": { "type": "string", "description": "Author name as printed (e.g. 'Bo Chen')." },
     "slug": { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "Filesystem-safe identifier. Drives book_workspace/<slug>/ and all output filenames." },
-    "genre": { "type": "string", "description": "Free-text genre/register label (e.g. 'literary fiction', 'AI-career nonfiction')." },
+    "genre": { "type": "string", "description": "Free-text genre/register label (e.g. 'literary fiction', 'AI-career nonfiction'). (orchestrator/agent-consumed; not read by the build toolchain)." },
     "is_fiction": { "type": "boolean", "description": "Selects the fiction copyright disclaimer + fiction_refs handling; false enables the LaTeX->Unicode math path." },
+    "language": { "type": "string", "default": "en", "description": "BCP-47 language tag for EPUB dc:language + xml:lang (read by build_epub.py). Defaults to 'en'." },
+    "integration_mode": {
+      "type": "string",
+      "enum": ["synthesis", "anthology", "reforge"],
+      "default": "synthesis",
+      "description": "How multiple intake sources become ONE book. synthesis (default): re-derive from first principles — the core stays the core, satellites DISSOLVE in; recombination is not synthesis. anthology: parts intentionally stay distinct. reforge: an existing manuscript reborn, re-synthesized strictly better in the author's register. Asked once at intake when a core + satellites exist; never silently assumed. (orchestrator/agent-consumed; not read by the build toolchain)."
+    },
+
+    "min_pages": {
+      "type": "integer",
+      "default": 75,
+      "description": "HARD house floor: verify_build fails a print format whose interior page count is below this (default 75). A thinner book gives an illegible spine (spine font scales with page count) and reads as a pamphlet. Set lower ONLY as a deliberate, recorded exception; 0 disables the check. Prevention is upstream: target ~28-34K words for 6x9 to clear it with margin. See LESSONS_LEDGER §16.5."
+    },
+    "kindle_include_toc": {
+      "type": "boolean",
+      "default": false,
+      "description": "Kindle/reflowable ebooks: whether to inject a manual CONTENTS page + TableOfContents field. Default FALSE — Amazon builds navigation from the Heading-1 structure, so a manual TOC is redundant and some upload paths render it broken/blank. Kindle NEVER carries page numbers regardless. See LESSONS_LEDGER §16.4."
+    },
 
     "units": {
       "type": "array",
@@ -64,12 +82,12 @@
       "type": "string",
       "enum": ["matte", "gloss"],
       "default": "matte",
-      "description": "Cover finish. Matte is the literary house default."
+      "description": "Cover finish. Matte is the literary house default. (orchestrator/agent-consumed; not read by the build toolchain)."
     },
 
     "formats": {
       "type": "array",
-      "description": "Which upload-ready formats to produce. Literary/premium ships all 5; tech register drops mixam_hardcover.",
+      "description": "Which upload-ready formats to produce. Literary/premium ships all 5; tech register drops mixam_hardcover. (orchestrator/agent-consumed; not read by the build toolchain).",
       "items": { "type": "string", "enum": ["kindle", "kdp_paperback", "kdp_hardcover", "mixam_hardcover", "digital_pdf", "epub", "mixam_paperback", "blurb_paperback", "blurb_hardcover"] },
       "uniqueItems": true,
       "minItems": 1,
@@ -90,7 +108,12 @@
         "top_in": { "type": "number", "default": 0.5, "description": "Top margin. Mixam profile uses 0.625in." },
         "bottom_in": { "type": "number", "default": 0.625, "description": "Bottom margin. Mixam profile uses 0.75in." },
         "body_color": { "type": "string", "default": "1A1A1A", "description": "Print body hex (Kindle uses 000000)." },
-        "ornament_glyph": { "type": "string", "default": "✦", "description": "Section-break / part ornament (U+2726 four-pointed star), rendered in Segoe UI Symbol." }
+        "ornament_glyph": { "type": "string", "default": "✦", "description": "Section-break / part ornament (U+2726 four-pointed star), rendered in the ornament_font." },
+        "ornament_font": { "type": "string", "default": "Segoe UI Symbol", "description": "Font used to render ornament_glyph in the generators. Segoe UI Symbol ships with Windows and carries the U+2726 star; change only if your box lacks it." },
+        "code_font": { "type": "string", "default": "Consolas", "description": "Monospace font for inline `backtick` code runs in the generators. Consolas is the Windows default." },
+        "math_font": { "type": "string", "default": "Cambria Math", "description": "Font tagged on LaTeX->Unicode math runs in the generators. Cambria Math is the Windows default; latex_to_unicode.js emits glyphs this font renders well." },
+        "include_toc": { "type": "boolean", "default": true, "description": "PRINT interiors: build a CONTENTS/TOC page. Default true. TOC entries MUST be title-case at normal tracking with a right-tab dot leader — NEVER wide-tracked ALL-CAPS (they wrap and collide with the leaders, garbling the Contents page). See LESSONS_LEDGER §16.3." },
+        "page_number_align": { "type": "string", "enum": ["center", "outer"], "default": "center", "description": "Footer page-number placement. House style = center (bottom-center on every page). 'outer' = recto-right / verso-left (the old default). See LESSONS_LEDGER §16.2." }
       },
       "default": {}
     },
@@ -166,7 +189,7 @@
             "negative_prompt": { "type": "string", "default": "text, watermark, letters, title, signature, frame, border" },
             "steps": { "type": "integer", "default": 30 },
             "seed": { "type": "integer", "default": -1, "description": "-1 = randomize. run_batch.py sweeps seeds for variants." },
-            "reroll_budget": { "type": "integer", "default": 6, "description": "Max re-rolls before the cover loop hard-stops to the human." }
+            "reroll_budget": { "type": "integer", "default": 6, "description": "Max re-rolls before the cover loop hard-stops to the human. (orchestrator/agent-consumed; not read by the build toolchain)." }
           },
           "default": {}
         },
@@ -199,7 +222,7 @@
         "kdp_bleed_in": { "type": "number", "default": 0.125, "description": "KDP paperback single-wrap bleed all sides." },
         "mixam_bleed_in": { "type": "number", "default": 0.80, "description": "Mixam cover bleed all sides (unusually thick - paper wraps case boards)." },
         "calibrate_against_previewer": { "type": "boolean", "default": true, "description": "On dimension rejection, reverse-derive the board-add from the Previewer's stated expected wrap width rather than trusting a formula." },
-      "spine_override_in": { "type": "number", "description": "Escape hatch: a Previewer/Mixam-stated EXACT spine width (inches) that bypasses the formula entirely. Set after a dimension rejection reveals the real number; composite_cover.py then uses it verbatim." }
+        "spine_override_in": { "type": "number", "description": "Escape hatch: a Previewer/Mixam-stated EXACT spine width (inches) that bypasses the formula entirely. Set after a dimension rejection reveals the real number; composite_cover.py then uses it verbatim." }
       },
       "default": {}
     },
@@ -258,9 +281,19 @@
         "exemplars_path": { "type": "string", "default": "exemplars/", "description": "Dir of voice-calibration passages (anchor + supporting)." },
         "blacklist": { "type": "array", "items": { "type": "string" }, "description": "Forbidden phrasings/vocabulary (e.g. delve, crucial, leverage-as-verb, meta-openings). Hard exit-1 lint outside scaffolding dirs.", "default": [] },
         "greenlist": { "type": "array", "items": { "type": "string" }, "description": "Sanctioned signature phrases/Bo-isms to preserve.", "default": [] },
-        "sacred_terms": { "type": "array", "items": { "type": "string" }, "description": "Glossary of terms with locked usage ('Never Say Instead'); e.g. an exact refrain wording that must not drift.", "default": [] }
+        "sacred_terms": { "type": "array", "items": { "type": "string" }, "description": "Glossary of terms with locked usage ('Never Say Instead'); e.g. an exact refrain wording that must not drift.", "default": [] },
+        "no_em_dashes": { "type": "boolean", "default": true, "description": "HARD gate: forbid em-dashes (U+2014) and en-dashes (U+2013) in prose. Default TRUE (Bo's named #1 AI-tell). lint_manuscript.py fails (exit 1) on any em/en-dash in a manuscript file. Compound-adjective hyphens (U+002D) are never flagged. A non-Bo book that legitimately uses em-dashes sets this false. See docs/author_voice/AUTHOR_VOICE_Bo_Chen.md §1." }
       },
       "default": { "unit_noun": "chapter", "exemplars_path": "exemplars/", "blacklist": [], "greenlist": [], "sacred_terms": [] }
+    },
+
+    "check_part_pages": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional recto-parity heading override consumed by check_part_pages.py. If absent, headings are synthesized from units[].title / voice.unit_noun.",
+      "properties": {
+        "headings": { "type": "array", "items": { "type": "string" }, "description": "Explicit ordered list of heading STEMS to Find on recto pages (matched before the dash tail)." }
+      }
     }
   }
 }

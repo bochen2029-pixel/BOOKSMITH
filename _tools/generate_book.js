@@ -72,7 +72,7 @@ const REPO_ROOT = path.resolve(TOOLS_DIR, "..");
 // CLI
 // ============================================================
 function parseArgs(argv) {
-  const args = { config: null, format: null, src: null, out: null, inject: true };
+  const args = { config: null, format: null, src: null, out: null, inject: true, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--config") args.config = argv[++i];
@@ -80,6 +80,7 @@ function parseArgs(argv) {
     else if (a === "--src") args.src = argv[++i];
     else if (a === "--out") args.out = argv[++i];
     else if (a === "--no-inject") args.inject = false;
+    else if (a === "--help" || a === "-h") args.help = true;
   }
   return args;
 }
@@ -88,6 +89,24 @@ const VALID_FORMATS = [
   "kdp_paperback", "kdp_hardcover", "mixam_hardcover",
   "mixam_paperback", "blurb_paperback", "blurb_hardcover",
 ];
+
+const USAGE = `generate_book.js — BOOKSMITH print-interior DOCX generator
+
+Usage:
+  node generate_book.js --config <book_config.json> --format <profile> [options]
+
+Required:
+  --config <path>   book_config.json (per-book knobs; schema _tools/book_config.schema.json)
+  --format <name>   one of: ${VALID_FORMATS.join(" | ")}
+
+Options:
+  --src <path>      version-pinned master markdown (default: latest outputs/markdown/<slug>_vN.md)
+  --out <path>      output .docx path (default: book_workspace/<slug>/outputs/<profile>/...)
+  --no-inject       skip the post-Packer mirror-margin + front-matter vAlign injection
+  -h, --help        show this help and exit
+
+Reads geometry/typography/front-matter from book_config.json; NEVER hard-codes a
+book-specific value. Run inject_mirror_margins.js + docx_to_pdf.py after this.`;
 
 // Interior page-count multiple per format (§4.4; print_presets page_multiple).
 // x2 is guaranteed here by the trailing EVEN_PAGE blank; x4 (Mixam) is padded
@@ -232,6 +251,13 @@ function resolveTypography(config) {
     FIRST_INDENT: num(interior.first_line_indent, 360),
     BODY_COLOR: str(interior.body_color, "1A1A1A"),
     ORNAMENT: str(interior.ornament_glyph, "✦"),
+    // Config-driven glyph fonts (schema defaults match the historical literals,
+    // so a sparse config is byte-identical to before). ORNAMENT_FONT renders the
+    // ornament glyph, CODE_FONT the inline `backtick` runs, MATH_FONT the
+    // LaTeX->Unicode math runs.
+    ORNAMENT_FONT: str(interior.ornament_font, "Segoe UI Symbol"),
+    CODE_FONT: str(interior.code_font, "Consolas"),
+    MATH_FONT: str(interior.math_font, "Cambria Math"),
   };
 }
 
@@ -248,7 +274,7 @@ function makeInlineBuilder(T) {
     const codeParts = text.split(/(`[^`]+`)/g);
     for (const codePart of codeParts) {
       if (codePart.startsWith("`") && codePart.endsWith("`") && codePart.length > 2) {
-        runs.push(new TextRun({ ...baseOpts, text: codePart.slice(1, -1), font: "Consolas" }));
+        runs.push(new TextRun({ ...baseOpts, text: codePart.slice(1, -1), font: T.CODE_FONT }));
         continue;
       }
       if (codePart.length === 0) continue;
@@ -256,7 +282,7 @@ function makeInlineBuilder(T) {
       for (const mathPart of mathParts) {
         if (mathPart.startsWith("$") && mathPart.endsWith("$") && mathPart.length > 2) {
           const expr = latexToUnicode(mathPart.slice(1, -1));
-          runs.push(new TextRun({ ...baseOpts, text: expr, font: "Cambria Math", italics: true }));
+          runs.push(new TextRun({ ...baseOpts, text: expr, font: T.MATH_FONT, italics: true }));
           continue;
         }
         if (mathPart.length === 0) continue;
@@ -305,6 +331,17 @@ function makeFactories(T, buildInlineRuns) {
     });
   }
 
+  // House-style unit-heading text (§16.3): title-case at light tracking, NOT
+  // wide-tracked ALL-CAPS. Word's auto-TOC copies the heading text verbatim, so
+  // an all-caps + wide-tracked + em-dash heading ("CHAPTER ONE — DEPARTURE")
+  // produces a long Contents entry that wraps to two lines and collides with the
+  // dot leaders. Title-case + a colon separator ("Chapter One: Departure",
+  // matching the house style "Chapter 13: The Entropy Engineer") stays single-
+  // line and de-garbles the auto-TOC. The colon swap fires only on a spaced
+  // em/en-dash separator; a title without one keeps its own casing untouched.
+  function unitHeadingText(title) {
+    return String(title == null ? "" : title).replace(/\s+[—–]\s+/, ": ");
+  }
   // Unit (chapter/part) heading. leadingPageBreak=false when this heading is the
   // first item of an ODD_PAGE section — the section break itself advances the
   // page, so a PageBreak would double-advance to an unwanted blank recto (§4.3).
@@ -316,12 +353,12 @@ function makeFactories(T, buildInlineRuns) {
       heading: HeadingLevel.HEADING_1,
       spacing: { before: 200, after: 400 },
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: title.toUpperCase(), font: T.FONT, size: 28, color: T.BODY_COLOR, characterSpacing: 60 })],
+      children: [new TextRun({ text: unitHeadingText(title), font: T.FONT, size: 28, color: T.BODY_COLOR, characterSpacing: 20 })],
     }));
     result.push(new Paragraph({
       spacing: { before: 100, after: 500 },
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: T.ORNAMENT, font: "Segoe UI Symbol", size: 20, color: "999999" })],
+      children: [new TextRun({ text: T.ORNAMENT, font: T.ORNAMENT_FONT, size: 20, color: "999999" })],
     }));
     return result;
   }
@@ -338,7 +375,7 @@ function makeFactories(T, buildInlineRuns) {
     return new Paragraph({
       spacing: { before: 300, after: 300 },
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: `${T.ORNAMENT}  ${T.ORNAMENT}  ${T.ORNAMENT}`, font: "Segoe UI Symbol", size: 16, color: "BBBBBB" })],
+      children: [new TextRun({ text: `${T.ORNAMENT}  ${T.ORNAMENT}  ${T.ORNAMENT}`, font: T.ORNAMENT_FONT, size: 16, color: "BBBBBB" })],
     });
   }
 
@@ -346,7 +383,7 @@ function makeFactories(T, buildInlineRuns) {
     return new Paragraph({
       spacing: { before: 200, after: 200 },
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: latexToUnicode(expr), font: "Cambria Math", size: 24, color: T.BODY_COLOR, italics: true })],
+      children: [new TextRun({ text: latexToUnicode(expr), font: T.MATH_FONT, size: 24, color: T.BODY_COLOR, italics: true })],
     });
   }
 
@@ -499,7 +536,7 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
     }));
     kids.push(new Paragraph({
       spacing: { before: 300, after: 200 }, alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: T.ORNAMENT, font: "Segoe UI Symbol", size: 22, color: "999999" })],
+      children: [new TextRun({ text: T.ORNAMENT, font: T.ORNAMENT_FONT, size: 22, color: "999999" })],
     }));
     if (subtitle) {
       kids.push(new Paragraph({
@@ -633,8 +670,13 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
 // ============================================================
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  if (args.help) {
+    console.log(USAGE);
+    return;
+  }
   if (!args.format || !VALID_FORMATS.includes(args.format)) {
-    console.error(`--format is required and must be one of: ${VALID_FORMATS.join(" | ")}`);
+    console.error(`error: --format is required and must be one of: ${VALID_FORMATS.join(" | ")}`);
+    console.error(`Run "node generate_book.js --help" for usage.`);
     process.exit(2);
   }
   const config = loadConfig(args.config);
@@ -666,26 +708,26 @@ async function main() {
   };
 
   // ---- Header/footer factories ----
-  // Mirror page-number footers: RIGHT-aligned default (recto -> outer corner),
-  // LEFT-aligned even (verso -> outer corner). evenAndOddHeaders (injected) makes
-  // the split render (§3.4).
+  // Page-number footers. House style (LESSONS_LEDGER §16.2): CENTERED at the
+  // bottom of EVERY page, recto and verso alike — NOT the outer corner. The
+  // legacy outer-corner style (recto RIGHT / verso LEFT) is still selectable via
+  // interior.page_number_align='outer' (schema default 'center'); it relies on
+  // the evenAndOddHeaders split that inject_mirror_margins.js injects so the
+  // default (recto) and even (verso) footers render on the correct sides.
+  const pnAlign = (config.interior && config.interior.page_number_align) === "outer" ? "outer" : "center";
   function pageNumberFooters() {
-    return {
-      footers: {
-        default: new Footer({
-          children: [new Paragraph({
-            alignment: AlignmentType.RIGHT,
-            children: [new TextRun({ children: [PageNumber.CURRENT], font: T.FONT, size: 18, color: "888888" })],
-          })],
-        }),
-        even: new Footer({
-          children: [new Paragraph({
-            alignment: AlignmentType.LEFT,
-            children: [new TextRun({ children: [PageNumber.CURRENT], font: T.FONT, size: 18, color: "888888" })],
-          })],
-        }),
-      },
-    };
+    const mk = (align) => new Footer({
+      children: [new Paragraph({
+        alignment: align,
+        children: [new TextRun({ children: [PageNumber.CURRENT], font: T.FONT, size: 18, color: "888888" })],
+      })],
+    });
+    if (pnAlign === "outer") {
+      // Outer corner: recto (default) = RIGHT, verso (even) = LEFT.
+      return { footers: { default: mk(AlignmentType.RIGHT), even: mk(AlignmentType.LEFT) } };
+    }
+    // Centered on both recto and verso (house default).
+    return { footers: { default: mk(AlignmentType.CENTER), even: mk(AlignmentType.CENTER) } };
   }
 
   // §3.5: EVERY header-free section needs EXPLICIT empty Header AND Footer.
@@ -728,20 +770,28 @@ async function main() {
 
   const recto = (config.recto_strategy || "odd_page_sections");
 
+  // Gate the whole CONTENTS/TOC section behind interior.include_toc (schema
+  // default TRUE — omit only when a book deliberately ships without a printed
+  // Contents). §16.3. When present, its entries are the title-case Heading-1
+  // texts (see unitHeadingText) rendered by Word's auto-TOC dot-leader style.
+  const includeToc = !(config.interior && config.interior.include_toc === false);
+
   // ---- Assemble sections ----
   const sections = [];
   // Front matter first (each its own one-page section).
   for (const s of frontSections) sections.push(s);
 
   // TOC on recto, empty headers/footers.
-  sections.push({
-    properties: {
-      type: recto === "odd_page_sections" ? SectionType.ODD_PAGE : SectionType.NEXT_PAGE,
-      page: { ...PAGE_COMMON, margin: { ...PAGE_COMMON.margin, footer: 0 } },
-    },
-    ...emptyHeadersFooters(),
-    children: tocChildren,
-  });
+  if (includeToc) {
+    sections.push({
+      properties: {
+        type: recto === "odd_page_sections" ? SectionType.ODD_PAGE : SectionType.NEXT_PAGE,
+        page: { ...PAGE_COMMON, margin: { ...PAGE_COMMON.margin, footer: 0 } },
+      },
+      ...emptyHeadersFooters(),
+      children: tocChildren,
+    });
+  }
 
   // First body unit — ODD_PAGE, page numbers start at 1.
   sections.push({
@@ -820,13 +870,21 @@ async function main() {
   console.log(`Body            : ${T.BODY_SIZE/2}pt ${T.FONT}, leading ${T.BODY_LINE}, indent ${T.FIRST_INDENT} DXA, color #${T.BODY_COLOR}`);
   console.log(`Unit noun       : ${unitNoun} (level "${unitLevel}")  |  units: ${unitContents.length}`);
   console.log(`Front-matter    : ${frontSections.length} section(s)  |  recto: ${recto}`);
+  console.log(`Contents/TOC    : ${includeToc ? "included — title-case auto-TOC w/ dot leader (§16.3)" : "OMITTED (interior.include_toc=false)"}`);
+  console.log(`Page numbers    : ${pnAlign === "outer" ? "OUTER (recto-right / verso-left)" : "centered (house style §16.2)"}`);
   console.log(`Sections total  : ${sections.length}`);
   console.log(`Page multiple   : must be x${pageMultiple}` + (pageMultiple === 4 ? " (pad in Python via fitz AFTER PDF conversion)" : " (trailing EVEN_PAGE handles it)"));
   console.log(`Mirror inject   : ${args.inject ? "done (mirrorMargins + evenAndOddHeaders + front-matter vAlign)" : "SKIPPED (--no-inject)"}`);
 }
 
 if (require.main === module) {
-  main().catch((e) => { console.error(e); process.exit(1); });
+  main().catch((e) => {
+    // Quiet, structured message for expected errors (missing --config, no
+    // markdown source, bad format). Set BOOKSMITH_DEBUG=1 for the full stack.
+    console.error(`error: ${e && e.message ? e.message : e}`);
+    if (process.env.BOOKSMITH_DEBUG && e && e.stack) console.error(e.stack);
+    process.exit(1);
+  });
 }
 
-module.exports = { main, splitUnits, resolveMargins, resolveTypography };
+module.exports = { main, splitUnits, resolveMargins, resolveTypography, USAGE };

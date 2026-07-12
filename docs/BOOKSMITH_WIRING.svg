@@ -1,0 +1,158 @@
+<svg viewBox="0 0 1520 1400" xmlns="http://www.w3.org/2000/svg" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#C9A760"/>
+    </marker>
+    <marker id="arwT" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#5FB3B3"/>
+    </marker>
+    <style>
+      .ph  { fill:#16324a; stroke:#C9A760; stroke-width:2; }
+      .g   { fill:#5a1717; stroke:#C9A760; stroke-width:1.5; }
+      .cv  { fill:#123634; stroke:#5FB3B3; stroke-width:2; }
+      .t   { fill:#F4EFE0; font-size:16px; }
+      .tb  { fill:#F4EFE0; font-size:17px; font-weight:bold; }
+      .ts  { fill:#cdbf9a; font-size:12.5px; }
+      .gt  { fill:#F4EFE0; font-size:12.5px; }
+      .arw { stroke:#C9A760; stroke-width:2.2; fill:none; marker-end:url(#arw); }
+      .arwT{ stroke:#5FB3B3; stroke-width:2; fill:none; marker-end:url(#arwT); }
+      .star{ fill:#C9A760; font-size:13px; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1520" height="1400" fill="#0D1B2A"/>
+  <text x="40" y="52" class="tb" font-size="28" fill="#C9A760">BOOKSMITH — the superstructure</text>
+  <text x="40" y="80" class="ts" font-size="15">gist + docs  →  9 upload-ready formats + a generated, verified cover.  Every step is bound to a gate that fails if the step is skipped.</text>
+
+  <!-- COMPACTION SPINE wrap -->
+  <rect x="30" y="100" width="900" height="1270" rx="14" fill="none" stroke="#4a6b8a" stroke-width="1.5" stroke-dasharray="7 6"/>
+  <text x="45" y="122" class="ts" fill="#8fb3d6">PHASE 0 · SESSION SPINE (wraps all) — _CONTINUITY.md ledger ⇄ SessionStart(compact) rehydration hook · model policy: subagents = sonnet|opus · _LESSONS.md → LESSONS_LEDGER</text>
+
+  <!-- LEFT SPINE PHASES -->
+  <!-- 1 -->
+  <rect class="ph" x="80" y="150" width="470" height="66" rx="9"/>
+  <text x="100" y="178" class="tb">1 · INTAKE + INGEST</text>
+  <text x="100" y="200" class="ts">size → chunk → reconcile → DIGEST FAN-OUT (write-to-disk-then-return) → vendor</text>
+  <!-- G1 -->
+  <path d="M315,216 l28,26 l-28,26 l-28,-26 Z" class="g"/>
+  <text x="315" y="247" text-anchor="middle" class="gt">GATE-1</text>
+  <line class="arw" x1="315" y1="216" x2="315" y2="216"/>
+  <line class="arw" x1="315" y1="268" x2="315" y2="292"/>
+  <!-- 2 -->
+  <rect class="ph" x="80" y="294" width="470" height="66" rx="9"/>
+  <text x="100" y="322" class="tb">2 · ARCHITECT — seed.md + book_config.json</text>
+  <text x="100" y="344" class="ts">Book Bible · voice + sacred terms · units[] · schema-valid · init_contracts</text>
+  <path d="M315,360 l28,26 l-28,26 l-28,-26 Z" class="g"/>
+  <text x="315" y="391" text-anchor="middle" class="gt">GATE-2</text>
+  <line class="arw" x1="315" y1="412" x2="315" y2="436"/>
+  <!-- 3 -->
+  <rect class="ph" x="80" y="438" width="470" height="66" rx="9"/>
+  <text x="100" y="466" class="tb">3 · DRAFT unit N  ⟲  (loop 1→N)</text>
+  <text x="100" y="488" class="ts">Context Pack + PRIOR FULL PROSE · class A/B/C · update _CONTINUITY.md</text>
+  <path d="M315,504 l28,26 l-28,26 l-28,-26 Z" class="g"/>
+  <text x="315" y="535" text-anchor="middle" class="gt">GATE-3</text>
+  <path class="arw" d="M560,471 q60,0 60,-90 q0,-30 -60,-30" />
+  <text x="600" y="405" class="ts" fill="#cdbf9a">more units ⟲</text>
+  <line class="arw" x1="315" y1="556" x2="315" y2="580"/>
+  <!-- 4 -->
+  <rect class="ph" x="80" y="582" width="470" height="66" rx="9"/>
+  <text x="100" y="610" class="tb">4 · INTEGRATION</text>
+  <text x="100" y="632" class="ts">seam pass · thread audit (refrains/mirrors EXACT) · lint_manuscript</text>
+  <path d="M315,648 l28,26 l-28,26 l-28,-26 Z" class="g"/>
+  <text x="315" y="679" text-anchor="middle" class="gt">GATE-4</text>
+  <line class="arw" x1="315" y1="700" x2="315" y2="724"/>
+  <!-- 5 -->
+  <rect class="ph" x="80" y="726" width="470" height="58" rx="9"/>
+  <text x="100" y="752" class="tb">5 · ASSEMBLE — version-pinned master  (KEYSTONE)</text>
+  <text x="100" y="772" class="ts">the ONE markdown every generator reads · word count = parity baseline</text>
+  <line class="arw" x1="315" y1="784" x2="315" y2="806"/>
+  <!-- 6 -->
+  <rect class="ph" x="80" y="808" width="470" height="72" rx="9"/>
+  <text x="100" y="835" class="tb">6 · PRODUCE FORMATS  (9 branches)</text>
+  <text x="100" y="856" class="star">★ RECTO ODD_PAGE · empty headers · mirror+vAlign inject · ÷2/÷4</text>
+  <text x="100" y="874" class="ts">generate_book / kindle / epub → docx_to_pdf → check_part_pages</text>
+  <path d="M315,880 l28,26 l-28,26 l-28,-26 Z" class="g"/>
+  <text x="315" y="911" text-anchor="middle" class="gt">GATE-5</text>
+  <text x="360" y="908" class="ts" fill="#cdbf9a">verify_build all_pass</text>
+  <line class="arw" x1="315" y1="932" x2="315" y2="956"/>
+  <!-- 7 COVER -->
+  <rect class="cv" x="80" y="958" width="470" height="72" rx="9"/>
+  <text x="100" y="985" class="tb">7 · COVER — generate → composite → SEE</text>
+  <text x="100" y="1006" class="star">★ text-to-image (cover_gen SDXL) · fitz MediaBox · cover_meta</text>
+  <text x="100" y="1024" class="ts">checkpoint? VRAM? ComfyUI? → art → composite → imguard</text>
+  <path d="M315,1030 l28,26 l-28,26 l-28,-26 Z" class="g"/>
+  <text x="315" y="1061" text-anchor="middle" class="gt">GATE-6</text>
+  <text x="360" y="1058" class="ts" fill="#8fd6c9">vision_verify PASS</text>
+  <line class="arw" x1="315" y1="1082" x2="315" y2="1106"/>
+  <!-- 8 -->
+  <rect class="ph" x="80" y="1108" width="470" height="58" rx="9"/>
+  <text x="100" y="1134" class="tb">8 · VERIFY EVERYTHING</text>
+  <text x="100" y="1154" class="ts">verify_build ∀ format · vision_verify ∀ cover · rendered-page spot checks</text>
+  <path d="M315,1166 l28,26 l-28,26 l-28,-26 Z" class="g"/>
+  <text x="315" y="1197" text-anchor="middle" class="gt">GATE-7</text>
+  <line class="arw" x1="315" y1="1218" x2="315" y2="1242"/>
+  <!-- 9 -->
+  <rect class="ph" x="80" y="1244" width="470" height="66" rx="9" stroke="#F4EFE0" stroke-width="2.5"/>
+  <text x="100" y="1272" class="tb" fill="#C9A760">9 · SHIP-AT-90% → EMIT finished folder</text>
+  <text x="100" y="1294" class="ts">upload checklist + dimension report · kdp_metadata · fold _LESSONS</text>
+
+  <!-- fail loop back -->
+  <path class="arw" d="M550,891 q120,20 120,-40 q0,-540 -120,-538" stroke-dasharray="6 5"/>
+  <text x="600" y="620" class="ts" fill="#b98a8a">FAIL → diagnose vs LESSONS_LEDGER → retry</text>
+
+  <!-- RIGHT COLUMN -->
+  <!-- cover loop mini -->
+  <rect x="960" y="150" width="520" height="300" rx="12" fill="#0f2620" stroke="#5FB3B3" stroke-width="1.5"/>
+  <text x="980" y="180" class="tb" fill="#8fd6c9">THE COVER LOOP (generate → see → verify)</text>
+  <rect class="cv" x="985" y="200" width="150" height="46" rx="8"/><text x="1060" y="228" text-anchor="middle" class="t">art prompt</text>
+  <line class="arwT" x1="1135" y1="223" x2="1195" y2="223"/>
+  <rect class="cv" x="1200" y="200" width="150" height="46" rx="8"/><text x="1275" y="228" text-anchor="middle" class="t">cover_gen SDXL</text>
+  <line class="arwT" x1="1275" y1="246" x2="1275" y2="286"/>
+  <path d="M1275,288 l26,24 l-26,24 l-26,-24 Z" class="g"/><text x="1275" y="316" text-anchor="middle" class="gt">vv:art</text>
+  <text x="1150" y="316" class="ts" fill="#b98a8a">no baked text?</text>
+  <line class="arwT" x1="1249" y1="312" x2="1141" y2="312"/>
+  <rect class="cv" x="985" y="360" width="200" height="46" rx="8"/><text x="1085" y="388" text-anchor="middle" class="t">composite + type</text>
+  <line class="arwT" x1="1185" y1="383" x2="1245" y2="383"/>
+  <path d="M1300,360 l26,23 l-26,23 l-26,-23 Z" class="g"/><text x="1300" y="388" text-anchor="middle" class="gt">vv:wrap</text>
+  <line class="arwT" x1="1326" y1="383" x2="1400" y2="383"/>
+  <rect class="cv" x="1405" y="360" width="66" height="46" rx="8"/><text x="1438" y="388" text-anchor="middle" class="t">lock</text>
+  <text x="985" y="432" class="ts">mechanical, parallel: verify_build cover_wrap_dimensions (MediaBox vs recompute, 4-dec)</text>
+
+  <!-- two-verifier legend -->
+  <rect x="960" y="470" width="520" height="150" rx="12" fill="#122436" stroke="#C9A760" stroke-width="1.5"/>
+  <text x="980" y="500" class="tb" fill="#C9A760">THE TWO-VERIFIER MODEL</text>
+  <text x="980" y="528" class="t">MECHANICAL — verify_build.py</text>
+  <text x="980" y="550" class="ts">dimensions · page parity · recto · mirror flags · empty headers · word parity · lint</text>
+  <text x="980" y="578" class="t" fill="#8fd6c9">PERCEPTUAL — vision_verify.py (KEEL Qwen / Claude via imguard)</text>
+  <text x="980" y="600" class="ts">legibility · spelling · spine centering · bleed · ISBN clear · art matches Bible</text>
+
+  <!-- cannot-forget list -->
+  <rect x="960" y="640" width="520" height="670" rx="12" fill="#1a1220" stroke="#C9A760" stroke-width="1.5"/>
+  <text x="980" y="670" class="tb" fill="#C9A760">★ CANNOT FORGET — each bound to a gate</text>
+  <text x="980" y="700" class="star">1 · Generate cover ART (not placeholder)  → vision_verify</text>
+  <text x="980" y="726" class="star">2 · Chapters start RIGHT (recto) page  → check_part_pages</text>
+  <text x="980" y="752" class="star">3 · Mirror margins injected  → mirror_flags</text>
+  <text x="980" y="778" class="star">4 · Empty headers on blank sections  → empty_headers</text>
+  <text x="980" y="804" class="star">5 · Mixam ÷4 / KDP ÷2 page count  → page_multiple</text>
+  <text x="980" y="830" class="star">6 · Spine width per paper/format  → cover_wrap_dimensions</text>
+  <text x="980" y="856" class="star">7 · PAGES re-derived, never hard-coded  → pages_match</text>
+  <text x="980" y="882" class="star">8 · Exact MediaBox via fitz, not PIL  → cover_wrap_dimensions</text>
+  <text x="980" y="908" class="star">9 · Ebook not below print word count  → kindle/epub parity</text>
+  <text x="980" y="934" class="star">10 · No title text baked in the art  → vision_verify OCR</text>
+  <text x="980" y="960" class="star">11 · Fonts vendored repo-relative  → compositor check</text>
+  <text x="980" y="986" class="star">12 · Word-COM fields updated by index  → docx_to_pdf</text>
+  <text x="980" y="1012" class="star">13 · ISBN barcode keep-out clear  → vision_verify wrap</text>
+  <text x="980" y="1038" class="star">14 · Mixam filename routing (inner_/front_cover…)  → naming</text>
+  <text x="980" y="1064" class="star">15 · PowerShell not Bash on Windows  → runtime</text>
+  <text x="980" y="1090" class="star">16 · Digests write-to-disk THEN return  → files present</text>
+  <text x="980" y="1116" class="star">17 · Subagents sonnet|opus, never Fable  → policy</text>
+  <text x="980" y="1142" class="star">18 · EPUB mimetype first + STORED  → epub_structure</text>
+  <text x="980" y="1168" class="star">19 · No same-named nested docs (Amazon detector)  → metadata</text>
+  <text x="980" y="1194" class="star">20 · Continuity ledger survives compaction  → SessionStart hook</text>
+  <line x1="980" y1="1214" x2="1460" y2="1214" stroke="#4a6b8a" stroke-dasharray="4 4"/>
+  <text x="980" y="1240" class="ts" fill="#cdbf9a">Full 64 rules → docs/LESSONS_LEDGER.md</text>
+  <text x="980" y="1262" class="ts" fill="#cdbf9a">Exact numbers → docs/format_spec_sheet.md</text>
+  <text x="980" y="1284" class="ts" fill="#cdbf9a">Service geometry → _tools/print_presets.json</text>
+
+  <text x="40" y="1388" class="ts" fill="#6b8ab0">No-gaps rule: every box terminates in a gate or a pointer. A node with neither is unheld — add its enforcer before shipping.</text>
+</svg>

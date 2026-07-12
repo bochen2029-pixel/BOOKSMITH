@@ -13,15 +13,15 @@ PORTED FROM: C:\\BOOK3\\_tools\\_titanic_source\\check_part_pages.py
   reads the unit list + heading style from book_config.json instead of the
   hard-coded five Titanic parts, and emits the verdict as JSON for GATE-5.
 
-Heading discovery:
-  The set of unit headings to find is derived from book_config in this order:
-    1. --headings "A|B|C"  (explicit pipe-separated override) if given, else
-    2. book_config.check_part_pages.headings[]  if present, else
-    3. synthesized from voice.unit_noun + the unit list, matching the house
-       "PART N —" / "CHAPTER N —" convention with an em-dash OR en-dash OR
-       hyphen tail (the generators emit an em-dash; we search the stem so the
-       dash variant does not matter). If no unit list is resolvable we fall back
-       to searching "PART "/"CHAPTER " stems 1..99 and stop at the first miss.
+Heading discovery (two tiers — exactly what the live check runs):
+    1. An EXPLICIT heading-stem list, if one is given:
+         --headings "A|B|C"  (pipe-separated CLI override), else
+         book_config.check_part_pages.headings[]  (config-declared stems).
+       Each stem is Find'd (Heading-1 style, case-insensitive) and its page read.
+    2. else STRUCTURAL: every paragraph at outline level 1 (Heading 1) is a unit
+       start. This is robust to the CONTENTS/TOC page (TOC entries are styled
+       "TOC n", NOT outline level 1), to UPPERCASE rendering, and to em/en/hyphen
+       dash variants — no text Find, no TOC collision. This is the default path.
 
 Usage:
   python check_part_pages.py <in.docx> [--config book_config.json]
@@ -37,7 +37,26 @@ import sys
 import os
 import json
 
-import win32com.client
+try:
+    import win32com.client
+    _WIN32COM_IMPORT_ERROR = None
+except ImportError as _exc:  # non-Windows, or pywin32 not installed
+    win32com = None
+    _WIN32COM_IMPORT_ERROR = _exc
+
+
+def _require_word():
+    """Fail with an actionable JSON error instead of an import traceback."""
+    if win32com is None:
+        print(json.dumps({
+            "error": "word_com_unavailable",
+            "detail": "Recto-parity verification requires Microsoft Word COM "
+                      "(pywin32) on Windows. Without it, verify page parity "
+                      "from the rendered PDF (PyMuPDF text search) or on the "
+                      "KDP/Mixam previewer before upload.",
+            "import_error": str(_WIN32COM_IMPORT_ERROR),
+        }))
+        raise SystemExit(3)
 
 # Word enum constants.
 WD_STORY = 6                 # wdStory (HomeKey unit)
@@ -47,100 +66,12 @@ WD_ADJ_PAGE_NUMBER = 3       # wdActiveEndAdjustedPageNumber (Selection.Informat
 WD_ALERTS_NONE = 0           # wdAlertsNone
 WD_OUTLINE_1 = 1             # wdOutlineLevel1 — Heading-1 paragraphs (chapter/part starts)
 
-# Roman numerals 1..30 — the house part headings are "PART I", "PART II", ...
-_ROMAN = [
-    "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
-    "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX",
-    "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX",
-]
-
 
 def load_config(config_path):
     if not config_path:
         return {}
     with open(config_path, "r", encoding="utf-8") as f:
         return json.load(f)
-
-
-def _config_unit_ids(cfg):
-    """Best-effort resolution of the ordered unit id list from config.
-
-    Structure lives under several possible keys across seeds; we accept any of
-    them, else fall back to the authorship.per_chapter_overrides key order (an
-    ordered dict of unit_id -> class that every seed carries)."""
-    for key in ("units", "structure", "unit_order"):
-        v = cfg.get(key)
-        if isinstance(v, list) and v:
-            # list of ids or list of {id: ...}
-            ids = []
-            for item in v:
-                if isinstance(item, str):
-                    ids.append(item)
-                elif isinstance(item, dict):
-                    ids.append(item.get("id") or item.get("unit_id") or "")
-            ids = [i for i in ids if i]
-            if ids:
-                return ids
-    overrides = (cfg.get("authorship") or {}).get("per_chapter_overrides") or {}
-    if isinstance(overrides, dict) and overrides:
-        return list(overrides.keys())
-    return []
-
-
-def _config_unit_titles(cfg):
-    """Dash-stem of each unit's rendered title. generate_book renders
-    units[].title verbatim as the heading (e.g. 'Chapter One - Departure'); we
-    Find the stem BEFORE the first em/en/hyphen dash so the dash variant is
-    irrelevant and Find is robust."""
-    titles = []
-    for key in ("units", "structure", "unit_order"):
-        v = cfg.get(key)
-        if isinstance(v, list) and v:
-            for item in v:
-                if isinstance(item, dict):
-                    t = (item.get("title") or "").strip()
-                    if not t:
-                        continue
-                    for dash in ("—", "–", " - ", "-"):
-                        idx = t.find(dash)
-                        if idx > 0:
-                            t = t[:idx].strip()
-                            break
-                    titles.append(t)
-            if titles:
-                return titles
-    return []
-
-
-def resolve_headings(cfg, headings_override):
-    """Return the list of heading STEMS to Find (no dash tail — we match the
-    stem so em-dash vs en-dash vs hyphen is irrelevant)."""
-    if headings_override:
-        return [h.strip() for h in headings_override.split("|") if h.strip()]
-
-    cpp = cfg.get("check_part_pages") or {}
-    if isinstance(cpp.get("headings"), list) and cpp["headings"]:
-        return [str(h).strip() for h in cpp["headings"] if str(h).strip()]
-
-    # Prefer the ACTUAL rendered unit titles over synthesized "CHAPTER N" —
-    # generate_book renders units[].title as the heading text.
-    unit_titles = _config_unit_titles(cfg)
-    if unit_titles:
-        return unit_titles
-
-    unit_noun = ((cfg.get("voice") or {}).get("unit_noun") or "chapter").upper()
-    unit_ids = _config_unit_ids(cfg)
-    n = len(unit_ids)
-
-    if unit_noun == "PART":
-        if n == 0:
-            # unknown count — search PART I..PART XXX, caller stops at first miss
-            return [f"PART {_ROMAN[i]}" for i in range(1, len(_ROMAN))]
-        return [f"PART {_ROMAN[i]}" for i in range(1, min(n, len(_ROMAN) - 1) + 1)]
-    else:
-        # Chapters number arabically: "CHAPTER 1", "CHAPTER 2", ...
-        count = n if n > 0 else 99
-        return [f"CHAPTER {i}" for i in range(1, count + 1)]
 
 
 def find_page_of(word_app, heading):
@@ -161,8 +92,41 @@ def find_page_of(word_app, heading):
     return None
 
 
-def check_pages(docx_path, cfg, headings_override, stop_at_first_miss):
-    word_app = win32com.client.Dispatch("Word.Application")
+def _make_word():
+    """Robust Word.Application factory (early binding first).
+
+    Late-bound Dispatch() can attach to a leftover/stuck Word instance whose
+    dynamic dispatch fails to resolve standard members (AttributeError on
+    Repaginate / ComputeStatistics). EnsureDispatch loads the Word type library
+    so every member resolves; DispatchEx forces a fresh instance; plain Dispatch
+    is the last resort."""
+    w = win32com.client
+    for factory in (
+        lambda: w.gencache.EnsureDispatch("Word.Application"),
+        lambda: w.DispatchEx("Word.Application"),
+        lambda: w.Dispatch("Word.Application"),
+    ):
+        try:
+            return factory()
+        except Exception:
+            continue
+    return w.Dispatch("Word.Application")
+
+
+def _config_declared_headings(cfg):
+    """book_config.check_part_pages.headings[] — an explicit ordered list of
+    heading STEMS to Find, matched before the dash tail (em/en/hyphen agnostic).
+    Returns [] when absent."""
+    cpp = (cfg or {}).get("check_part_pages") or {}
+    hs = cpp.get("headings")
+    if isinstance(hs, list) and hs:
+        return [str(h).strip() for h in hs if str(h).strip()]
+    return []
+
+
+def check_pages(docx_path, cfg, headings_override):
+    _require_word()
+    word_app = _make_word()
     word_app.Visible = False
     try:
         word_app.DisplayAlerts = WD_ALERTS_NONE
@@ -175,13 +139,18 @@ def check_pages(docx_path, cfg, headings_override, stop_at_first_miss):
         doc.Repaginate()
         total_pages = int(doc.ComputeStatistics(WD_STAT_PAGES))
 
-        # Structural discovery: chapter/part headings are the ONLY paragraphs at
-        # outline level 1 (HeadingLevel.HEADING_1). Robust to the CONTENTS/TOC page
-        # (TOC entries are styled "TOC n", NOT outline level 1) and to UPPERCASE
-        # rendering + dash variants — no text Find, no TOC collision.
+        # Heading discovery (two tiers only, matching the live code):
+        #   1. --headings "A|B|C" OR book_config.check_part_pages.headings[] —
+        #      an explicit stem list, Find each and read its page.
+        #   2. else structural: chapter/part headings are the ONLY paragraphs at
+        #      outline level 1 (Heading 1). Robust to the CONTENTS/TOC page (TOC
+        #      entries are styled "TOC n", NOT outline level 1) and to UPPERCASE
+        #      rendering + dash variants — no text Find, no TOC collision.
         results = []
-        if headings_override:
-            for heading in [h.strip() for h in headings_override.split("|") if h.strip()]:
+        explicit = ([h.strip() for h in headings_override.split("|") if h.strip()]
+                    if headings_override else _config_declared_headings(cfg))
+        if explicit:
+            for heading in explicit:
                 page = find_page_of(word_app, heading)
                 results.append({"heading": heading, "page": page,
                                 "recto": (page % 2 == 1) if page else None})
@@ -245,14 +214,7 @@ def main() -> int:
 
     cfg = load_config(config_path)
 
-    # If neither an explicit override nor a config-declared heading list exists
-    # and the unit count is unknown, we sweep and stop at the first missing
-    # heading.
-    cpp_declared = bool(headings_override) or bool((cfg.get("check_part_pages") or {}).get("headings"))
-    unit_count_known = bool(_config_unit_ids(cfg))
-    stop_at_first_miss = not cpp_declared and not unit_count_known
-
-    total_pages, results = check_pages(docx_path, cfg, headings_override, stop_at_first_miss)
+    total_pages, results = check_pages(docx_path, cfg, headings_override)
 
     found = [r for r in results if r["page"] is not None]
     all_recto = bool(found) and all(r["recto"] for r in found)

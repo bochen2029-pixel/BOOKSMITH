@@ -1,10 +1,13 @@
 {
   "title": "The Night Was Young",
   "subtitle": "A Novel",
-  "author": "Bo Chen",
+  "author": "Your Name",
   "slug": "the_night_was_young",
   "genre": "literary fiction (historical / time-travel)",
   "is_fiction": true,
+  "integration_mode": "synthesis",
+  "min_pages": 75,
+  "kindle_include_toc": false,
 
   "trim": { "w": 6, "h": 9 },
   "paper": "cream",
@@ -22,7 +25,9 @@
     "top_in": 0.5,
     "bottom_in": 0.625,
     "body_color": "1A1A1A",
-    "ornament_glyph": "✦"
+    "ornament_glyph": "✦",
+    "include_toc": true,
+    "page_number_align": "center"
   },
 
   "front_matter": [
@@ -99,6 +104,10 @@
     "unit_noun": "part",
     "exemplars_path": "exemplars/",
     "blacklist": [
+      "—",
+      "–",
+      "Key Takeaways",
+      "It's important to note",
       "delve",
       "crucial",
       "leverage",
@@ -106,7 +115,13 @@
       "to be fair",
       "in conclusion",
       "a testament to",
-      "navigate the complexities"
+      "navigate the complexities",
+      "tapestry",
+      "/(?i)^in this (chapter|part|section)/",
+      "/(?i)key takeaways/",
+      "/(?i)\\bin (summary|conclusion)\\b/",
+      "/(?i)\\bvery\\s+unique\\b/",
+      "/(?i)\\b(a|the)\\s+myriad\\s+of\\b/"
     ],
     "greenlist": [
       "the night was young",
@@ -117,6 +132,7 @@
       "The night was young. | closing refrain, exact wording, never paraphrase",
       "the room | Tori's door / Bo's floor - the comprehension achieved in the water",
       "the dissolution | Zhuangzi butterfly frame - never call it 'the dream' in narration"
-    ]
+    ],
+    "no_em_dashes": true
   }
 }

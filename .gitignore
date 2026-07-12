@@ -14,7 +14,59 @@ desktop.ini
 # --- machine-local (kit_env.json IS tracked — it documents the reference machine;
 #     override locally via kit_env.local.json if that pattern is ever added) ---
 
-# --- large regenerable outputs: keep the testvoyage proof-of-life artifacts,
-#     but exclude any future book workspaces by default (uncomment to track one) ---
+# --- PRIVATE BOOK WORKSPACES: never track a real book by default.
+#     testvoyage (the generic proof book) is the tracked exception; to publish
+#     another example book, add a matching !negation for it here. ---
+book_workspace/*
+!book_workspace/testvoyage
+
+# --- session-recovery artifacts: regenerable from the session .jsonl and may
+#     contain personal transcript content — never track, never ship ---
+_REHYDRATION.md
+**/_REHYDRATION.md
+_CONTINUITY.snapshot.md
+**/_CONTINUITY.snapshot.md
+.booksmith_rehydrate
+
+# --- personal-data + stray root artifacts: memory dumps, session logs, and
+#     harness-local state carry the author's private transcript/identity and
+#     must never enter git. make_giftable.py's scrub guards only the ZIP path,
+#     so git needs its own guard here. ---
+_SESSION_MEMORY_*.md
+SESSION_LOG.md
+.recall/
+.claude/settings.json
+.claude/settings.local.json
+# bad-redirect artifact: a literal-colon filename left by a mangled shell
+# redirect (e.g. `C:BOOKSMITH_...js`) — never a real source file
+C:*
+# third-party service-return PDFs dropped at the repo root (Blurb/KDP digest
+# proofs etc.); keep them locally as evidence, never commit them
+/Digest_*.pdf
+
+# --- this-session audit/fix scratch: records of the kit-hardening campaign,
+#     kept locally for provenance but not kit deliverables — never commit ---
+_KIT_AUDIT_*.md
+_tools/_fixplan/
+# stray reference screenshots left by prior verification sessions (regenerable)
+_refcheck/
+
+# --- distribution build output (make_giftable.py) ---
+dist/
+
+# --- large regenerable outputs inside tracked example books ---
 book_workspace/*/outputs/**/*.pdf.bak
 book_workspace/*/manuscript/drafts/*_wip_*
+# assemble_manuscript.py re-derives the version-pinned master on every build;
+# these accumulate untracked and are never the source of truth — regenerate,
+# don't commit. (The ONE curated proof set already tracked for testvoyage
+# stays tracked; this only stops NEW versions from leaking in.)
+book_workspace/*/outputs/markdown/*_v*.md
+
+# --- model weights: fetch_weights.py / fetch_weights 'sdxl' downloads multi-GB
+#     .safetensors checkpoints. A stranger must never accidentally commit these
+#     (they are re-downloadable and would bloat every clone). ---
+checkpoints/
+**/checkpoints/
+*.safetensors
+*.ckpt

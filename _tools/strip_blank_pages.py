@@ -49,6 +49,27 @@ def non_ws_count(text: str) -> int:
     return len(re.sub(r"\s+", "", text or ""))
 
 
+def is_header_ghost(text: str) -> bool:
+    """True when a below-min-chars page is a print-only header-only 'ghost' (a
+    running head + folio) rather than legitimate minimalist front matter or a
+    short recto part-title (e.g. 'PART III').
+
+    A header ghost carries a folio digit ('THENIGHTWASYOUNG 42') OR is a single
+    unspaced all-caps run left by a running head that lost its inter-word spacing.
+    A real part-title is spaced words with no folio ('PART III'), so it is
+    preserved. (The task's proposed r'[A-Z ]+\\d*' fullmatch was NOT used: it also
+    matches 'PART III' and would wrongly strip it.)"""
+    norm = re.sub(r"\s+", " ", text or "").strip()
+    if not norm:
+        return True
+    upperish = re.fullmatch(r"[A-Z0-9 .·—–\-]+", norm) is not None
+    if not upperish:
+        return False  # contains lowercase / real words -> content, keep it
+    has_folio = re.search(r"\d", norm) is not None
+    single_unspaced_run = " " not in norm and norm.isalpha()
+    return has_folio or single_unspaced_run
+
+
 def strip_blank_pages(in_pdf: str, out_pdf: str,
                       min_chars: int = DEFAULT_MIN_NON_WS_CHARS,
                       keep_covers: int = DEFAULT_KEEP_COVERS):
@@ -74,7 +95,10 @@ def strip_blank_pages(in_pdf: str, out_pdf: str,
             continue
         text = doc[i].get_text() or ""
         compact = non_ws_count(text)
-        if compact < min_chars:
+        # Truly-empty pages always go. Below-min-chars pages go ONLY if they are
+        # header-only ghosts — a short recto part-title ('PART III') or other
+        # minimalist front matter is content and is preserved.
+        if compact == 0 or (compact < min_chars and is_header_ghost(text)):
             preview = text.strip().replace("\n", " ")[:80]
             remove_0idx.append(i)
             removed_manifest.append({"page": page_num, "chars": compact, "preview": preview})

@@ -86,7 +86,6 @@ const LATEX_SYMBOLS = [
   ['\\subseteq', '⊆'], ['\\supseteq', '⊇'],
   ['\\subset', '⊂'], ['\\supset', '⊃'],
   ['\\cup', '∪'], ['\\cap', '∩'],
-  ['\\in', '∈'], ['\\notin', '∉'],
   ['\\forall', '∀'], ['\\exists', '∃'],
 
   // Arrows
@@ -112,6 +111,10 @@ const LATEX_SYMBOLS = [
   // Function names — keep upright as plain letters
   ['\\max', 'max'], ['\\min', 'min'],
   ['\\sup', 'sup'], ['\\inf', 'inf'],
+  // Set membership — MUST come after \int (line ~98), \infty (line ~102) and
+  // \inf above, because the replacement loop has no word boundary and '\in' is a
+  // prefix of all three; matching it first would garble them (\int->∈t, etc.).
+  ['\\in', '∈'], ['\\notin', '∉'],
   ['\\lim', 'lim'], ['\\log', 'log'], ['\\ln', 'ln'], ['\\exp', 'exp'],
   ['\\sin', 'sin'], ['\\cos', 'cos'], ['\\tan', 'tan'],
   ['\\arg', 'arg'], ['\\det', 'det'], ['\\dim', 'dim'], ['\\gcd', 'gcd'],

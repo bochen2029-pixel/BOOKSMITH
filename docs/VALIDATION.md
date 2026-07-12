@@ -24,7 +24,7 @@
 | Contract scaffolding | init_contracts.py | 3 stubs from units[] |
 | **Perceptual verify (LIVE)** | vision_verify.py → KEEL Qwen | read title/subtitle/author, VERDICT: PASS |
 
-**All five formats produce their complete upload-ready deliverables.**
+**All nine formats produce their complete upload-ready deliverables.** (The tables above reflect the original 855-word loop-test; the four later formats are green in the 2026-07-11 addendum below.)
 
 ## Bugs found and fixed during the loop-test (all fixed in the kit)
 
@@ -39,7 +39,7 @@
 
 ## Live cover-gen: PROVEN 2026-07-11
 
-**RESOLVED — the full agentic cover loop ran end-to-end live.** ComfyUI launched headless (`main.py --base-directory C:\Users\user\Documents\ComfyUI --lowvram --cpu-vae` on :8188), `cover_gen.py` produced real SDXL art (tall ship at dusk, seed 42, 30 steps), `composite_cover.py` assembled all profiles onto it, and **KEEL Qwen QC-verified the AI's own composited cover → VERDICT: PASS** (it checked for fused masts / impossible rigging / distorted hull, confirmed the title legible + correctly spelled, no defects). Two fixes made during the live run:
+**RESOLVED — the full agentic cover loop ran end-to-end live.** ComfyUI launched headless (`main.py --base-directory <kit_env.cover_gen data dir> --lowvram --cpu-vae` on :8188), `cover_gen.py` produced real SDXL art (tall ship at dusk, seed 42, 30 steps), `composite_cover.py` assembled all profiles onto it, and **KEEL Qwen QC-verified the AI's own composited cover → VERDICT: PASS** (it checked for fused masts / impossible rigging / distorted hull, confirmed the title legible + correctly spelled, no defects). Two fixes made during the live run:
 - Installed `comfyui-frontend-package` (+ workflow-templates, embedded-docs) into `Documents\ComfyUI\.venv` — Comfy Desktop bundles the frontend outside the venv, so a headless `main.py` launch needs it.
 - `cover_gen.patch_checkpoint` now **strips non-node keys** before submission — the hermes `sdxl_txt2img.json` carries a `_comment` string key that ComfyUI's `/prompt` rejects ("a node is missing the class_type property").
 

@@ -32,7 +32,26 @@ import sys
 import os
 import json
 
-import win32com.client
+try:
+    import win32com.client
+    _WIN32COM_IMPORT_ERROR = None
+except ImportError as _exc:  # non-Windows, or pywin32 not installed
+    win32com = None
+    _WIN32COM_IMPORT_ERROR = _exc
+
+
+def _require_word():
+    """Fail with an actionable JSON error instead of an import traceback."""
+    if win32com is None:
+        print(json.dumps({
+            "error": "word_com_unavailable",
+            "detail": "Print-faithful docx->PDF requires Microsoft Word COM "
+                      "(pywin32) on Windows. On this machine produce EPUB / "
+                      "Kindle DOCX instead (Tier 2), or render the DOCX to PDF "
+                      "externally and feed that PDF to the downstream steps.",
+            "import_error": str(_WIN32COM_IMPORT_ERROR),
+        }))
+        raise SystemExit(3)
 
 # Word enum constants (avoid importing the makepy typelib — plain ints are stable).
 WD_FORMAT_PDF = 17       # wdFormatPDF
@@ -41,13 +60,43 @@ WD_STAT_WORDS = 0        # wdStatisticWords
 WD_ALERTS_NONE = 0       # wdAlertsNone
 
 
+def _make_word():
+    """Robust Word.Application factory.
+
+    Late-bound Dispatch() can attach to a leftover/stuck Word instance whose
+    dynamic dispatch then fails to resolve standard members (observed:
+    AttributeError on TablesOfContents / Repaginate). Prefer EARLY binding
+    (gencache.EnsureDispatch loads the Word type library so every member
+    resolves); then a fresh out-of-process instance (DispatchEx); then plain
+    late binding as a last resort."""
+    w = win32com.client
+    for factory in (
+        lambda: w.gencache.EnsureDispatch("Word.Application"),
+        lambda: w.DispatchEx("Word.Application"),
+        lambda: w.Dispatch("Word.Application"),
+    ):
+        try:
+            return factory()
+        except Exception:
+            continue
+    return w.Dispatch("Word.Application")
+
+
 def update_all_tocs(doc):
     """Update every TablesOfContents field. This is what deletes/recreates the
     underlying field handles, which is why the subsequent field loop must go by
     index, not by a live iterator."""
-    toc_count = doc.TablesOfContents.Count
+    # Resilient: a print interior with no TOC — or late-bound COM dispatch that
+    # cannot resolve the TablesOfContents collection — must not kill the render.
+    try:
+        toc_count = doc.TablesOfContents.Count
+    except Exception:
+        return 0
     for i in range(1, toc_count + 1):
-        doc.TablesOfContents(i).Update()
+        try:
+            doc.TablesOfContents(i).Update()
+        except Exception:
+            pass
     return toc_count
 
 
@@ -59,7 +108,10 @@ def update_fields_by_index(doc):
     §3.7 / tx_book_aibook). Iterating by index and swallowing per-field errors
     is the crash fix."""
     # Snapshot the count once; do not trust a live iterator across updates.
-    field_count = doc.Fields.Count
+    try:
+        field_count = doc.Fields.Count
+    except Exception:
+        return
     for i in range(1, field_count + 1):
         try:
             doc.Fields(i).Update()
@@ -80,7 +132,8 @@ def docx_to_pdf(docx_path: str, pdf_path: str):
     if out_dir and not os.path.isdir(out_dir):
         os.makedirs(out_dir, exist_ok=True)
 
-    word = win32com.client.Dispatch("Word.Application")
+    _require_word()
+    word = _make_word()
     word.Visible = False
     try:
         word.DisplayAlerts = WD_ALERTS_NONE

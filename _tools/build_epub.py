@@ -460,11 +460,18 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         for _d, fname, _t, xhtml, _toc in docs:
             w(f"OEBPS/text/{fname}", xhtml)
 
+    # A raw-art cover (from cover_art/) has NO title/author typography — the
+    # composited kindle cover is preferred. Flag it so the operator sees the
+    # EPUB is shipping bare AI art (see the cover_typography advisory in main()).
+    cover_is_raw_art = bool(cover_src is not None
+                            and cover_src.parent.name == "cover_art")
+
     return {
         "chapters": len(units),
         "toc_entries": len(toc_entries),
         "words": body_words,
         "cover": str(cover_src) if cover_src else None,
+        "cover_is_raw_art": cover_is_raw_art,
     }
 
 
@@ -549,7 +556,20 @@ def main() -> int:
 
     info = build(cfg, master, ws, out_path)
     checks = self_check(out_path)
+    # Non-fatal advisory: the EPUB is shipping raw AI art (no title/author
+    # typography). The composited-preferred fallback is intentional resilience,
+    # so this stays pass=True — it only surfaces the fact to the operator.
+    if info.get("cover_is_raw_art"):
+        checks.append({
+            "name": "cover_typography",
+            "pass": True,
+            "detail": "cover=raw AI art (cover_art/); run composite_cover.py "
+                      "--profile kindle for title/author typography before shipping",
+        })
     all_pass = all(c["pass"] for c in checks)
+
+    # Internal flag — not part of the emitted JSON contract.
+    info.pop("cover_is_raw_art", None)
 
     print(json.dumps({
         "epub": str(out_path),

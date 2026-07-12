@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: letter; margin: 14mm 15mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #1A2233; font-size: 11.2px; line-height: 1.5; margin: 0; }
+  h1 { font-size: 20px; margin: 0; letter-spacing: .2px; }
+  .sub { color: #5A6B85; font-size: 11px; margin-top: 3px; }
+  .banner { display: flex; align-items: center; gap: 14px; background: linear-gradient(110deg,#0A1730,#0C1E3C);
+            color: #F0F4FA; padding: 16px 18px; border-radius: 12px; }
+  .banner .sub { color: #9BB0CC; }
+  .emblem { flex: 0 0 auto; }
+  h2 { font-size: 13.5px; color: #0A1730; margin: 19px 0 7px; padding-bottom: 4px; border-bottom: 2px solid #008EED;
+       display: flex; align-items: baseline; gap: 8px; }
+  h2 .min { margin-left: auto; font-size: 10px; font-weight: 600; color: #5A6B85; }
+  .phase { font-size: 10px; font-weight: 800; color: #fff; background: #008EED; border-radius: 5px; padding: 1px 7px; white-space: nowrap; }
+  .phase.rec   { background: #0E9E6E; }
+  .phase.avoid { background: #C2410C; }
+  .phase.req   { background: #C2410C; }
+  ul { list-style: none; margin: 0 0 4px; padding: 0; }
+  li { position: relative; padding: 3px 0 3px 26px; }
+  .cb { position: absolute; left: 0; top: 3px; width: 14px; height: 14px; border: 1.6px solid #66788F; border-radius: 3px; }
+  .n  { position: absolute; left: 0; top: 1px; width: 17px; height: 17px; border-radius: 50%; background: #008EED;
+        color: #fff; font-size: 10px; font-weight: 800; text-align: center; line-height: 17px; }
+  code, .path { font-family: "Cascadia Code","Consolas",monospace; font-size: 10px; background: #EEF2F8; color: #0B3A66;
+                padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+  b { color: #0A1730; }
+  .note { background: #F4F8FF; border-left: 3px solid #008EED; padding: 8px 12px; border-radius: 0 8px 8px 0; margin: 8px 0; }
+  .warn { background: #FFF6F2; border-left: 3px solid #C2410C; }
+  .good { background: #F1FBF6; border-left: 3px solid #0E9E6E; }
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  td, th { padding: 4px 8px; vertical-align: top; border-bottom: 1px solid #E4EAF2; }
+  th { text-align: left; color: #0A1730; border-bottom: 1.6px solid #008EED; font-size: 10.5px; }
+  .k td:first-child { white-space: nowrap; font-weight: 700; color: #0A1730; }
+  .keep { break-inside: avoid; }
+  a { color: #0B6BCB; text-decoration: none; }
+  .foot { margin-top: 14px; padding-top: 8px; border-top: 1px solid #E4EAF2; color: #7385A0; font-size: 9.5px; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <svg class="emblem" width="46" height="46" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <rect width="512" height="512" rx="96" fill="#0C1A33"/>
+    <path d="M256 152 C 216 128, 152 124, 116 132 L116 356 C 152 348, 216 352, 256 376 C 296 352, 360 348, 396 356 L396 132 C 360 124, 296 128, 256 152 Z"
+          fill="#ffffff" fill-opacity="0.06" stroke="#008EED" stroke-width="14" stroke-linejoin="round"/>
+    <line x1="256" y1="156" x2="256" y2="372" stroke="#008EED" stroke-width="12"/>
+    <path d="M152 212 C 186 204, 218 208, 230 216 M152 258 C 186 250, 218 254, 230 262 M152 304 C 186 296, 218 300, 230 308
+             M282 216 C 294 208, 326 204, 360 212 M282 262 C 294 254, 326 250, 360 258 M282 308 C 294 300, 326 296, 360 304"
+          fill="none" stroke="#34D399" stroke-width="13" stroke-linecap="round"/>
+  </svg>
+  <div>
+    <h1>BOOKSMITH — how to use it</h1>
+    <div class="sub">you talk &middot; it writes &middot; you get a finished book</div>
+  </div>
+</div>
+
+<div class="note good keep">
+  <b>What this is.</b> This folder writes your book <b>with</b> you. You give it whatever you have (notes,
+  drafts, rambles — or nothing at all) and about <b>ten minutes of conversation</b>. It then drafts the whole
+  book <b>in your voice</b>, checks its own work at every step, and hands you <b>upload-ready files</b> for
+  Kindle, print paperback and hardcover, EPUB stores, and a share-by-email PDF — plus a cover.
+  <b>Nothing ships until you say so.</b>
+</div>
+
+<h2><span class="phase">1</span> Set up once <span class="min">~10 min, one time per computer</span></h2>
+<ul>
+  <li><span class="cb"></span>Install <b>Claude Code</b> (<a href="https://claude.com/claude-code">claude.com/claude-code</a>) and <b>Python 3.10+</b> (<a href="https://python.org">python.org</a>).</li>
+  <li><span class="cb"></span>Open a terminal in this folder and run: <code>pip install -r requirements.txt</code></li>
+  <li><span class="cb"></span>Run the check-up: <code>python _tools/doctor.py</code> — it tells you what your computer can do. Green means go. ("Tier&nbsp;2" just means ebooks now; print PDFs need a Windows computer with Microsoft Word — you can do that part later, anywhere.)</li>
+</ul>
+
+<h2><span class="phase">2</span> Start your book <span class="min">the whole ritual</span></h2>
+<ul>
+  <li><span class="n">1</span><b>Drop anything you have</b> into the <span class="path">intake</span> folder — notes, Word docs, PDFs, old drafts, transcripts of you talking. Mess and duplicates are fine. <b>Having nothing is also fine</b> — it will interview the book out of you.</li>
+  <li><span class="n">2</span><b>Open Claude Code in this folder.</b></li>
+  <li><span class="n">3</span><b>Say hi.</b> Tell it you want to write a book and answer its questions — plain talk, about ten minutes. (Also works: paste <code>Read START_HERE.md in full and follow it exactly.</code>) Overwhelmed? Say <b>"just decide for me"</b> and it will, out loud.</li>
+</ul>
+<div class="note keep">
+  Before it starts writing, it shows you a <b>one-page pitch of your book</b> — the title ideas, who it's for,
+  the shape, a paragraph written the way you sound. <b>That page is your steering wheel.</b> Once you approve it,
+  the machine works alone and only interrupts for two things: <b>chapters you claimed for yourself</b>, and the
+  final <b>"ship it?"</b>
+</div>
+
+<h2><span class="phase">3</span> Things you can say, anytime</h2>
+<table class="k keep">
+  <tr><td>"how's it going"</td><td>progress report — chapters done, words, what's next</td></tr>
+  <tr><td>"keep going"</td><td>writes the next chapter(s), updates you as it lands them</td></tr>
+  <tr><td>"rewrite chapter 3, warmer"</td><td>redoes exactly that, keeps every earlier version</td></tr>
+  <tr><td>"I'll write the dedication myself"</td><td>that space stays yours — it will never fill it in</td></tr>
+  <tr><td>"show me the book so far"</td><td>assembles everything into one readable draft</td></tr>
+  <tr><td>"make the covers"</td><td>cover art + lettering for every edition, checked by eye</td></tr>
+  <tr><td>"ship it"</td><td>final pass: every format built, checked, and boxed with upload checklists</td></tr>
+  <tr><td>"continue"</td><td>after closing the app, a crash, anything — picks up exactly where it stopped. <b>Work is saved the moment it's written; nothing is ever lost.</b></td></tr>
+</table>
+
+<h2><span class="phase">4</span> Already have a book?</h2>
+<div class="note keep">
+  Drop the manuscript (Word, PDF, EPUB, or plain text) into <span class="path">intake</span> and say
+  <b>"make this better."</b> It reads all of it, asks what you're hoping for, then rewrites the book from the
+  ground up in <b>your</b> register — not a light polish, a rebirth. You get a <b>receipt</b>: anything it chose to
+  drop is listed for you, so nothing disappears silently. Mark any passage <b>sacred</b> and it stays word-for-word.
+</div>
+
+<h2><span class="phase">5</span> Where your finished book lands</h2>
+<table class="k keep">
+  <tr><td>Everything</td><td><span class="path">book_workspace\&lt;your book&gt;\outputs\</span> — one folder per store</td></tr>
+  <tr><td>Kindle &amp; EPUB</td><td><span class="path">outputs\kindle\</span> &nbsp;&middot;&nbsp; <span class="path">outputs\epub\</span> (Apple, Kobo, Google, Nook)</td></tr>
+  <tr><td>Print</td><td><span class="path">outputs\kdp_paperback\</span> &middot; <span class="path">kdp_hardcover\</span> &middot; Mixam &amp; Blurb folders</td></tr>
+  <tr><td>Share-by-email</td><td><span class="path">outputs\digital\</span> — a clean PDF with covers, for friends and reviewers</td></tr>
+  <tr><td>With each</td><td>an <b>upload checklist</b> — follow it line by line on the store's site</td></tr>
+</table>
+
+<div class="note warn keep">
+  <b>Quick fixes.</b> &nbsp;&bull;&nbsp; <b>No graphics card</b> for cover art? Put any image you like in the book's
+  <span class="path">cover_art</span> folder and say "use this" — the lettering and layout are still done for you.
+  &nbsp;&bull;&nbsp; <b>Print files</b> need Windows + Microsoft Word; ebooks don't — finish print on any Word machine later.
+  &nbsp;&bull;&nbsp; <b>Confused?</b> Say "status". <b>Stuck?</b> Close it, reopen, say "continue".
+</div>
+
+<h2><span class="phase rec">THE DEAL</span> What to expect</h2>
+<ul>
+  <li><span class="cb"></span><b>First pass lands at ~90%.</b> You redline, it revises — quickly. A v1.1 is cheap; a blank page is expensive.</li>
+  <li><span class="cb"></span><b>It never invents your life.</b> What it can't know, it asks. What you didn't decide, it decides out loud and tells you it did — change any of it, anytime.</li>
+  <li><span class="cb"></span><b>Your words stay yours.</b> Chapters you claim are left for you; passages you mark sacred are never touched; every draft version is kept, nothing overwritten.</li>
+</ul>
+
+<div class="foot">
+  For the <b>author</b>, not the admin — setup details and machine config live in <span class="path">INSTALL.md</span> and <span class="path">docs\</span>.
+  &nbsp; BOOKSMITH user manual v1.0 &middot; ships with the kit &middot; generated 2026-07-11.
+</div>
+
+</body>
+</html>

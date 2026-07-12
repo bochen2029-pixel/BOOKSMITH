@@ -84,6 +84,9 @@ def is_structural_line(line: str) -> bool:
         return True
     if re.match(r"^\d+\.\s+", stripped):
         return True
+    if re.match(r"^\|", stripped):
+        # A markdown table row: never prose, never demands terminal punctuation.
+        return True
     return False
 
 
@@ -115,12 +118,33 @@ def lint_corruption(text: str) -> list:
     lines = text.split("\n")
     prev_para_lastline = None
 
+    # Pre-pass: line numbers (1-based) that fall inside a ```-fenced code block.
+    # The line-level loop below already skips fenced code via its own in_code
+    # toggle, but the paragraph-level checks (PARAGRAPH_NOT_TERMINATED, etc.) run
+    # off iter_paragraphs, which has no fence state — a ```python block would be
+    # linted as a prose paragraph. We skip any paragraph starting inside a fence.
+    fenced_lines = set()
+    _in_fence = False
+    for _idx, _line in enumerate(lines, start=1):
+        if _line.strip().startswith("```"):
+            _in_fence = not _in_fence
+            fenced_lines.add(_idx)  # the fence marker line itself
+            continue
+        if _in_fence:
+            fenced_lines.add(_idx)
+
     # --- Line-level checks (raw lines) ---
     for idx, line in enumerate(lines, start=1):
         if line.strip().startswith("```"):
             in_code = not in_code
             continue
         if in_code:
+            continue
+        # A markdown table row legitimately carries column-alignment padding
+        # (2+ spaces) and cell tokens with underscores (val_1). These are table
+        # formatting, not PDF-round-trip corruption, so the line-level MULTIPLE_
+        # SPACES / EMBEDDED_UNDERSCORE / hyphen checks skip table rows.
+        if line.lstrip().startswith("|"):
             continue
 
         # CHECK 5: multiple consecutive spaces mid-content.
@@ -148,8 +172,23 @@ def lint_corruption(text: str) -> list:
         if not stripped_para:
             continue
 
+        # Skip paragraphs that begin inside a fenced code block: iter_paragraphs
+        # has no fence state, so a ```python block would otherwise be linted as
+        # prose (odd '_'/'*', "not terminated", stray-markdown false positives).
+        if start_line in fenced_lines:
+            prev_para_lastline = None
+            continue
+
         first_line = stripped_para.split("\n", 1)[0]
         if is_structural_line(first_line):
+            prev_para_lastline = None
+            continue
+
+        # Skip whole markdown-table blocks: a table is one blank-line-delimited
+        # paragraph whose every non-blank line is a table row. Its pipes/dashes
+        # trip UNBALANCED_EMPHASIS and its cells have no terminal punctuation.
+        if all(l.lstrip().startswith("|")
+               for l in stripped_para.split("\n") if l.strip()):
             prev_para_lastline = None
             continue
 
@@ -199,6 +238,55 @@ def lint_corruption(text: str) -> list:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# PART A2 — the em-dash HARD gate (AUTHOR VOICE, docs/author_voice/AUTHOR_VOICE_Bo_Chen.md §1)
+# ─────────────────────────────────────────────────────────────────────────────
+# Bo's named #1 AI-tell: NO em-dashes (U+2014) or en-dashes (U+2013) in prose.
+# This existed only as prose guidance + a per-book blacklist entry nobody set,
+# so the first book shipped saturated with them. It is a real gate now: enabled
+# by voice.no_em_dashes (DEFAULT TRUE). Compound-adjective hyphens (U+002D, "-")
+# are a DIFFERENT character and are never flagged; only U+2014 / U+2013 are.
+EM_DASHES = {"—": "U+2014 em-dash", "–": "U+2013 en-dash",
+             "―": "U+2015 horizontal bar", "‒": "U+2012 figure dash",
+             "−": "U+2212 minus sign"}
+
+
+def lint_em_dashes(text: str) -> list:
+    """Flag every em/en-dash outside fenced code blocks. Route the pause to a
+    comma, colon, period, semicolon, or parentheses (Bo's real substitute is the
+    semicolon). Table '(n/a)' placeholder dashes are rare in prose; if one is
+    legitimate, replace it with '(none)'."""
+    findings = []
+    in_code = False
+    for idx, line in enumerate(text.split("\n"), start=1):
+        if line.strip().startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        # Carve-out (LESSONS_LEDGER §18.1): a markdown table row may use '—' as an
+        # (n/a) placeholder, which feedback_no_em_dashes.md sanctions. That
+        # exemption is ONLY for a standalone-dash cell — a cell whose entire
+        # stripped content is the dash character. An em-dash used as prose
+        # punctuation INSIDE a table cell still blocks the HARD gate.
+        scan_line = line
+        if line.lstrip().startswith("|"):
+            # Split into cells on unescaped pipes; drop the empty leading/trailing
+            # cells produced by the row's border pipes. Keep only cells whose
+            # stripped content is NOT exactly one dash char (those are the
+            # sanctioned (n/a) placeholders); rejoin the rest for dash detection.
+            cells = re.split(r"(?<!\\)\|", line)
+            kept = [c for c in cells if c.strip() not in EM_DASHES]
+            scan_line = " ".join(kept)
+        for ch, name in EM_DASHES.items():
+            n = scan_line.count(ch)
+            if n:
+                findings.append(("EM_DASH", idx,
+                                 f"{n}x {name} in prose — Bo forbids em-dashes "
+                                 f"(AI tell); use , : . ; or ( ): {line.strip()[:80]!r}"))
+    return findings
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # PART B — voice-drift / blacklist scrubber
 # (tiered structure ported from C:\BOOK3\_tools\check_acp_vocabulary.py)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -227,6 +315,17 @@ def compile_blacklist(blacklist: list) -> tuple:
         if entry.startswith("cs:"):
             phrase = entry[len("cs:"):]
             cs.append((phrase, f"blacklist (case-sensitive) {phrase!r}"))
+            continue
+        # Slash-wrapped entry (/pattern/) is a regex — the form the voice docs
+        # mandate for H2/H3 meta-opener/summary atoms. Must be recognized BEFORE
+        # the uppercase heuristic, or `/(?i)Key Takeaways/` lands in the literal
+        # case-sensitive tier (slashes included) and never matches prose.
+        if len(entry) >= 2 and entry.startswith("/") and entry.endswith("/"):
+            pat = entry[1:-1]
+            try:
+                rx.append((re.compile(pat), f"blacklist regex {pat!r}"))
+            except re.error as exc:
+                print(f"[warn] bad blacklist regex {pat!r}: {exc}", file=sys.stderr)
             continue
         # Heuristic: a phrase containing an uppercase letter is a proper-noun
         # style term → case-sensitive; otherwise case-insensitive.
@@ -261,21 +360,60 @@ def parse_sacred_terms(sacred_terms: list) -> list:
     return locked
 
 
-def scan_voice(text: str, cs, ci, rx, locked_terms) -> list:
-    """Return (code, line_no, detail) findings for blacklist + sacred-term drift."""
+def _greenlisted(needle: str, line_lower: str, greenlist_l) -> bool:
+    """True if EVERY occurrence of a blacklist `needle` (already lowercased) on
+    this line falls inside a sanctioned greenlist phrase that is itself on the
+    line. Protects Bo-isms whose text contains a banned substring (voice.greenlist,
+    documented as scrub-protection in the voice profile). Occurrence-aware: a
+    banned word used standalone still fires even if a greenlist phrase that also
+    contains it appears elsewhere on the same line."""
+    if not needle or not greenlist_l:
+        return False
+    # Build the set of character positions covered by any greenlist phrase that
+    # itself contains the needle and is present on the line.
+    covered = []
+    for g in greenlist_l:
+        if not g or needle not in g:
+            continue
+        start = 0
+        while True:
+            gi = line_lower.find(g, start)
+            if gi < 0:
+                break
+            covered.append((gi, gi + len(g)))
+            start = gi + 1
+    if not covered:
+        return False
+    # Every occurrence of the needle must sit fully inside a covered span.
+    start = 0
+    while True:
+        ni = line_lower.find(needle, start)
+        if ni < 0:
+            return True  # all occurrences accounted for
+        ne = ni + len(needle)
+        if not any(cs <= ni and ne <= cend for cs, cend in covered):
+            return False  # this occurrence is not greenlist-protected
+        start = ni + 1
+
+
+def scan_voice(text: str, cs, ci, rx, locked_terms, greenlist=None) -> list:
+    """Return (code, line_no, detail) findings for blacklist + sacred-term drift.
+    A greenlisted phrase (voice.greenlist) present on a line suppresses a
+    BLACKLIST finding whose matched needle falls inside that phrase."""
     findings = []
+    greenlist_l = [str(g).lower() for g in (greenlist or []) if str(g).strip()]
     lines = text.splitlines()
     for line_num, line in enumerate(lines, 1):
         line_lower = line.lower()
         for phrase, label in cs:
-            if phrase in line:
+            if phrase in line and not _greenlisted(phrase.lower(), line_lower, greenlist_l):
                 findings.append(("BLACKLIST", line_num, f"{label}: {line.strip()[:80]!r}"))
         for needle, label in ci:
-            if needle in line_lower:
+            if needle in line_lower and not _greenlisted(needle, line_lower, greenlist_l):
                 findings.append(("BLACKLIST", line_num, f"{label}: {line.strip()[:80]!r}"))
         for pattern, label in rx:
             m = pattern.search(line)
-            if m:
+            if m and not _greenlisted(m.group(0).lower(), line_lower, greenlist_l):
                 findings.append(("BLACKLIST", line_num, f"{label} matched {m.group(0)!r}: {line.strip()[:80]!r}"))
 
     # Sacred-term drift: for each locked exact wording, flag a near-miss —
@@ -324,7 +462,14 @@ def is_documentation_file(path: Path) -> bool:
     if path.name.lower() in EXCLUDED_NAMES:
         return True
     parts_l = [p.lower() for p in path.parts]
-    for part in parts_l:
+    # The workspace slug (the segment directly under book_workspace/) is never a
+    # meta-dir even if its name happens to be a marker word (e.g. a book slugged
+    # 'state'). Anchoring the META_DIR_MARKERS test to skip that one segment stops
+    # an entire manuscript from being silently excluded and falsely reported CLEAN.
+    skip_idx = parts_l.index("book_workspace") + 1 if "book_workspace" in parts_l else -1
+    for i, part in enumerate(parts_l):
+        if i == skip_idx:
+            continue
         if part in META_DIR_MARKERS:
             # manuscript/drafts/ is in scope even though 'drafts' is generic.
             if part == "drafts" and "manuscript" in parts_l:
@@ -390,6 +535,7 @@ def read_text(path: Path) -> str:
 
 
 CORRUPTION_ORDER = [
+    "EM_DASH",
     "EMBEDDED_UNDERSCORE", "PARAGRAPH_NOT_TERMINATED", "EMDASH_CONTINUATION",
     "MID_WORD_HYPHEN_BREAK", "UNBALANCED_EMPHASIS", "STRAY_MARKDOWN",
     "MULTIPLE_SPACES", "BLACKLIST", "SACRED_DRIFT",
@@ -435,7 +581,11 @@ def main() -> int:
 
     voice = cfg.get("voice", {}) if isinstance(cfg, dict) else {}
     blacklist = voice.get("blacklist", []) or []
+    greenlist = voice.get("greenlist", []) or []
     sacred_terms = voice.get("sacred_terms", []) or []
+    # Em-dash HARD gate defaults ON (Bo's #1 AI-tell). A non-Bo book that
+    # legitimately uses em-dashes sets voice.no_em_dashes=false.
+    no_em_dashes = bool(voice.get("no_em_dashes", True)) if isinstance(voice, dict) else True
     cs, ci, rx = compile_blacklist(blacklist)
     locked_terms = parse_sacred_terms(sacred_terms)
 
@@ -449,13 +599,53 @@ def main() -> int:
     if not args.paths and not args.include_docs:
         files = [f for f in files if not is_documentation_file(f)]
 
+    # Marketing/ceremonial copy renders into the book + Amazon listing but lives
+    # in the CONFIG, not manuscript/ — it bypassed the manuscript scan (a live
+    # leak: an epigraph attribution shipped an em-dash). Scan it too (§19.3).
+    config_findings = []
+    if no_em_dashes and isinstance(cfg, dict):
+        epi = cfg.get("epigraph") or {}
+        km = cfg.get("kdp_metadata") or {}
+        ceremonial = {
+            "title": cfg.get("title"),
+            "author": cfg.get("author"),
+            "epigraph.text": epi.get("text"),
+            "epigraph.attribution": epi.get("attribution"),
+            "about_the_author": cfg.get("about_the_author"),
+            "dedication": cfg.get("dedication"),
+            "readers_note": cfg.get("readers_note"),
+            "subtitle": cfg.get("subtitle"),
+            "kdp_metadata.description": km.get("description"),
+        }
+        for fld, val in ceremonial.items():
+            if isinstance(val, str):
+                for ch, name in EM_DASHES.items():
+                    if ch in val:
+                        config_findings.append(
+                            (fld, f"{val.count(ch)}x {name} in config.{fld} "
+                                  f"(renders into the book/listing): {val[:80]!r}"))
+
     if not files:
         print(f"[info] No manuscript .md files found to lint under {root}.")
         print("[info] (Scaffolding/cached-source dirs are excluded unless --include-docs.)")
-        return 0
+        if config_findings:
+            print(f"\n  [EM_DASH] config ceremonial/marketing copy — {len(config_findings)} finding(s):")
+            for fld, detail in config_findings:
+                print(f"    {detail}")
+            return 1
+        # An EMPTY manuscript scan is NOT a silent pass: a misresolved or empty
+        # root would otherwise report the em-dash + voice gate green (exit 0) when
+        # it never ran. Return 2 (usage/environment error) so verify_build's
+        # returncode==0 pass-check cannot be fooled by a manuscript that was never
+        # collected. A real book with files still exits 0 below.
+        print(f"[WARNING] No files collected — the em-dash + voice gate did NOT run "
+              f"under the resolved root {root}. This is an environment/config error, "
+              f"not a clean manuscript. Check --root / config slug.", file=sys.stderr)
+        return 2
 
     print(f"[lint] {len(files)} file(s) under {root}")
-    print(f"[lint] corruption checks: 7 | blacklist tiers: "
+    print(f"[lint] corruption checks: 7 | em-dash gate: "
+          f"{'ON (hard)' if no_em_dashes else 'OFF'} | blacklist tiers: "
           f"{len(cs)} cs + {len(ci)} ci + {len(rx)} regex | "
           f"locked sacred terms: {len(locked_terms)}")
 
@@ -464,11 +654,13 @@ def main() -> int:
     for f in files:
         text = read_text(f)
         findings = lint_corruption(text)
+        if no_em_dashes and (not is_documentation_file(f) or args.include_docs or args.paths):
+            findings += lint_em_dashes(text)
         if not args.include_docs or args.paths:
             # Voice scrub runs on manuscript files (already filtered above),
             # or on any explicit target the caller named.
             if not is_documentation_file(f) or args.include_docs or args.paths:
-                findings += scan_voice(text, cs, ci, rx, locked_terms)
+                findings += scan_voice(text, cs, ci, rx, locked_terms, greenlist)
 
         print(f"\n=== {f} ===")
         if not findings:
@@ -491,6 +683,14 @@ def main() -> int:
                 print(f"    ... {len(hits) - 50} more")
         print(f"\n  TOTAL FINDINGS: {len(findings)}")
         total += len(findings)
+
+    if config_findings:
+        exit_code = 1
+        total += len(config_findings)
+        print(f"\n=== config: ceremonial/marketing copy (renders into the book + listing) ===")
+        print(f"\n  [EM_DASH] — {len(config_findings)} finding(s):")
+        for fld, detail in config_findings:
+            print(f"    {detail}")
 
     print(f"\n{'=' * 72}")
     if exit_code == 0:

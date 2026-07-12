@@ -53,6 +53,7 @@ SOURCE
 import argparse
 import base64
 import json
+import re
 import subprocess
 import sys
 import time
@@ -205,7 +206,6 @@ def parse_verdict(content: str) -> dict:
 
     verdict = "FAIL"
     issues = []
-    lower = content.lower()
     # Find the last explicit VERDICT line.
     verdict_line = None
     for line in content.splitlines():
@@ -213,21 +213,25 @@ def parse_verdict(content: str) -> dict:
             verdict_line = line
     if verdict_line is not None:
         vl = verdict_line.lower()
-        if "pass" in vl and "fail" not in vl.split("pass", 1)[0]:
+        # PASS requires a WHOLE-WORD 'pass' (a bare substring like "passengers"
+        # must not read as PASS) and no 'fail' anywhere on the line. FAIL stays a
+        # lenient substring match — the fail-safe direction — so a run-together
+        # "FAILfaint" still registers as FAIL.
+        if re.search(r"\bpass\b", vl) and "fail" not in vl:
             verdict = "PASS"
         elif "fail" in vl:
             verdict = "FAIL"
             reason = verdict_line.split(":", 1)[-1].strip()
-            reason = reason.lstrip("FAILfail").strip(" -–—:")
+            # Strip a leading 'FAIL' prefix (run-together or word-bounded) —
+            # NOT lstrip(), which drops every leading char in {F,A,I,L}.
+            reason = re.sub(r"^\s*fail", "", reason, flags=re.IGNORECASE).strip(" -–—:")
             if reason:
                 issues.append(reason)
     else:
-        # No explicit line — infer conservatively.
-        if "pass" in lower and "fail" not in lower:
-            verdict = "PASS"
-        else:
-            verdict = "FAIL"
-            issues.append("No explicit VERDICT line; model did not confirm PASS.")
+        # No explicit VERDICT line — fail safe. Never infer PASS from a stray
+        # 'pass' substring in OCR text.
+        verdict = "FAIL"
+        issues.append("model emitted no explicit VERDICT line; defaulting to FAIL")
 
     return {"verdict": verdict, "issues": issues, "ocr": content}
 
@@ -313,6 +317,28 @@ def run_claude(image: Path, rubric: str) -> dict:
     }
 
 
+def _resolve_auto_backend(config_path: Path) -> str:
+    """Portable default: 'keel' only when kit_env.vision names a local server
+    binary that actually exists on this machine AND requests is importable;
+    otherwise 'claude' (the harness's own vision — zero local setup)."""
+    try:
+        import requests  # noqa: F401
+    except ImportError:
+        return "claude"
+    try:
+        vision = load_kit_env(config_path).get("vision", {}) if config_path.exists() else {}
+    except Exception:
+        return "claude"
+    if not vision:
+        return "claude"
+    if str(vision.get("backend", "keel")).strip().lower() == "claude":
+        return "claude"
+    server = str(vision.get("llama_server", ""))
+    if server and Path(server).exists():
+        return "keel"
+    return "claude"
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -325,8 +351,11 @@ def main() -> int:
     ap.add_argument("--rubric", default="",
                     help="Rubric text file path OR inline rubric text. "
                          "Defaults to the wrap-verify checklist.")
-    ap.add_argument("--backend", choices=["keel", "claude"], default="keel",
-                    help="keel = local Qwen (default, $0 on-box); "
+    ap.add_argument("--backend", choices=["auto", "keel", "claude"], default="auto",
+                    help="auto (default) = keel when kit_env.vision names a local "
+                         "server binary that exists on this machine, else claude "
+                         "(the portable zero-setup path); "
+                         "keel = local Qwen ($0 on-box); "
                          "claude = resize + hand to harness vision.")
     ap.add_argument("--config", default=str(DEFAULT_KIT_ENV),
                     help="Path to kit_env.json (machine paths). "
@@ -350,7 +379,11 @@ def main() -> int:
     # ALWAYS resize first (the 2000px ingestion guard applies to both backends).
     safe_image = resize_safe(image)
 
-    if args.backend == "claude":
+    backend = args.backend
+    if backend == "auto":
+        backend = _resolve_auto_backend(Path(args.config))
+
+    if backend == "claude":
         emit(run_claude(safe_image, rubric))
         return 0
 

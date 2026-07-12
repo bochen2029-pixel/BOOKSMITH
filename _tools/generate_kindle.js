@@ -44,15 +44,33 @@ const REPO_ROOT = path.resolve(TOOLS_DIR, "..");
 // CLI + config
 // ============================================================
 function parseArgs(argv) {
-  const args = { config: null, src: null, out: null };
+  const args = { config: null, src: null, out: null, help: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--config") args.config = argv[++i];
     else if (a === "--src") args.src = argv[++i];
     else if (a === "--out") args.out = argv[++i];
+    else if (a === "--help" || a === "-h") args.help = true;
   }
   return args;
 }
+
+const USAGE = `generate_kindle.js — BOOKSMITH reflowable Kindle DOCX generator
+
+Usage:
+  node generate_kindle.js --config <book_config.json> [options]
+
+Required:
+  --config <path>   book_config.json (per-book knobs; schema _tools/book_config.schema.json)
+
+Options:
+  --src <path>      version-pinned master markdown (default: latest outputs/markdown/<slug>_vN.md)
+  --out <path>      output .docx path (default: book_workspace/<slug>/outputs/kindle/<slug>_KINDLE.docx)
+  -h, --help        show this help and exit
+
+Emits a single-section reflowable DOCX (no page numbers/headers/mirror). Reads the
+SAME version-pinned markdown as generate_book.js. A manual CONTENTS page is OMITTED
+by default (kindle_include_toc); Amazon auto-navs from Heading 1.`;
 
 function loadConfig(configPath) {
   if (!configPath) throw new Error("--config <book_config.json> is required");
@@ -99,6 +117,11 @@ function resolveTypography(config) {
     FIRST_INDENT: num(interior.first_line_indent, 360),
     BODY_COLOR: "000000",                // Kindle uses pure black (§3.2)
     ORNAMENT: str(interior.ornament_glyph, "✦"),
+    // Config-driven glyph fonts (schema defaults match the historical literals,
+    // so a sparse config is byte-identical to before).
+    ORNAMENT_FONT: str(interior.ornament_font, "Segoe UI Symbol"),
+    CODE_FONT: str(interior.code_font, "Consolas"),
+    MATH_FONT: str(interior.math_font, "Cambria Math"),
   };
 }
 
@@ -114,7 +137,7 @@ function makeInlineBuilder(T) {
     const codeParts = text.split(/(`[^`]+`)/g);
     for (const codePart of codeParts) {
       if (codePart.startsWith("`") && codePart.endsWith("`") && codePart.length > 2) {
-        runs.push(new TextRun({ ...baseOpts, text: codePart.slice(1, -1), font: "Consolas" }));
+        runs.push(new TextRun({ ...baseOpts, text: codePart.slice(1, -1), font: T.CODE_FONT }));
         continue;
       }
       if (codePart.length === 0) continue;
@@ -122,7 +145,7 @@ function makeInlineBuilder(T) {
       for (const mathPart of mathParts) {
         if (mathPart.startsWith("$") && mathPart.endsWith("$") && mathPart.length > 2) {
           const expr = latexToUnicode(mathPart.slice(1, -1));
-          runs.push(new TextRun({ ...baseOpts, text: expr, font: "Cambria Math", italics: true }));
+          runs.push(new TextRun({ ...baseOpts, text: expr, font: T.MATH_FONT, italics: true }));
           continue;
         }
         if (mathPart.length === 0) continue;
@@ -180,7 +203,7 @@ function makeFactories(T, buildInlineRuns) {
       new Paragraph({
         spacing: { before: 100, after: 500 },
         alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: T.ORNAMENT, font: "Segoe UI Symbol", size: 22, color: "999999" })],
+        children: [new TextRun({ text: T.ORNAMENT, font: T.ORNAMENT_FONT, size: 22, color: "999999" })],
       }),
     ];
   }
@@ -195,14 +218,14 @@ function makeFactories(T, buildInlineRuns) {
     return new Paragraph({
       spacing: { before: 300, after: 300 },
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: `${T.ORNAMENT}  ${T.ORNAMENT}  ${T.ORNAMENT}`, font: "Segoe UI Symbol", size: 18, color: "BBBBBB" })],
+      children: [new TextRun({ text: `${T.ORNAMENT}  ${T.ORNAMENT}  ${T.ORNAMENT}`, font: T.ORNAMENT_FONT, size: 18, color: "BBBBBB" })],
     });
   }
   function createDisplayMath(expr) {
     return new Paragraph({
       spacing: { before: 240, after: 240 },
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: latexToUnicode(expr), font: "Cambria Math", size: 26, color: T.BODY_COLOR, italics: true })],
+      children: [new TextRun({ text: latexToUnicode(expr), font: T.MATH_FONT, size: 26, color: T.BODY_COLOR, italics: true })],
     });
   }
   return { createBodyParagraph, createBlockquote, createUnitHeading, createSubsectionHeading, createSectionBreak, createDisplayMath };
@@ -283,6 +306,10 @@ function bodyFromFirstUnit(masterMd, unitLevel) {
 // ============================================================
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  if (args.help) {
+    console.log(USAGE);
+    return;
+  }
   const config = loadConfig(args.config);
   const T = resolveTypography(config);
   const buildInlineRuns = makeInlineBuilder(T);
@@ -302,7 +329,7 @@ async function main() {
   }));
   children.push(new Paragraph({
     spacing: { before: 300, after: 200 }, alignment: AlignmentType.CENTER,
-    children: [new TextRun({ text: T.ORNAMENT, font: "Segoe UI Symbol", size: 20, color: "999999" })],
+    children: [new TextRun({ text: T.ORNAMENT, font: T.ORNAMENT_FONT, size: 20, color: "999999" })],
   }));
   if (subtitle) {
     children.push(new Paragraph({
@@ -372,17 +399,27 @@ async function main() {
     }
   }
 
-  // ---- Table of Contents (auto from Heading 1) ----
-  children.push(new Paragraph({ children: [new PageBreak()] }));
-  children.push(new Paragraph({
-    spacing: { before: 2000, after: 600 }, alignment: AlignmentType.CENTER,
-    children: [new TextRun({ text: "CONTENTS", font: T.FONT, size: 24, color: T.BODY_COLOR, characterSpacing: 60 })],
-  }));
-  children.push(new TableOfContents("Table of Contents", {
-    hyperlink: true,
-    headingStyleRange: "1-1",
-    stylesWithLevels: [new StyleLevel("Heading1", 1)],
-  }));
+  // ---- Table of Contents (auto from Heading 1) — OMITTED by default (§16.4).
+  // For Kindle / reflowable uploads Amazon builds navigation from the Heading-1
+  // structure itself; a manual CONTENTS page + TableOfContents field is
+  // redundant and, on some KDP upload paths, renders as a broken/blank screen
+  // or a dead page-numbered list. Gate behind book_config.kindle_include_toc
+  // (schema default FALSE — rely on Amazon's H1 auto-nav; set true only for an
+  // upload path that wants an embedded TOC). Page numbers are ALWAYS absent
+  // from Kindle (single section, header:0 footer:0). ----
+  const includeToc = config.kindle_include_toc === true;
+  if (includeToc) {
+    children.push(new Paragraph({ children: [new PageBreak()] }));
+    children.push(new Paragraph({
+      spacing: { before: 2000, after: 600 }, alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: "CONTENTS", font: T.FONT, size: 24, color: T.BODY_COLOR, characterSpacing: 60 })],
+    }));
+    children.push(new TableOfContents("Table of Contents", {
+      hyperlink: true,
+      headingStyleRange: "1-1",
+      stylesWithLevels: [new StyleLevel("Heading1", 1)],
+    }));
+  }
 
   // ---- Body ----
   const unitNoun = (config.voice && config.voice.unit_noun) ? config.voice.unit_noun : "chapter";
@@ -416,7 +453,7 @@ async function main() {
 
   // ---- Document: single section, uniform 1" margins, no print furniture ----
   const doc = new Document({
-    features: { updateFields: true },   // Word fills the TOC field on open (§7.2)
+    features: { updateFields: includeToc },   // only a TOC field needs on-open fill (§7.2); off by default (§16.4)
     styles: {
       default: {
         document: { run: { font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR } },
@@ -449,11 +486,17 @@ async function main() {
   console.log(`Body            : ${T.BODY_SIZE/2}pt ${T.FONT}, leading ${T.BODY_LINE}, color #${T.BODY_COLOR}`);
   console.log(`Unit noun       : ${unitNoun} (Heading 1 for auto-TOC)`);
   console.log(`Furniture       : single section, 1" margins, NO page numbers/headers/mirror/versos`);
-  console.log(`TOC             : hyperlinked, populated on open via Word COM (updateFields)`);
+  console.log(`TOC             : ${includeToc ? "manual CONTENTS + hyperlinked field (kindle_include_toc=true)" : "OMITTED by default — Amazon auto-navs from Heading 1 (§16.4)"}`);
 }
 
 if (require.main === module) {
-  main().catch((e) => { console.error(e); process.exit(1); });
+  main().catch((e) => {
+    // Quiet, structured message for expected errors (missing --config, no
+    // markdown source). Set BOOKSMITH_DEBUG=1 for the full stack.
+    console.error(`error: ${e && e.message ? e.message : e}`);
+    if (process.env.BOOKSMITH_DEBUG && e && e.stack) console.error(e.stack);
+    process.exit(1);
+  });
 }
 
-module.exports = { main, parseMarkdown, bodyFromFirstUnit };
+module.exports = { main, parseMarkdown, bodyFromFirstUnit, USAGE };

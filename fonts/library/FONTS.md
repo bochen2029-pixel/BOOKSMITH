@@ -1,6 +1,6 @@
 # BOOKSMITH Font Library
 
-*25 files, all **SIL Open Font License (OFL)** — free for commercial book use, embedding, and print. Sourced from the official [google/fonts](https://github.com/google/fonts) repo (`ofl/` tree), fetched 2026-07-11. Every file is PIL-verified: loads via `ImageFont.truetype`, and all `-VF` files respond to `set_variation_by_axes([weight])` (weight axis 300–900 typical, per family).*
+*25 TTF files in this `fonts/library/` folder, all **SIL Open Font License (OFL)** — free for commercial book use, embedding, and print. (The kit also vendors 2 static Cormorant Garamond faces one level up in `fonts/` — the proven house cover default — for 27 TTFs total under `fonts/`.) Sourced from the official [google/fonts](https://github.com/google/fonts) repo (`ofl/` tree), fetched 2026-07-11. Every file is PIL-verified: loads via `ImageFont.truetype`, and all `-VF` files respond to `set_variation_by_axes([weight])` (weight axis 300–900 typical, per family). **License texts:** every family's verbatim OFL is in [`fonts/LICENSES/`](../LICENSES/) (one `OFL_<Family>.txt` per family, plus a README).*
 
 ## The two uses (important distinction)
 
@@ -46,7 +46,7 @@
 
 ## Provenance & license
 
-Every family downloaded from `https://github.com/google/fonts/tree/main/ofl/<family>/` (the canonical Google Fonts source). License: SIL OFL 1.1 for all — redistribution with the kit is permitted; each family's `OFL.txt` is available at the same source path. Re-verify any new addition with:
+Every family downloaded from `https://github.com/google/fonts/tree/main/ofl/<family>/` (the canonical Google Fonts source). License: SIL OFL 1.1 for all — redistribution with the kit is permitted. The verbatim license text for each family ships in [`fonts/LICENSES/`](../LICENSES/) (`OFL_<Family>.txt`); the original upstream `OFL.txt` is also available at the same GitHub source path. Re-verify any new addition with:
 
 ```powershell
 python -c "from PIL import ImageFont; ImageFont.truetype(r'fonts\library\NewFont-VF.ttf', 40).set_variation_by_axes([600]); print('OK')"

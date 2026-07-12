@@ -17,6 +17,7 @@
 | Decision | Value |
 |---|---|
 | Reader | {{READER}} |
+| Integration mode | {{INTEGRATION_MODE}} *(synthesis: satellites dissolve into a book grown from the core — the default | anthology: parts stay distinct | reforge: an existing manuscript reborn)* |
 | Voice | {{VOICE_ONE_LINE}} |
 | Person / tense | {{PERSON_TENSE}} |
 | Length (target) | {{WORD_TARGET}} |

@@ -11,7 +11,7 @@ CONTRACT (KIT_ARCHITECTURE (c) build_digital_pdf.py):
   - Word-COM interior PDF (reuse docx_to_pdf.py) + crop covers
     (BLEED_PX = int(0.80*DPI) = 240 for Mixam-sourced back art) ->
     cover pages as an EXACT 432x648-pt MediaBox via fitz.new_page ->
-    PyPDF2 concat -> book_workspace/<slug>/outputs/digital/<slug>_DIGITAL.pdf.
+    pypdf concat -> book_workspace/<slug>/outputs/digital/<slug>_DIGITAL.pdf.
 
 PORTED FROM:
   - C:\\BOOK\\build_digital_atd.py                     (blank-strip + fitz cover pages + interior copy)
@@ -45,14 +45,21 @@ import tempfile
 
 import fitz  # PyMuPDF
 from PIL import Image
-from PyPDF2 import PdfReader, PdfWriter
+# pypdf is the maintained successor to the EOL PyPDF2 (drop-in PdfReader/PdfWriter
+# API). Prefer it; fall back to PyPDF2 on machines that only have the old package.
+try:
+    from pypdf import PdfReader, PdfWriter
+except ImportError:  # pragma: no cover - legacy fallback
+    from PyPDF2 import PdfReader, PdfWriter
 
 # Local sibling tools.
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 if _THIS_DIR not in sys.path:
     sys.path.insert(0, _THIS_DIR)
-import docx_to_pdf as _docx_to_pdf            # noqa: E402
 import strip_blank_pages as _strip            # noqa: E402
+# docx_to_pdf (Word COM, Windows-only) is imported lazily inside
+# ensure_interior_pdf() so this module loads on any platform whenever a
+# pre-rendered interior PDF already exists.
 
 DPI = 300
 TRIM_W_IN = 6.00
@@ -92,14 +99,14 @@ def resolve_workspace(cfg, workspace_arg):
 
 
 def bleed_px_for_back(cfg) -> int:
-    """The back cover is cropped from the print wrap. Mixam-sourced wraps carry
-    0.80" bleed (BLEED_PX = int(0.80*300) = 240); KDP paperback wraps carry
-    0.125". Prefer the Mixam value when a Mixam wrap is the source, else fall
-    back to the KDP paperback bleed. We read both from spine config and default
-    to the 0.80" Mixam value per the contract."""
+    """The back cover is cropped from the print wrap. resolve_covers() only ever
+    sources the KDP paperback wrap ('{slug}_cover_wrap.jpg' / 'cover_wrap.jpg' /
+    '{slug}_KDP_PAPERBACK_wrap.jpg') — all 0.125" KDP bleed. The Mixam wrap
+    ('cover_wrap_mixam.jpg', 0.80" bleed) is NEVER in that list, so cropping with
+    the Mixam bleed shears 0.675" off every edge. Read the KDP paperback bleed."""
     spine = cfg.get("spine") or {}
-    mixam_bleed = spine.get("mixam_bleed_in", 0.80)
-    return int(round(mixam_bleed * DPI))
+    kdp_bleed = spine.get("kdp_bleed_in", 0.125)
+    return int(round(kdp_bleed * DPI))
 
 
 def crop_back_trim_from_wrap(wrap_path: str, cfg) -> Image.Image:
@@ -109,7 +116,13 @@ def crop_back_trim_from_wrap(wrap_path: str, cfg) -> Image.Image:
     bleed_px = bleed_px_for_back(cfg)
     back_trim_right = bleed_px + int(round(TRIM_W_IN * DPI))
     back_trim_bottom = wrap.height - bleed_px
-    return wrap.crop((bleed_px, bleed_px, back_trim_right, back_trim_bottom))
+    cropped = wrap.crop((bleed_px, bleed_px, back_trim_right, back_trim_bottom))
+    exp_w = int(round(TRIM_W_IN * DPI))
+    exp_h = int(round(TRIM_H_IN * DPI))
+    assert abs(cropped.size[0] - exp_w) <= 2 and abs(cropped.size[1] - exp_h) <= 2, (
+        f"back-cover crop {cropped.size} != expected ({exp_w},{exp_h}); "
+        f"wrong bleed for source {wrap_path}")
+    return cropped
 
 
 def render_cover_jpeg(img: Image.Image, cover_rgb, dpi: int = DPI) -> bytes:
@@ -166,6 +179,7 @@ def ensure_interior_pdf(cfg, ws: str) -> str:
             f"kdp_paperback format first.")
 
     out_pdf = os.path.join(pb_dir, f"{slug}_KDP_PAPERBACK.pdf")
+    import docx_to_pdf as _docx_to_pdf  # lazy: Word COM, Windows-only
     pages, words = _docx_to_pdf.docx_to_pdf(docx, out_pdf)
     print(f"  Rendered interior via Word COM: {pages} pages, {words} words",
           file=sys.stderr)
@@ -232,9 +246,14 @@ def build(config_path, workspace_arg):
     interior_pdf = ensure_interior_pdf(cfg, ws)
 
     # 2. Strip print-only blanks + header ghosts into a temp PDF.
+    #    keep_covers=1 (NOT the default 2, NOT 0): the strip runs on the
+    #    cover-LESS interior (covers are prepended below), so page 1 is the real
+    #    half-title (e.g. 'THE TEST VOYAGE' = 13 chars, below min_chars=30);
+    #    keep_covers=1 protects it unconditionally while still stripping page 2,
+    #    the true blank verso. keep_covers=2 would preserve that blank verso.
     fd, stripped_pdf = tempfile.mkstemp(suffix="_stripped.pdf", dir=out_dir)
     os.close(fd)
-    strip_result = _strip.strip_blank_pages(interior_pdf, stripped_pdf)
+    strip_result = _strip.strip_blank_pages(interior_pdf, stripped_pdf, keep_covers=1)
 
     # 3. Build the two exact-MediaBox cover pages.
     front_img, back_img, cover_rgb, front_src, back_src = resolve_covers(cfg, ws)
@@ -244,7 +263,7 @@ def build(config_path, workspace_arg):
     os.close(fd)
     build_cover_pages_pdf(front_jpeg, back_jpeg, cover_pdf)
 
-    # 4. Concatenate covers + stripped interior via PyPDF2 (per the contract).
+    # 4. Concatenate covers + stripped interior via pypdf (per the contract).
     writer = PdfWriter()
     cover_reader = PdfReader(cover_pdf)
     for page in cover_reader.pages:

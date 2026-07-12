@@ -86,6 +86,12 @@ FORMAT_DIR = {
     "epub": "epub",
 }
 
+# The canonical format list — the single source of truth for the --format choices
+# and the `--format all` fan-out sweep.
+FORMAT_CHOICES = ["kindle", "kdp_paperback", "kdp_hardcover", "mixam_hardcover",
+                  "mixam_paperback", "blurb_paperback", "blurb_hardcover",
+                  "digital_pdf", "epub"]
+
 # Interior page-count multiple per print format (§4.4; print_presets
 # page_multiple: Mixam perfect-bound/case x4 — CONFIRMED; KDP + Blurb x2).
 PAGE_MULTIPLES = {
@@ -137,8 +143,11 @@ def find_one(directory: Path, suffix: str, prefer_substr=None):
     absent. If multiple and no preference matches, returns the most recent."""
     if not directory.exists():
         return None
-    candidates = sorted(directory.glob(f"*{suffix}"),
-                        key=lambda p: p.stat().st_mtime, reverse=True)
+    # Skip Word owner-lock/temp files (~$name.docx) — a force-killed Word leaves
+    # these behind, and they are tiny non-zip files that break the OOXML checks.
+    candidates = sorted(
+        (p for p in directory.glob(f"*{suffix}") if not p.name.startswith("~$")),
+        key=lambda p: p.stat().st_mtime, reverse=True)
     if not candidates:
         return None
     if prefer_substr:
@@ -175,10 +184,40 @@ def _header_texts(z: zipfile.ZipFile, part_name: str):
     return re.findall(r"<w:t[^>]*>([^<]*)</w:t>", xml)
 
 
-def check_empty_headers(docx: Path):
-    """At least one header*.xml must render [] (a header-free ceremonial/blank
-    section got the empty-header fix). If EVERY header carries text, the
-    empty-header fix was not applied — the most-rediscovered rejection."""
+# Ceremonial front-matter types that must NOT carry a running head (they get
+# their own header-free one-page section). 'blank' versos are header-free too.
+_HEADERFREE_FRONTMATTER = {"half_title", "blank", "title", "copyright",
+                           "dedication", "epigraph", "contents", "readers_note"}
+
+
+def _expected_headerfree_sections(cfg: dict) -> int:
+    """Count the ceremonial/blank front-matter sections that must render an
+    EMPTY header, derived from config.front_matter, plus the trailing blank
+    verso the recto strategy appends. Falls back to 1 when front_matter is
+    absent (so the check never demands more than the legacy floor)."""
+    if not isinstance(cfg, dict):
+        return 1
+    fm = cfg.get("front_matter")
+    if not isinstance(fm, list) or not fm:
+        return 1
+    count = sum(1 for e in fm
+                if isinstance(e, dict) and e.get("type") in _HEADERFREE_FRONTMATTER)
+    # odd_page_sections appends a trailing EVEN_PAGE blank verso (also header-free).
+    if (cfg.get("recto_strategy", "odd_page_sections") == "odd_page_sections"):
+        count += 1
+    return max(count, 1)
+
+
+def check_empty_headers(docx: Path, cfg: dict = None):
+    """Every header-free ceremonial/blank section must render an EMPTY header.
+
+    A single stray empty header is NOT enough (the old rule); Word deduplicates
+    header PARTS (one empty part is shared by many header-free SECTIONS), so we
+    map each sectPr's headerReference -> header part -> empty? and count how many
+    SECTIONS resolve to an empty header, then require that count to meet the
+    expected header-free section count derived from config.front_matter. This is
+    what closes the KDP 'text outside margins' gap: it confirms the empty-header
+    fix reached the RIGHT sections, not merely that one empty header exists."""
     name = "empty_headers_on_headerfree_sections"
     if docx is None:
         return (name, False, "interior DOCX not found")
@@ -188,20 +227,70 @@ def check_empty_headers(docx: Path):
                                   if re.match(r"word/header\d*\.xml$", n))
             if not header_parts:
                 return (name, False, "no word/header*.xml parts present")
+            # part filename -> is-empty
+            part_empty = {}
             empties = 0
             summary = []
             for h in header_parts:
                 texts = [t for t in _header_texts(z, h) if t.strip()]
-                if not texts:
+                is_empty = not texts
+                part_empty[h.split("/")[-1]] = is_empty
+                if is_empty:
                     empties += 1
                     summary.append(f"{h.split('/')[-1]}=[]")
                 else:
                     summary.append(f"{h.split('/')[-1]}={texts[:1]}")
+
+            # Map rId -> header part filename via document.xml.rels, then walk
+            # each sectPr's headerReference to classify SECTIONS (not parts).
+            empty_ref_sections = None
+            titled_ref_sections = None
+            try:
+                rels = z.read("word/_rels/document.xml.rels").decode("utf-8", "replace")
+                rid_to_part = {}
+                for m in re.finditer(
+                        r'<Relationship\b[^>]*\bId="([^"]+)"[^>]*\bTarget="([^"]+)"[^>]*/>',
+                        rels):
+                    rid, target = m.group(1), m.group(2)
+                    if "header" in target.lower():
+                        rid_to_part[rid] = target.split("/")[-1]
+                doc = z.read("word/document.xml").decode("utf-8", "replace")
+                empty_ref_sections = 0
+                titled_ref_sections = 0
+                for m in re.finditer(r'<w:headerReference\b[^>]*\br:id="([^"]+)"', doc):
+                    part = rid_to_part.get(m.group(1))
+                    if part is None or part not in part_empty:
+                        continue
+                    if part_empty[part]:
+                        empty_ref_sections += 1
+                    else:
+                        titled_ref_sections += 1
+            except (KeyError, OSError):
+                empty_ref_sections = None  # rels/document missing — fall back
     except (zipfile.BadZipFile, OSError) as exc:
         return (name, False, f"could not inspect headers: {exc}")
+
+    expected = _expected_headerfree_sections(cfg)
+    detail = "; ".join(summary)
+
+    if empty_ref_sections is not None:
+        # Section-mapped: require enough SECTIONS to reference an empty header.
+        ok = empty_ref_sections >= expected
+        detail += (f"  (sections->empty header: {empty_ref_sections}, "
+                   f"->titled header: {titled_ref_sections}; "
+                   f"expected >= {expected} header-free)")
+        if not ok:
+            detail += "  FAIL: fewer header-free sections than the front-matter demands"
+        return (name, ok, detail)
+
+    # Fallback (rels/document.xml unreadable): count empty header PARTS, and
+    # report a lone empty as WEAK rather than a clean pass.
     ok = empties >= 1
-    detail = ("; ".join(summary) +
-              ("" if ok else "  (NO empty header found — empty-header fix likely missing)"))
+    if not ok:
+        detail += "  (NO empty header found — empty-header fix likely missing)"
+    elif empties == 1 and empties < len(header_parts):
+        detail += ("  WEAK: only one empty header PART and titled headers exist "
+                   "(cannot confirm the fix reached the right sections)")
     return (name, ok, detail)
 
 
@@ -288,6 +377,34 @@ def check_min_pages_note(pdf: Path, fmt: str):
     return (name, True, f"{pages} pages >= {fmt} service minimum {minimum}")
 
 
+def check_book_min_pages(pdf: Path, cfg: dict):
+    """HARD house floor (Bo's rule, 2026-07-12): no book ships under `min_pages`
+    interior pages (default 75) unless explicitly approved. A thinner book yields
+    an illegible spine (spine font scales with page count — LESSONS_LEDGER §16.1)
+    and reads as a pamphlet. Override: set book_config.min_pages lower to record a
+    deliberate exception, or 0 to disable."""
+    name = "book_min_pages"
+    floor = 75
+    if isinstance(cfg, dict) and cfg.get("min_pages") is not None:
+        try:
+            floor = int(cfg["min_pages"])
+        except (TypeError, ValueError):
+            floor = 75
+    if floor <= 0:
+        return (name, True, f"floor disabled (min_pages={floor})")
+    pages = _pdf_page_count(pdf) if pdf is not None else None
+    if pages is None:
+        return (name, False,
+                f"no interior PDF to count against the {floor}-page house floor")
+    if pages >= floor:
+        return (name, True, f"{pages} pages >= {floor}-page house floor")
+    return (name, False,
+            f"{pages} pages is BELOW the {floor}-page house floor — too thin "
+            f"(illegible spine, reads as a pamphlet). Lengthen the manuscript "
+            f"(~28-34K words for 6x9), or set book_config.min_pages lower to record "
+            f"a deliberate exception.")
+
+
 def _read_recorded_pages(fmt_dir: Path):
     """composite_cover.py records the PAGES it used. Look for a PAGES marker in
     a sidecar (pages.txt / *_dims.json / *_cover_meta.json). Returns int|None."""
@@ -339,24 +456,27 @@ def _expected_wrap(cfg: dict, fmt: str, pages):
     tw, th = float(trim.get("w", 6)), float(trim.get("h", 9))
     spine = cfg.get("spine", {})
     paper = cfg.get("paper", "cream")
-    per_page = float(spine.get("per_page_cream", 0.0025)) if paper == "cream" \
-        else float(spine.get("per_page_white", 0.002252))
 
     if fmt == "kdp_paperback":
-        bleed = float(spine.get("kdp_bleed_in", 0.125))
-        spine_w = pages * per_page  # no board add
-        w = tw * 2 + spine_w + bleed * 2
-        h = th + bleed * 2
-        return (round(w, 4), round(h, 4))
+        # SINGLE source of truth: preset_lookup.kdp_paperback_wrap_dims — the same
+        # code path composite_cover.build_kdp_wrap builds from. No board add; every
+        # knob passed through from book_config.spine so nothing is re-hardcoded.
+        d = preset_lookup.kdp_paperback_wrap_dims(
+            tw, th, pages, paper,
+            per_page_cream=float(spine.get("per_page_cream", 0.0025)),
+            per_page_white=float(spine.get("per_page_white", 0.002252)),
+            bleed_in=float(spine.get("kdp_bleed_in", 0.125)))
+        return (d["cover_w"], d["cover_h"])
     if fmt == "kdp_hardcover":
-        # KDP hardcover is white-only.
-        per_page_hc = float(spine.get("per_page_white", 0.002252))
-        board = float(spine.get("kdp_hardcover_board_add", 0.348))
-        turn_in = float(spine.get("kdp_hardcover_turn_in_in", 0.708))
-        height = float(spine.get("kdp_hardcover_height_in", 10.417))
-        spine_w = pages * per_page_hc + board
-        w = tw * 2 + spine_w + turn_in * 2
-        return (round(w, 4), round(height, 4))
+        # SINGLE source of truth: preset_lookup.kdp_hardcover_wrap_dims (white-only
+        # spine math + board add + case-board turn-in + hardcoded case height).
+        d = preset_lookup.kdp_hardcover_wrap_dims(
+            tw, th, pages,
+            per_page_white=float(spine.get("per_page_white", 0.002252)),
+            board_add_in=float(spine.get("kdp_hardcover_board_add", 0.348)),
+            turn_in_in=float(spine.get("kdp_hardcover_turn_in_in", 0.708)),
+            height_in=float(spine.get("kdp_hardcover_height_in", 10.417)))
+        return (d["cover_w"], d["cover_h"])
     if fmt == "mixam_hardcover":
         # Mixam ships FOUR panels; the front panel is trim + 2*bleed each side.
         bleed = float(spine.get("mixam_bleed_in", 0.80))
@@ -447,15 +567,21 @@ def _read_cover_meta(fmt_dir: Path):
     return obj if isinstance(obj, dict) else None
 
 
-def check_cover_wrap_dims(cfg: dict, fmt: str, fmt_dir: Path, pages):
+def check_cover_wrap_dims(cfg: dict, fmt: str, fmt_dir: Path, pages, final=False):
     """Compare the cover PDF MediaBox against the INDEPENDENTLY recomputed
     expected wrap dims (same formula/preset_lookup code path the compositor
     used), preferring the compositor's recorded PAGES from cover_meta.json.
     Also cross-checks the compositor's recorded target against the recompute —
-    a disagreement there means the two sides diverged (a real bug)."""
+    a disagreement there means the two sides diverged (a real bug).
+
+    When `final` (the export/ship sweep, --final), a MISSING cover is a HARD
+    fail: every format must carry its cover at ship time. During the ordinary
+    interior-first pipeline (final=False) a not-yet-built cover soft-skips."""
     name = "cover_wrap_dimensions"
     cover = _find_cover_pdf(fmt_dir, fmt)
     if cover is None:
+        if final:
+            return (name, False, "FINAL verify: cover wrap PDF missing")
         # The cover is produced at the cover stage (GATE-6), after the interior
         # verify. Absence here is expected — skip, do not measure the interior.
         return (name, True, "no cover wrap PDF yet (produced at the cover stage) — skipped")
@@ -483,6 +609,20 @@ def check_cover_wrap_dims(cfg: dict, fmt: str, fmt_dir: Path, pages):
     pages_used = meta_pages if meta_pages is not None else pages
     pages_src = ("cover_meta.json" if meta_pages is not None
                  else "interior PDF" if pages is not None else "unknown")
+
+    # STALE-COVER reconciliation: cover_meta.json records the page count the
+    # cover was composited for; the `pages` arg is the CURRENT interior PDF's
+    # page count. If the interior shrank/grew since the cover was built, the
+    # cover_meta target and its recompute both derive from the SAME (stale)
+    # meta_pages and always agree with each other — so the only way to catch a
+    # stale cover is to compare meta_pages against the live interior. When they
+    # disagree, the expected dims must reflect the CURRENT interior (not the
+    # stale meta), and this is a hard fail: recomposite the cover.
+    stale_cover = (meta_pages is not None and pages is not None
+                   and meta_pages != pages)
+    if stale_cover:
+        pages_used = pages
+        pages_src = "interior PDF (cover_meta STALE)"
     try:
         expected = _expected_wrap(cfg, fmt, pages_used)
     except (KeyError, ValueError) as exc:
@@ -509,7 +649,248 @@ def check_cover_wrap_dims(cfg: dict, fmt: str, fmt_dir: Path, pages):
             ok = False
             detail += (f"; compositor target {meta_target[0]}x{meta_target[1]} "
                        f"DISAGREES with recomputed {expected[0]}x{expected[1]}")
+
+    if stale_cover:
+        ok = False
+        detail += (f"; STALE COVER: cover_meta pages={meta_pages} != interior "
+                   f"PDF pages={pages} — recomposite the cover")
     return (name, ok, detail)
+
+
+def _in_to_dxa(inches: float) -> int:
+    """Inches -> DXA/twips (1440 per inch)."""
+    return int(round(float(inches) * 1440))
+
+
+def check_gutter_side(docx: Path, cfg: dict):
+    """Under mirrorMargins, w:left is the INSIDE (gutter/spine-side) margin and
+    w:right is the OUTSIDE margin (generate_book.js sets left=gutter,
+    right=outside). Verify every body section's inside margin is >= its outside
+    margin AND >= the configured gutter floor — closes the re-opened KDP
+    'insufficient gutter' rejection (an existing mirror flag does NOT guarantee
+    the gutter is on the correct/adequate side)."""
+    name = "gutter_on_inside_and_adequate"
+    if docx is None:
+        return (name, False, "interior DOCX not found")
+    try:
+        with zipfile.ZipFile(docx) as z:
+            doc = z.read("word/document.xml").decode("utf-8", "replace")
+    except (KeyError, zipfile.BadZipFile, OSError) as exc:
+        return (name, False, f"could not read word/document.xml: {exc}")
+    pgmars = re.findall(r"<w:pgMar\b[^>]*/>", doc)
+    if not pgmars:
+        return (name, False, "no <w:pgMar> found in document.xml")
+    # Gutter floor: config interior.gutter_in (schema default 0.75in = 1080 dxa).
+    interior = (cfg or {}).get("interior") or {}
+    try:
+        gutter_floor_dxa = _in_to_dxa(float(interior.get("gutter_in", 0.75)))
+    except (TypeError, ValueError):
+        gutter_floor_dxa = _in_to_dxa(0.75)
+    offenders = []
+    below_floor = []
+    checked = 0
+    for i, pm in enumerate(pgmars):
+        lm = re.search(r'\bw:left="(-?\d+)"', pm)
+        rm = re.search(r'\bw:right="(-?\d+)"', pm)
+        if not lm or not rm:
+            continue
+        left, right = int(lm.group(1)), int(rm.group(1))
+        checked += 1
+        if left < right:
+            offenders.append(f"sect#{i}: inside(left)={left} < outside(right)={right}")
+        if left < gutter_floor_dxa:
+            below_floor.append(f"sect#{i}: inside(left)={left} < floor {gutter_floor_dxa}")
+    problems = offenders + below_floor
+    ok = not problems
+    if ok:
+        return (name, True, f"{checked} section(s): inside >= outside and "
+                            f">= gutter floor {gutter_floor_dxa} dxa")
+    return (name, False, "; ".join(problems[:6]))
+
+
+def check_front_matter_valign(docx: Path, cfg: dict):
+    """inject_front_matter_valign.js writes <w:vAlign w:val="..."> into each
+    ceremonial front-matter section that declares a valign. Assert the DOCX
+    carries at least as many vAlign elements of each declared value as the
+    config demands (row 5 of the anti-forgetting matrix — was visual-only)."""
+    name = "front_matter_valign_injected"
+    fm = (cfg or {}).get("front_matter")
+    if not isinstance(fm, list) or not fm:
+        return (name, True, "no front_matter declared — nothing to check")
+    want = {}
+    for e in fm:
+        if isinstance(e, dict) and e.get("valign"):
+            want[e["valign"]] = want.get(e["valign"], 0) + 1
+    if not want:
+        return (name, True, "no front_matter entry declares a valign — skipped")
+    if docx is None:
+        return (name, False, "interior DOCX not found")
+    try:
+        with zipfile.ZipFile(docx) as z:
+            doc = z.read("word/document.xml").decode("utf-8", "replace")
+    except (KeyError, zipfile.BadZipFile, OSError) as exc:
+        return (name, False, f"could not read word/document.xml: {exc}")
+    have = {}
+    for m in re.finditer(r'<w:vAlign\b[^>]*\bw:val="([^"]+)"', doc):
+        have[m.group(1)] = have.get(m.group(1), 0) + 1
+    missing = {v: (want[v], have.get(v, 0)) for v in want if have.get(v, 0) < want[v]}
+    ok = not missing
+    if ok:
+        return (name, True, f"vAlign present: want {want}, have "
+                            f"{ {v: have.get(v, 0) for v in want} }")
+    return (name, False, f"vAlign MISSING/short (want,have): {missing} — "
+                         f"inject_front_matter_valign not applied to all sections")
+
+
+def check_mixam_spine_panel(cfg: dict, fmt_dir: Path, pages, final=False):
+    """Mixam 3-panel hardcover ships an independent spine.pdf whose width is
+    page-count dependent; only the front panel was ever measured. Recompute the
+    expected spine-panel width the SAME way composite_cover.build_mixam does
+    (spine_override wins, else pages*per_page(paper)+mixam_board_add, then
+    +2*mixam_bleed for the panel), and compare the spine.pdf MediaBox width."""
+    name = "mixam_spine_panel_width"
+    spine_pdf = None
+    if fmt_dir.exists():
+        for p in sorted(fmt_dir.glob("*.pdf"),
+                        key=lambda x: x.stat().st_mtime, reverse=True):
+            n = p.name.lower()
+            if n == "spine.pdf" or n.endswith("_spine.pdf"):
+                spine_pdf = p
+                break
+    if spine_pdf is None:
+        if final:
+            return (name, False, "FINAL verify: mixam spine.pdf missing")
+        return (name, True, "no spine.pdf yet (produced at the cover stage) — skipped")
+    if pages is None:
+        return (name, True, f"{spine_pdf.name} present; interior PAGES unknown so "
+                            f"cannot recompute spine width (informational)")
+    spine = (cfg or {}).get("spine") or {}
+    paper = (cfg or {}).get("paper", "cream")
+    override = spine.get("spine_override_in")
+    if override is not None:
+        try:
+            spine_in = round(float(override), 4)
+        except (TypeError, ValueError):
+            spine_in = None
+    else:
+        per_page = (float(spine.get("per_page_cream", 0.0025)) if paper == "cream"
+                    else float(spine.get("per_page_white", 0.002252)))
+        board = float(spine.get("mixam_board_add", 0.110))
+        spine_in = round(pages * per_page + board, 4)
+    if spine_in is None:
+        return (name, False, "could not compute expected mixam spine width")
+    bleed = float(spine.get("mixam_bleed_in", 0.80))
+    expected_panel_w = round(spine_in + 2 * bleed, 4)
+    actual = _cover_mediabox_inches(spine_pdf)
+    if actual is None:
+        return (name, False, f"could not read MediaBox from {spine_pdf.name}")
+    dw = abs(actual[0] - expected_panel_w)
+    ok = dw <= 0.001
+    return (name, ok, f"{spine_pdf.name}: spine panel width actual {actual[0]} vs "
+                      f"expected {expected_panel_w} in (spine {spine_in}+2x{bleed} "
+                      f"bleed; pages={pages}; Δw={dw:.4f}) — "
+                      f"{'ok' if ok else 'MISMATCH — recomposite for the current page count'}")
+
+
+def check_digital_pdf(cfg: dict, root: Path):
+    """The digital/reader PDF is otherwise gated only by lint. Assert its
+    structural invariants: it exists; the two front cover pages carry the exact
+    trim MediaBox (build_digital_pdf sets 432x648 pt for 6x9 via fitz — PIL
+    truncation would drift it); and it has >= 3 pages (2 covers + >=1 interior),
+    which also fails if the interior was not concatenated."""
+    name = "digital_pdf_structure"
+    fmt_dir = root / "outputs" / "digital"
+    slug = (cfg or {}).get("slug")
+    pdf = None
+    if slug:
+        cand = fmt_dir / f"{slug}_DIGITAL.pdf"
+        if cand.exists():
+            pdf = cand
+    if pdf is None:
+        pdf = find_one(fmt_dir, "_DIGITAL.pdf") or find_one(fmt_dir, ".pdf")
+    if pdf is None:
+        return (name, False, f"digital PDF not found under {fmt_dir}")
+    # Expected cover-page MediaBox = trim (inches) * 72, matching build_digital_pdf.
+    trim = (cfg or {}).get("trim") or {}
+    exp_w = round(float(trim.get("w", 6)) * 72.0, 3)
+    exp_h = round(float(trim.get("h", 9)) * 72.0, 3)
+    try:
+        import fitz
+        with fitz.open(str(pdf)) as doc:
+            n = len(doc)
+            if n < 3:
+                return (name, False, f"{pdf.name}: {n} pages — expected >= 3 "
+                                     f"(2 covers + >=1 interior; interior not concatenated?)")
+            problems = []
+            for idx in (0, 1):
+                r = doc[idx].rect
+                if abs(r.width - exp_w) > 0.01 or abs(r.height - exp_h) > 0.01:
+                    problems.append(f"page{idx+1} MediaBox {r.width:.3f}x{r.height:.3f} pt "
+                                    f"!= expected {exp_w}x{exp_h} pt")
+    except Exception as exc:
+        return (name, False, f"could not open digital PDF with fitz: {exc}")
+    ok = not problems
+    if ok:
+        return (name, True, f"{pdf.name}: {n} pages; both cover pages exact "
+                            f"{exp_w}x{exp_h} pt MediaBox")
+    return (name, False, "; ".join(problems))
+
+
+# Raw LaTeX/math delimiters that must NOT survive into an ebook body (they must
+# have been converted to Unicode/Cambria-Math glyphs). Compound hyphens and
+# ordinary '$' currency are NOT these markers.
+_LATEX_MARKERS = (r"\(", r"\)", r"\[", r"\]", r"\frac", r"\sqrt", r"\sum",
+                  r"\int", r"\alpha", r"\beta", r"\gamma", r"\theta", r"\times",
+                  r"\cdot", r"\begin{", r"\end{")
+
+
+def _book_is_math(cfg: dict) -> bool:
+    """A math book is a non-fiction title whose LaTeX->Unicode path is engaged
+    (is_fiction false). Explicit book_config.math or book_config.is_math wins."""
+    if not isinstance(cfg, dict):
+        return False
+    for key in ("math", "is_math", "has_math"):
+        if isinstance(cfg.get(key), bool):
+            return cfg[key]
+    return cfg.get("is_fiction") is False
+
+
+def check_no_residual_latex(root: Path, cfg: dict, fmt: str):
+    """Row 16 of the matrix: for a math book, no raw LaTeX delimiter may survive
+    into the Kindle/EPUB body (the LaTeX->Unicode transform must have run). Only
+    fires when the book is flagged math; otherwise it is a no-op pass."""
+    name = "no_residual_latex_math"
+    if not _book_is_math(cfg):
+        return (name, True, "book not flagged as math — LaTeX check skipped")
+    bodies = []
+    try:
+        if fmt == "epub":
+            epub = find_one(root / "outputs" / "epub", ".epub")
+            if epub is None:
+                return (name, True, "no .epub to scan (informational)")
+            with zipfile.ZipFile(epub) as z:
+                for nn in z.namelist():
+                    if nn.startswith("OEBPS/text/") and nn.endswith(".xhtml"):
+                        bodies.append(z.read(nn).decode("utf-8", "replace"))
+        else:  # kindle DOCX
+            kindle = find_one(root / "outputs" / "kindle", ".docx",
+                              prefer_substr=["kindle"])
+            if kindle is None:
+                return (name, True, "no kindle DOCX to scan (informational)")
+            with zipfile.ZipFile(kindle) as z:
+                bodies.append(z.read("word/document.xml").decode("utf-8", "replace"))
+    except (zipfile.BadZipFile, OSError, KeyError) as exc:
+        return (name, False, f"could not scan body for LaTeX: {exc}")
+    joined = "\n".join(bodies)
+    hits = sorted({mk for mk in _LATEX_MARKERS if mk in joined})
+    # Inline $...$ math (a $ pair on one line with a letter/backslash between).
+    if re.search(r"\$[^$\n]*[\\A-Za-z][^$\n]*\$", joined):
+        hits.append("$...$")
+    ok = not hits
+    if ok:
+        return (name, True, "no residual raw LaTeX delimiters in the ebook body")
+    return (name, False, f"residual raw LaTeX survived into the {fmt} body: "
+                         f"{hits[:8]} — the LaTeX->Unicode transform did not run")
 
 
 def check_lint(config_path: Path):
@@ -663,7 +1044,8 @@ def check_kindle_parity(root: Path):
 # driver
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str) -> list:
+def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
+               final: bool = False) -> list:
     checks = []
     fmt_dir = root / "outputs" / FORMAT_DIR.get(fmt, fmt)
 
@@ -674,27 +1056,62 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str) -> list:
         pdf = _find_interior_pdf(fmt_dir)
 
         checks.append(check_mirror_flags(docx))
-        checks.append(check_empty_headers(docx))
+        checks.append(check_gutter_side(docx, cfg))
+        checks.append(check_empty_headers(docx, cfg))
+        checks.append(check_front_matter_valign(docx, cfg))
         checks.append(check_recto_parity(docx, config_path))
         checks.append(check_page_multiple(pdf, fmt))
         note = check_min_pages_note(pdf, fmt)   # INFORMATIONAL, never fails
         if note is not None:
             checks.append(note)
+        checks.append(check_book_min_pages(pdf, cfg))   # HARD 75-page house floor (§16.5)
         checks.append(check_pages_match_compositor(pdf, fmt_dir))
         pages = _pdf_page_count(pdf) if pdf is not None else None
-        checks.append(check_cover_wrap_dims(cfg, fmt, fmt_dir, pages))
+        checks.append(check_cover_wrap_dims(cfg, fmt, fmt_dir, pages, final=final))
+        if fmt == "mixam_hardcover":
+            checks.append(check_mixam_spine_panel(cfg, fmt_dir, pages, final=final))
+
+    if fmt == "digital_pdf":
+        checks.append(check_digital_pdf(cfg, root))
 
     if fmt == "kindle":
         checks.append(check_kindle_parity(root))
+        checks.append(check_no_residual_latex(root, cfg, "kindle"))
 
     if fmt == "epub":
         checks.append(check_epub_structure(fmt_dir))
         checks.append(check_epub_parity(root))
+        checks.append(check_no_residual_latex(root, cfg, "epub"))
 
     # lint runs for every format (voice + corruption gate).
     checks.append(check_lint(config_path))
 
     return checks
+
+
+CHECK_CONTINUITY = SCRIPT_DIR / "check_continuity.py"
+
+
+def _run_continuity_check(root: Path):
+    """Run the sibling check_continuity.py against the workspace's _CONTINUITY.md
+    (final/export sweep only). Returns {"all_pass", "detail"} or None if there is
+    no ledger to validate (absence is not a failure — not every workspace keeps
+    one)."""
+    ledger = root / "_CONTINUITY.md"
+    if not ledger.exists():
+        return None
+    if not CHECK_CONTINUITY.exists():
+        return {"all_pass": False,
+                "detail": f"check_continuity.py not found at {CHECK_CONTINUITY}"}
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(CHECK_CONTINUITY), "--workspace", str(root)],
+            capture_output=True, text=True, timeout=120)
+    except (subprocess.SubprocessError, OSError) as exc:
+        return {"all_pass": False, "detail": f"continuity check failed to run: {exc}"}
+    out = (proc.stdout or "").strip().splitlines()
+    detail = out[-1] if out else f"exit {proc.returncode}"
+    return {"all_pass": proc.returncode == 0, "detail": detail}
 
 
 def main() -> int:
@@ -707,13 +1124,14 @@ def main() -> int:
         description="Mechanical build verifier (spec checks -> pass/fail JSON).")
     ap.add_argument("--config", required=True, help="Path to book_config.json.")
     ap.add_argument("--format", required=True,
-                    choices=["kindle", "kdp_paperback", "kdp_hardcover",
-                             "mixam_hardcover", "mixam_paperback",
-                             "blurb_paperback", "blurb_hardcover",
-                             "digital_pdf", "epub"],
-                    help="Which format profile to verify.")
+                    choices=FORMAT_CHOICES + ["all"],
+                    help="Which format profile to verify ('all' sweeps every "
+                         "format and fails if ANY fails).")
     ap.add_argument("--root", help="Override the workspace root "
                                    "(default: book_workspace/<slug>/).")
+    ap.add_argument("--final", action="store_true",
+                    help="FINAL/ship sweep: a missing cover is a HARD fail "
+                         "(export v1.0 passes this); also validates _CONTINUITY.md.")
     args = ap.parse_args()
 
     config_path = Path(args.config)
@@ -731,11 +1149,40 @@ def main() -> int:
         return 1
 
     root = workspace_root(cfg, config_path, args.root)
-    checks_raw = run_checks(cfg, config_path, root, args.format)
+
+    # --format all: fan out over every format, aggregate, fail if ANY fails.
+    if args.format == "all":
+        per_format = {}
+        overall = True
+        for fmt in FORMAT_CHOICES:
+            checks_raw = run_checks(cfg, config_path, root, fmt, final=args.final)
+            checks = [{"name": n, "pass": bool(ok), "detail": d}
+                      for (n, ok, d) in checks_raw]
+            fmt_pass = all(c["pass"] for c in checks) if checks else False
+            per_format[fmt] = {"all_pass": fmt_pass, "checks": checks}
+            overall = overall and fmt_pass
+        continuity = _run_continuity_check(root) if args.final else None
+        if continuity is not None:
+            per_format["_continuity"] = continuity
+            overall = overall and continuity["all_pass"]
+        print(json.dumps({"format": "all", "root": str(root),
+                          "final": bool(args.final),
+                          "all_pass": overall, "formats": per_format},
+                         ensure_ascii=False, indent=2))
+        return 0 if overall else 1
+
+    checks_raw = run_checks(cfg, config_path, root, args.format, final=args.final)
     checks = [{"name": n, "pass": bool(ok), "detail": d} for (n, ok, d) in checks_raw]
+    if args.final:
+        continuity = _run_continuity_check(root)
+        if continuity is not None:
+            checks.append({"name": "continuity_ledger_consistent",
+                           "pass": continuity["all_pass"],
+                           "detail": continuity["detail"]})
     all_pass = all(c["pass"] for c in checks) if checks else False
 
     print(json.dumps({"format": args.format, "root": str(root),
+                      "final": bool(args.final),
                       "all_pass": all_pass, "checks": checks},
                      ensure_ascii=False, indent=2))
     return 0 if all_pass else 1

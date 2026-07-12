@@ -1,0 +1,19 @@
+# BOOKSMITH line-ending + binary policy.
+# The kit is authored on Windows but must clone clean on macOS/Linux; without
+# this, git only warns about CRLF and ships no protection. Normalize all text
+# to LF in the repo; mark binaries so git never touches their bytes (a CRLF
+# "fix" would corrupt a font/PDF/image and silently break the print pipeline).
+
+# Normalize every text file to LF in the repository.
+* text=auto eol=lf
+
+# --- binary assets: never munged, never diffed as text ---
+*.ttf  binary
+*.otf  binary
+*.pdf  binary
+*.docx binary
+*.epub binary
+*.jpg  binary
+*.jpeg binary
+*.png  binary
+*.zip  binary

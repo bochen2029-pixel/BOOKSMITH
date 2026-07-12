@@ -111,9 +111,20 @@ except ImportError:  # pragma: no cover - fitz is a declared dependency
 DPI = 300
 PT_PER_IN = 72.0
 
-# Repo-relative font dir, computed from THIS script's location — never the
-# cross-repo C:\Claude-Titanic\fonts. Kit taxonomy: _tools/ and fonts/ are
-# siblings under C:\BOOKSMITH\.
+# KDP permits spine TEXT only at >= 0.0625" spine width (KDP's documented
+# spine-text minimum is ~79-80 pages; 0.0625" is the width form the code gates
+# on). Below that the spine is too thin to carry a legible title (and
+# KDP forbids spine text there), so render_spine leaves it BLANK — a clean dark
+# face, not an illegible sliver. Platform rule, not a per-book knob (§16.1). The
+# 75-page floor (§16.5, verify_build) keeps real books well above this at
+# >= 0.1875" spine; this constant is the universal safety that also guards the
+# KDP wrap / hardcover / Mixam-3-panel paths, which — unlike build_flat_wrap's
+# stricter 0.25" spine_blank_below_in — carry no per-profile blank rule.
+SPINE_TEXT_MIN_IN = 0.0625
+
+# Repo-relative font dir, computed from THIS script's location — never a
+# cross-repo fonts path (that dependency shipped empty font folders in prior
+# kits). Kit taxonomy: _tools/ and fonts/ are siblings under the repo root.
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 FONTS_DIR = REPO_ROOT / "fonts"
@@ -255,6 +266,11 @@ def load_font(size: int, weight: int = 300, use_bold_ttf: bool = False) -> Image
 
     use_bold_ttf=True loads the dedicated Bold TTF; otherwise the Light variable
     font is loaded and its weight axis set via set_variation_by_axes.
+
+    NOTE: the compositor ALWAYS renders Cormorant Garamond. The
+    `cover.title_face` config knob is currently informational only — it is not
+    read here, so a family override has no effect on the composited typography.
+    (See the schema description for cover.title_face.)
     """
     path = FONT_BOLD if use_bold_ttf else FONT_LIGHT
     f = ImageFont.truetype(str(path), size=size)
@@ -614,12 +630,29 @@ def render_spine(spine_w_px: int, spine_h_px: int, cfg: CoverConfig,
     Text is double-drawn (+1px) for weight on a narrow spine. The spine face
     matches the cover dark background color; no image on the spine.
     """
+    # §16.1 BLANK-SPINE FLOOR — below KDP's spine-text minimum a title can only
+    # render as an illegible sliver (and KDP forbids spine text there), so return
+    # a clean dark spine face at the final orientation/size. Checked first, before
+    # any text setup, so every profile that shares this renderer is protected.
+    spine_in = spine_w_px / DPI
+    if spine_in < SPINE_TEXT_MIN_IN:
+        print(f"  Spine text: BLANKED (spine {spine_in:.4f}\" < {SPINE_TEXT_MIN_IN}\" "
+              f"KDP spine-text minimum; LESSONS_LEDGER 16.1) - dark face only")
+        return Image.new("RGB", (spine_w_px, spine_h_px), cfg.col_dark)
+
     # Horizontal temp canvas: width = book height, height = spine width.
     tmp = Image.new("RGB", (spine_h_px, spine_w_px), cfg.col_dark)
     d = ImageDraw.Draw(tmp)
 
     spine_px = spine_w_px  # spine physical width in px
-    title_size = max(24, int(spine_px * 0.40))
+    # §16.1 LEGIBLE FLOOR — fill 0.55 of the spine width (up from 0.40; Bo kept
+    # enlarging thin-book spine titles by hand). No fixed-px floor: a constant px
+    # floor on a thin spine would exceed the spine width and overflow the rotate;
+    # the fraction keeps the glyph inside the spine at any legal width, and the
+    # sub-threshold case is already blanked above, so the title is as large as
+    # the spine allows and never an illegible sliver. Author/ornament scale off
+    # this via measure_block(), so they track the larger title automatically.
+    title_size = int(spine_px * 0.55)
     title_font = load_font(title_size, weight=600)
     spine_title = cfg.title.upper()
     title_tracking = 0.04
@@ -691,20 +724,35 @@ def build_kdp_wrap(cfg: CoverConfig, pages: int, profile: str,
 
     trim_w = cfg.trim_w
     trim_h = cfg.trim_h
-    spine_in = cfg.spine_in(pages, profile)
 
+    # SINGLE source of truth for KDP wrap geometry: preset_lookup — the SAME code
+    # path verify_build._expected_wrap recomputes from, so the verifier checks
+    # exactly what we build (no re-implementation drift). book_config.spine.* is
+    # passed straight through; spine_override_in wins inside the helper.
     if hardcover:
-        edge_in = cfg.kdp_hc_turn_in           # 0.708 case-board turn-in (NOT bleed)
-        wrap_w_in = round(edge_in + trim_w + spine_in + trim_w + edge_in, 4)
-        wrap_h_in = cfg.kdp_hc_height          # hardcode 10.417 (validator > arithmetic)
+        d = preset_lookup.kdp_hardcover_wrap_dims(
+            trim_w, trim_h, pages,
+            per_page_white=cfg.per_page_white,
+            board_add_in=cfg.kdp_hc_board_add,
+            turn_in_in=cfg.kdp_hc_turn_in,
+            height_in=cfg.kdp_hc_height,
+            spine_override_in=cfg.spine_override)
+        edge_in = d["turn_in_in"]              # 0.708 case-board turn-in (NOT bleed)
         out_name = "cover_wrap_hardcover"
         quiet_in = 0.375                        # inside the trim, from trim edge
     else:
-        edge_in = cfg.kdp_bleed                # 0.125 bleed
-        wrap_w_in = round(edge_in + trim_w + spine_in + trim_w + edge_in, 4)
-        wrap_h_in = round(trim_h + 2 * edge_in, 4)
+        d = preset_lookup.kdp_paperback_wrap_dims(
+            trim_w, trim_h, pages, cfg.paper,
+            per_page_cream=cfg.per_page_cream,
+            per_page_white=cfg.per_page_white,
+            bleed_in=cfg.kdp_bleed,
+            spine_override_in=cfg.spine_override)
+        edge_in = d["bleed_in"]                # 0.125 bleed
         out_name = "cover_wrap"
         quiet_in = 0.375
+    spine_in = d["spine"]
+    wrap_w_in = d["cover_w"]
+    wrap_h_in = d["cover_h"]
 
     wrap_w = math.ceil(wrap_w_in * DPI)
     wrap_h = math.ceil(wrap_h_in * DPI)

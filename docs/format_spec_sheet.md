@@ -1,4 +1,4 @@
-# Format Spec Sheet — the 5-format exact-numbers cheat sheet
+# Format Spec Sheet — the exact-numbers cheat sheet (all nine formats)
 
 *The load-bearing numbers for the PRODUCE FORMATS and COVER stages, extracted from `LESSONS_LEDGER.md` §3–§8. Every value here is a DEFAULT the toolchain bakes in; the per-book overrides live in `book_config.json`. The one overriding meta-rule: **calibrate against the KDP Print Previewer / Mixam job calculator — the validator is canonical, arithmetic is not.** When arithmetic and the Previewer disagree to 4 decimals, the Previewer wins.*
 
@@ -134,8 +134,8 @@ pdf.save(out, deflate=True, garbage=4, clean=True)
 - Output = **DOCX** for direct KDP upload (not epub/PDF). Single section, uniform 1" margins (`1440` all sides), `header 0 footer 0 gutter 0`. **FORBIDDEN:** page numbers, running headers, mirror margins, blank versos, forced rectos — all print concepts that render as broken empty screens.
 - Chapter delimiter = `new Paragraph({children:[new PageBreak()]})` (Amazon treats these as chapter boundaries). Body Georgia 12pt (`size:24`), line 340, color `000000`.
 - Chapter/Part titles `HeadingLevel.HEADING_1` (Amazon scans H1 for the auto-TOC); H2/H3/H4 are styled paragraphs, not navigable. Navigable TOC: `new TableOfContents("Table of Contents", {hyperlink:true, headingStyleRange:"1-1", stylesWithLevels:[new StyleLevel("Heading1",1)]})` + `new Document({features:{updateFields:true}})`; populate via Word COM.
-- **Content parity, not page parity** with print (same words; the ~18-page gap is print-only front matter). Math runs tagged `Cambria Math`. Back matter = extended About-the-Author. Verify with `kindle_parity_check.py` — ebook may be slightly higher (About-the-Author), never lower.
-- **Kindle cover = front-only JPG, 1600×2560 px** (1.6:1), sRGB, JPEG q92–95, < 50 MB. No wrap, no spine → immune to every print rejection → ship it first.
+- **Content parity, not page parity** with print (same words; the ~18-page gap is print-only front matter). Math runs tagged `Cambria Math`. Back matter = extended About-the-Author. Verify with `python _tools/verify_build.py --config book_config.json --format kindle` (check #8, Kindle word-count parity — ebook may be slightly higher for About-the-Author, never below print).
+- **Kindle cover = front-only JPG, 1600×2400 px** (trim-matched 6:9; `composite_cover.py` renders `H = round(1600 × 9/6) = 2400`), sRGB, JPEG q92–95, < 50 MB. (Amazon's ideal Kindle ratio is 1:1.6 = 1600×2560; the kit renders trim-matched by design so the ebook cover shares the print trim proportions.) No wrap, no spine → immune to every print rejection → ship it first.
 
 ---
 
@@ -158,7 +158,7 @@ Page 1 front cover + page 2 back cover (both exact 6×9-pt MediaBox) + interior 
 ## 12. The first-pass checklist (assert before declaring ANY format done)
 
 - [ ] `lint_manuscript.py` exit 0; `Grep "[—–]"` clean; refrain at exact placements; no surviving `[BO-WRITES]`; Class-A units outline-only.
-- [ ] All generators read the SAME version-pinned markdown; `kindle_parity_check.py` parity (never lower).
+- [ ] All generators read the SAME version-pinned markdown; `verify_build.py --format kindle` word-count parity (never lower).
 - [ ] 6×9 Georgia, correct pt/leading; parser splits backticks BEFORE italics.
 - [ ] `<w:mirrorMargins/>` + `<w:evenAndOddHeaders/>` in `settings.xml` AND `pgMar` gutter on the correct side.
 - [ ] Every header-free section renders `[]`; trailing blank is a truly-empty paragraph; `<w:vAlign>` on ceremonial sections.
@@ -166,7 +166,7 @@ Page 1 front cover + page 2 back cover (both exact 6×9-pt MediaBox) + interior 
 - [ ] `PAGES` re-derived once and injected into every compositor; spine multiplier correct; KDP-HC `+0.348` then Previewer-calibrated; Mixam from its calculator; HC height 10.417".
 - [ ] Cover PDF MediaBox exact via PyMuPDF (4-decimal); typography ≥ bleed+0.25"; ISBN keep-out clear; Mixam filenames `inner_*/front_cover/back_cover/spine.pdf` (never bare `back.pdf`); cover regenerated after any interior change.
 - [ ] Cover art has no baked text; ≥1999×2775 px; source preserved; perceptual vision PASS.
-- [ ] Kindle: single section, no page numbers/headers/mirror/versos/rectos; H1 chapters + hyperlinked TOC; math Cambria Math; cover 1600×2560 JPG.
+- [ ] Kindle: single section, no page numbers/headers/mirror/versos/rectos; H1 chapters + hyperlinked TOC; math Cambria Math; cover 1600×2400 JPG (trim-matched 6:9).
 - [ ] Metadata: ≤3 categories, 7 keywords ≤50 chars, description ≤4000, paper/finish/trim set; 2 print ISBNs only; fiction disclaimer present.
 - [ ] KDP Print Previewer dry-run accepts paperback + hardcover.
 
