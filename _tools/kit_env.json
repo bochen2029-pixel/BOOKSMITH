@@ -38,6 +38,18 @@
     "fallback": "claude — the harness's own vision via imguard-resized image read from disk"
   },
 
+  "model": {
+    "backend": "anthropic",
+    "model": "claude-opus-4-8",
+    "base_url": "https://api.anthropic.com",
+    "openai_base_url": "http://127.0.0.1:8080/v1",
+    "api_key_env": "ANTHROPIC_API_KEY",
+    "max_tokens": 8192,
+    "temperature": 0.7,
+    "timeout_s": 300,
+    "note": "The deterministic engine (engine.py) calls the model as a PURE FUNCTION (model_client.py) for prose generation. backend: anthropic (Claude via the ANTHROPIC_API_KEY env var; best prose) | openai (any OpenAI-compatible /v1/chat/completions at openai_base_url, e.g. a local llama-server; sovereign/offline) | mock (deterministic, network-free; used by engine --dry-run). The model is NEVER given tools."
+  },
+
   "organs": {
     "imguard": "C:\\imguard\\imguard.py",
     "chunker": "C:\\chunker\\chunker.py",

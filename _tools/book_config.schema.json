@@ -42,7 +42,8 @@
         "properties": {
           "id": { "type": "string", "description": "Filesystem-safe unit id, e.g. 'part_1' or 'ch_01'." },
           "title": { "type": "string", "description": "Display heading, e.g. 'Part I - The Dissolution'." },
-          "class": { "type": "string", "enum": ["A", "B", "C"], "description": "Optional per-unit authorship class override (else authorship.default_class)." }
+          "class": { "type": "string", "enum": ["A", "B", "C"], "description": "Optional per-unit authorship class override (else authorship.default_class)." },
+          "target_words": { "type": "integer", "minimum": 1, "description": "Optional per-unit word target; the deterministic engine (engine.py) drafts to ~this length and gates within 0.6-1.6x. Defaults to 1500 if omitted." }
         }
       }
     },

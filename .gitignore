@@ -50,6 +50,8 @@ _KIT_AUDIT_*.md
 _tools/_fixplan/
 # stray reference screenshots left by prior verification sessions (regenerable)
 _refcheck/
+# engine runtime state (engine.py owns it; regenerable, per-machine; never track)
+**/_engine/
 
 # --- distribution build output (make_giftable.py) ---
 dist/

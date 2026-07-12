@@ -335,7 +335,9 @@ flowchart LR
 | Mixam + Blurb service geometry, provenance‑tagged | `_tools/print_presets.json` (+ `preset_lookup.py`) |
 | cover art prompt rules + composite + verify loop | `docs/cover_pipeline.md` |
 | seed/contract/registry/handoff discipline | `docs/vibe_writing_method.md` |
-| command grammar + autonomous loop + gates | `CLAUDE.md` |
+| command grammar + autonomous loop + gates (interactive, session-driven) | `CLAUDE.md` |
+| deterministic engine (control inversion: code holds the loop, model is a pure function, gates + disk own state, crash/resume with zero orientation) | `docs/ENGINE.md` (`_tools/engine.py`, `_tools/model_client.py`, `_tools/engine_smoketest.py`) |
+| kit self-consistency meta-gate (clone runs cold) | `_tools/selfcheck.py` |
 | what was validated + bugs fixed | `docs/VALIDATION.md` |
 | session build history + environment specifics | `SESSION_LOG.md` |
 | machine paths (Word, ComfyUI, KEEL, organs) | `_tools/kit_env.json` |
