@@ -18,7 +18,7 @@
 1. **Put the folder anywhere.** `C:\BOOKSMITH`, `D:\kits\booksmith`, `~/booksmith` — nothing depends on the location.
 2. **Python deps:** `pip install -r requirements.txt`
 3. **Node deps:** already vendored in `_tools/node_modules` — nothing to do. (If that folder is absent: `npm install --prefix _tools`.)
-4. **Machine config:** copy `_tools/kit_env.template.json` → `_tools/kit_env.json`. The template's defaults are correct for a first run — the optional blocks (cover art gen, local vision, accelerator organs) are simply off until you fill their paths.
+4. **Machine config (one command):** `python _tools/autoconfig.py` — detects this machine (Node, Python, Word tier, ComfyUI, checkpoints, GPU, vendored fonts) and writes a correct `_tools/kit_env.json`, backing up any existing one. It sets the keyless defaults: model backend `harness` (prose comes from your Claude Code session — no API key) and vision `claude` (the harness's own vision). Optional blocks (AI cover art, local vision) switch on when their tools are present, and it prints a one-line remedy for anything it could not find. (Manual alternative: copy `_tools/kit_env.template.json` → `kit_env.json` and edit.)
 5. **Preflight:** `python _tools/doctor.py` — prints PASS/WARN/FAIL per capability plus your tier verdict. Fix anything it flags FAIL; WARNs tell you which optional capability is off and how to enable it.
 6. **Fonts (print interiors only):** the interior default is Georgia (ships with Windows). To use a vendored open font instead (EB Garamond, Literata, Crimson Pro, …): install the TTF from `fonts/library/` into your OS so Word can see it, and set `interior.body_font` in your book's `book_config.json`. Cover typography needs no install — the compositor reads the TTFs straight from `fonts/`.
 
@@ -32,6 +32,17 @@
 4. Say **`init`**. From there the plain-language commands drive everything: `generate seed` → `generate chapter 1` (or "keep going") → `produce format kdp_paperback` → `generate cover` → `verify` → `export v1.0`.
 
 The one built-in human checkpoint is the final "ship at 90%?" confirm at `export v1.0` — plus any chapters you reserve for your own hand (authorship Class A/B in `book_config.json`).
+
+## Two ways to run
+
+- **Interactive (the default above):** the Claude Code session drives the pipeline from `CLAUDE.md`. Best for hands-on authoring, human-written Class A/B passages, and creative control at each step.
+- **Deterministic engine — `docs/ENGINE.md`:** code drives the pipeline and calls the model as a pure function; the engine runs every gate itself and resumes from disk after any interruption (crash, compaction) with zero orientation. Inside Claude Code with **no API key**, run it keyless: the engine hands your session one chapter at a time to write, then gates the result and continues.
+
+  ```
+  python _tools/engine.py --config book_workspace/<slug>/book_config.json --backend harness
+  ```
+
+  It pauses with a one-line writing order, you write the chapter to the named file, you re-run; repeat to a finished, gate-verified folder. Prove the machine first with `python _tools/engine_smoketest.py` (no key, no book).
 
 ## Small-context models
 

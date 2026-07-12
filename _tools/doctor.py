@@ -918,11 +918,19 @@ def main(argv=None):
                              "testvoyage fixture (assemble -> generate_kindle -> "
                              "verify_build) and assert word-count parity; exit 0 "
                              "on pass, 1 on failure")
+    parser.add_argument("--autoconfig", action="store_true",
+                        help="detect this machine and write _tools/kit_env.json "
+                             "(backs up any existing) -- run first on a fresh copy")
     try:
         args = parser.parse_args(argv)
     except SystemExit:
         # argparse already printed usage; normalize to exit code 2.
         return 2
+
+    if args.autoconfig:
+        import subprocess
+        return subprocess.call([sys.executable,
+                                str(Path(__file__).resolve().parent / "autoconfig.py")])
 
     if args.smoke:
         print()
