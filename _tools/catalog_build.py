@@ -18,7 +18,7 @@ Usage:
   python _tools/catalog_build.py --all               # both
 """
 from __future__ import annotations
-import argparse, json, sys
+import argparse, json, subprocess, sys, urllib.request
 from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
@@ -109,12 +109,61 @@ def render_hypergen(entry, size=(1600, 2400)):
     entry["rendered"] = True
 
 
+def _server():
+    for c in (TOOLS / "kit_env.json", TOOLS / "kit_env.template.json"):
+        if c.exists():
+            try:
+                cg = json.loads(c.read_text(encoding="utf-8")).get("cover_gen", {})
+                return cg.get("comfyui_server") or "http://127.0.0.1:8188"
+            except Exception:
+                pass
+    return "http://127.0.0.1:8188"
+
+
+def _comfy_up(server):
+    try:
+        urllib.request.urlopen(server.rstrip("/") + "/system_stats", timeout=4)
+        return True
+    except Exception:
+        return False
+
+
+def render_sdxl(entry, server):
+    """Render one SDXL catalog entry via the vendored comfy_client; save cover + thumb."""
+    from PIL import Image
+    g = entry["gen"]
+    a = {"prompt": g["prompt"], "negative_prompt": g.get("negative", ""), "seed": g.get("seed", 0)}
+    tmp = CAT / "_sdxl_tmp"
+    tmp.mkdir(parents=True, exist_ok=True)
+    before = {p.name for p in tmp.glob("*.png")}
+    rc = subprocess.call([sys.executable, str(TOOLS / "comfy_client.py"),
+                          "--workflow", str(TOOLS / "workflows" / "sdxl_txt2img.json"),
+                          "--args", json.dumps(a), "--output-dir", str(tmp), "--host", server])
+    new = [p for p in tmp.glob("*.png") if p.name not in before]
+    if rc != 0 or not new:
+        return False
+    src = max(new, key=lambda p: p.stat().st_mtime)
+    im = Image.open(src).convert("RGB")
+    out = CAT / entry["file"]; out.parent.mkdir(parents=True, exist_ok=True)
+    im.save(out)
+    th = im.copy(); th.thumbnail((256, 384))
+    tout = CAT / entry["thumb"]; tout.parent.mkdir(parents=True, exist_ok=True)
+    th.save(tout)
+    try:
+        src.unlink()
+    except Exception:
+        pass
+    entry["rendered"] = True
+    return True
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Build the prerendered cover-art catalog.")
     ap.add_argument("--dry-run", action="store_true", help="print the matrix + write stub manifest")
     ap.add_argument("--hypergen", action="store_true", help="render the hypergen entries (no GPU)")
     ap.add_argument("--sdxl", action="store_true", help="render SDXL entries (needs ComfyUI up)")
     ap.add_argument("--all", action="store_true")
+    ap.add_argument("--server", default=None, help="ComfyUI server URL (overrides kit_env)")
     args = ap.parse_args(argv)
 
     specs = matrix()
@@ -134,8 +183,23 @@ def main(argv=None):
         print(f"rendered {done} hypergen covers -> {CAT}/covers")
 
     if args.sdxl or args.all:
-        print("SDXL rendering: shell each sdxl entry's gen.prompt through cover_gen/comfy_client "
-              "with ComfyUI running. (Deferred here; run on a GPU box with the stack up.)")
+        server = args.server or _server()
+        if not _comfy_up(server):
+            print(f"SDXL: ComfyUI not reachable at {server}. Start it "
+                  f"(python _tools/cover_setup.py --launch, or run ComfyUI), then re-run --sdxl.")
+        else:
+            todo = [s for s in specs if s["source"] == "sdxl"]
+            done = failed = 0
+            for i, s in enumerate(todo, 1):
+                if (CAT / s["file"]).exists():
+                    s["rendered"] = True
+                    continue
+                print(f"  [{i}/{len(todo)}] rendering {s['id']} ...", flush=True)
+                ok = render_sdxl(s, server)
+                done += int(ok); failed += int(not ok)
+                if not ok:
+                    print(f"      FAILED {s['id']}", file=sys.stderr)
+            print(f"SDXL: rendered {done}, failed {failed} -> {CAT}/covers")
 
     # write/merge the manifest (stubs are valid; cover_pick can match on tags/desc now,
     # images fill in as they render)

@@ -50,7 +50,7 @@
         "seed": 1000,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_literary_fiction_dark_literary",
@@ -106,7 +106,7 @@
         "seed": 1002,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_literary_fiction_warm_memoir",
@@ -162,7 +162,7 @@
         "seed": 1004,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_thriller_bold_thriller",
@@ -218,7 +218,7 @@
         "seed": 1006,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_thriller_noir",
@@ -274,7 +274,7 @@
         "seed": 1008,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_science_fiction_cool_scifi",
@@ -330,7 +330,7 @@
         "seed": 1010,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_science_fiction_noir",
@@ -386,7 +386,7 @@
         "seed": 1012,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_fantasy_botanical",
@@ -442,7 +442,7 @@
         "seed": 1014,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_fantasy_dark_literary",
@@ -498,7 +498,7 @@
         "seed": 1016,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_romance_soft_romance",
@@ -554,7 +554,7 @@
         "seed": 1018,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_romance_warm_memoir",
@@ -610,7 +610,7 @@
         "seed": 1020,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_memoir_warm_memoir",
@@ -666,7 +666,7 @@
         "seed": 1022,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_memoir_dark_literary",
@@ -722,7 +722,7 @@
         "seed": 1024,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_horror_noir",
@@ -778,7 +778,7 @@
         "seed": 1026,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_horror_bold_thriller",
@@ -834,7 +834,7 @@
         "seed": 1028,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_business_earthy_nonfiction",
@@ -890,7 +890,7 @@
         "seed": 1030,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_business_cool_scifi",
@@ -946,7 +946,7 @@
         "seed": 1032,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_history_warm_memoir",
@@ -1002,7 +1002,7 @@
         "seed": 1034,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_history_earthy_nonfiction",
@@ -1058,7 +1058,7 @@
         "seed": 1036,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_poetry_dark_literary",
@@ -1114,7 +1114,7 @@
         "seed": 1038,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_poetry_botanical",
@@ -1170,7 +1170,7 @@
         "seed": 1040,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_nature_botanical",
@@ -1226,7 +1226,7 @@
         "seed": 1042,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_nature_earthy_nonfiction",
@@ -1282,7 +1282,7 @@
         "seed": 1044,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_science_nonfiction_cool_scifi",
@@ -1338,7 +1338,7 @@
         "seed": 1046,
         "checkpoint": "sd_xl_base_1.0.safetensors"
       },
-      "rendered": false
+      "rendered": true
     },
     {
       "id": "hypergen_science_nonfiction_earthy_nonfiction",
