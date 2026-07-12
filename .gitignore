@@ -51,6 +51,9 @@ _KIT_AUDIT_*.md
 _tools/_fixplan/
 # stray reference screenshots left by prior verification sessions (regenerable)
 _refcheck/
+# lessons staging: auto-drafted candidate lessons (ledger_stage.py) awaiting human
+# endorsement + promotion into LESSONS_LEDGER.md; regenerable scratch, never shipped
+docs/_lessons_staging.md
 # engine runtime state (engine.py owns it; regenerable, per-machine; never track)
 **/_engine/
 # prerendered cover-catalog IMAGES: large + regenerable (hypergen renders live;

@@ -220,7 +220,7 @@ nothing outward-facing happens without the sanctioned human confirm.
 6. **Cover 2.0 palette-transfer + typography vision loop** (§1.4) — makes every catalog image serve every book.
 7. **The graduation exam, instrumented** (§1.7) — run it, turn every stumble into a ledger rule + a gate.
 8. **`AGENTS.md` + `harness_profiles/generic.md`** (§2.7) — the first step off single-harness.
-9. **Self-growing ledger staging** (§2.6) — auto-draft lessons from gate failures into a staging file for human endorsement.
+9. **Self-growing ledger staging** (§2.6) — auto-draft lessons from gate failures into a staging file for human endorsement. **[DONE 2026-07-12 — `_tools/ledger_stage.py` harvests every engine hard-stop (`_engine/HARDSTOP.json` + HARDSTOP events in `_engine/log.jsonl`) across workspaces, de-dupes by a normalized (stage, detail) key, and drafts symptom -> cause -> fix -> proposed-gate PROPOSED blocks into `docs/_lessons_staging.md` (gitignored scratch) for human endorsement into `docs/LESSONS_LEDGER.md`. It never edits the ledger itself (curation stays human, §4 pause). Idempotent; `--selftest` + a real scan (harvested this session's 5 hard-stops incl. the two one-shot bugs) verified.]**
 10. **The domain schema spike** (§3.1) — prove the engine is domain-general by scaffolding `domains/course/` behind the same gates.
 
 ---
