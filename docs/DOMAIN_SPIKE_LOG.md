@@ -37,6 +37,15 @@ on `domain != "book"` (book path byte-identical). Schema gains an optional `doma
 A second domain (modules → lessons) proving the engine is domain-general: `domains/course/`
 descriptor + producer + verifier, driven end-to-end through the engine on the mock backend.
 
+**Result ✅ (2026-07-13):** `domains/{README, book/README, course/*}` created. The `course` domain =
+`domain.json` (targets/producers/verifier) + `produce_course.py` (lessons → modules → `course.md`
++ `course.json`) + `verify_course.py` (structure + advisory authorial-act). A real drive through the
+UNCHANGED engine: `precheck(domain=course) → draft:l_01..03 → integrate → produce:course_md +
+course_json → verify → emit`, rc 0, 2 modules / 3 lessons produced + verified. Locked as smoketest
+scenario **J**. Bonus fix: the integrate→authorial_act advisory parse (`--json` is pretty-printed; it
+was reading only `}`) — the advisory + the `quality_gate` opt-in now actually function. **Sweep A–J
+7/7 green; book path unchanged.**
+
 ## Phase 3 — typography vision-loop (#6)
 `composite_cover` proposes N title layouts; score each (vision when available, else a mechanical
 legibility proxy over the title band); pick the best. Testable via the mechanical proxy.

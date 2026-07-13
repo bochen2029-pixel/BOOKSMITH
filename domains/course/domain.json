@@ -1,0 +1,13 @@
+{
+  "domain": "course",
+  "unit_noun": "lesson",
+  "author_role": "instructional designer",
+  "bible_label": "Course outline",
+  "no_cover": true,
+  "produce_targets": ["course_md", "course_json"],
+  "producers": {
+    "course_md": ["python", "domains/course/produce_course.py", "--config", "{config}", "--target", "course_md"],
+    "course_json": ["python", "domains/course/produce_course.py", "--config", "{config}", "--target", "course_json"]
+  },
+  "verifier": ["python", "domains/course/verify_course.py", "--config", "{config}"]
+}

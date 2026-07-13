@@ -17,6 +17,7 @@ engine.py with the mock model backend through the real gates and asserts:
   G. INGEST   — intake docs become relational digests + a manifest (GATE-1) before seed.
   H. HARNESS SEED — the architect turn is fulfilled keyless over the disk bridge too.
   I. PLAN ORDER   — cover-consuming formats (epub, digital_pdf) are sequenced AFTER cover.
+  J. DOMAIN       — a non-book 'course' domain runs end-to-end through the SAME engine.
 
 No network, no API key, no Word COM (stops at 'assemble'). This is the
 "graduation-exam" check: the machine, not a book.
@@ -315,6 +316,49 @@ def main() -> int:
                 fails.append(f"I: {dep} sequenced BEFORE cover (ordering bug regressed)")
     if IWS.exists():
         shutil.rmtree(IWS)
+
+    # --- J. DOMAIN GENERALITY: the 'course' domain drives the SAME engine ---
+    CWS = ROOT / "book_workspace" / "_coursetest"
+    if CWS.exists():
+        shutil.rmtree(CWS)
+    CWS.mkdir(parents=True)
+    ccfg = {"title": "Intro to Control Inversion", "author": "BOOKSMITH", "slug": "_coursetest",
+            "domain": "course",
+            "voice": {"unit_noun": "lesson", "no_em_dashes": True, "blacklist": []},
+            "units": [
+                {"id": "l_01", "title": "What Inversion Is", "module": "Foundations", "target_words": 120},
+                {"id": "l_02", "title": "The Ledger", "module": "Foundations", "target_words": 120},
+                {"id": "l_03", "title": "The Gate", "module": "Practice", "target_words": 120}]}
+    (CWS / "book_config.json").write_text(json.dumps(ccfg, indent=2), "utf-8")
+    r = subprocess.run([PY, ENGINE, "--config", str(CWS / "book_config.json"), "--dry-run", "--fresh"],
+                       capture_output=True, text=True, cwd=str(ROOT))
+    print("J/DOMAIN-course rc=", r.returncode)
+    if r.returncode != 0:
+        fails.append(f"J: course engine run rc={r.returncode}\n{r.stdout[-900:]}\n{r.stderr[-300:]}")
+    js = CWS / "outputs" / "course" / "_coursetest_course.json"
+    if not (CWS / "outputs" / "course" / "_coursetest_COURSE.md").exists():
+        fails.append("J: course markdown not produced")
+    if not js.exists():
+        fails.append("J: course json not produced")
+    else:
+        cj = json.loads(js.read_text("utf-8"))
+        if cj.get("total_lessons") != 3:
+            fails.append(f"J: expected 3 lessons, got {cj.get('total_lessons')}")
+        if cj.get("total_modules") != 2:
+            fails.append(f"J: expected 2 modules, got {cj.get('total_modules')}")
+    for lid in ("l_01", "l_02", "l_03"):
+        if not (CWS / "manuscript" / "current" / f"{lid}_current.md").exists():
+            fails.append(f"J: lesson {lid} not drafted")
+    try:
+        stJ = json.loads((CWS / "_engine" / "state.json").read_text("utf-8"))["stages"]
+        for k in ("precheck", "draft:l_01", "integrate", "produce:course_md",
+                  "produce:course_json", "verify", "emit"):
+            if stJ.get(k, {}).get("status") != "done":
+                fails.append(f"J: stage {k} not done ({stJ.get(k, {}).get('status')})")
+    except Exception as e:
+        fails.append(f"J: could not read course engine state: {e}")
+    if CWS.exists():
+        shutil.rmtree(CWS)
 
     print("\n" + ("=" * 50))
     if fails:

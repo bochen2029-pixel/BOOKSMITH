@@ -818,7 +818,7 @@ class Engine:
         aa_rc, aa_o, aa_e = run([sys.executable, str(TOOLS / "authorial_act.py"),
                                  "--config", str(self.config_path), "--json"])
         try:
-            aa = json.loads(aa_o.strip().splitlines()[-1]) if aa_o.strip() else {}
+            aa = json.loads(aa_o.strip()) if aa_o.strip() else {}  # --json is one (pretty) object
             verdict = ("PASS" if aa.get("pass")
                        else f"FAIL({aa.get('high', 0)}h/{len(aa.get('findings', []))}f)")
             self.log("authorial_act", verdict=verdict, score=aa.get("score", 0))
