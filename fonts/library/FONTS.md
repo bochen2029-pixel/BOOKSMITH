@@ -4,7 +4,7 @@
 
 ## The two uses (important distinction)
 
-1. **Covers (zero setup).** `composite_cover.py` reads TTFs straight from this folder by path — no installation needed. Point `cover.title_face` at any family here.
+1. **Covers (zero setup).** `composite_cover.py` reads TTFs straight from this folder by path — no installation needed. NOTE: `cover.title_face` is currently informational only — composite_cover.py always renders the vendored Cormorant Garamond; these faces are candidates for a future override (and for interior.body_font, which IS honored).
 2. **Interiors (needs install).** Word renders the interior PDF, and Word only sees fonts *installed in Windows* (right-click TTF → "Install", or copy to `C:\Windows\Fonts`). The zero-setup interior default remains **Georgia** (system font, ships with Windows). If you want a library face for the interior: install it, then set `interior.body_font` to the family name (e.g. `"EB Garamond"`).
 
 ## Body faces (interior serifs — install to use in Word)

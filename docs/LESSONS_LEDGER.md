@@ -24,9 +24,13 @@
 10. VERIFICATION LOOP
 11. CROSS-PLATFORM / RUNTIME
 12. AUDIOBOOK (bonus stage)
-13. UNRESOLVED NUMERIC CONFLICTS
+13. UNRESOLVED / RECONCILED NUMERIC CONFLICTS
 14. FIRST-PASS DEFAULTS CHECKLIST
 15. SESSION SURVIVAL & COMPACTION
+16. LATE-CAPTURED IDIOSYNCRASIES
+17. AUTHOR VOICE
+18. DELTAS
+19. THE EXHAUSTIVE READ-SWEEP
 
 ---
 
@@ -393,10 +397,10 @@
 - Verify: `kindle_parity_check.py` shows parity; equations render (not literal `\`); backtick equations render without literal backticks (§3.3).
 
 ### 7.4 Kindle cover = front-only JPG
-- Rule: Kindle cover is a separate front-only image: **1600×2560 px** (1.6:1 ratio), sRGB, JPEG q92–95 (< 50 MB — "KDP prefers JPEG").
+- Rule: Kindle cover is a separate front-only image: **1600×2400 (trim-matched 6:9; the code renders W=1600, H=W×trim_h/trim_w)**, sRGB, JPEG q92–95 (< 50 MB — "KDP prefers JPEG").
 - Why / symptom if violated: Kindle needs a single front cover, not a wrap; wrong ratio/size rejects.
-- Exact params/code: `composite_cover_kindle.py` outputs the front at native res as JPG (and optionally PNG).
-- Verify: Image is 1600×2560, sRGB, < 50 MB.
+- Exact params/code: `composite_cover.py --profile kindle` outputs the front at native res as JPG (and optionally PNG).
+- Verify: Image is 1600×2400 (trim-matched 6:9; the code renders W=1600, H=W×trim_h/trim_w), sRGB, < 50 MB.
 
 ### 7.5 Kindle is immune to print rejections; updates don't auto-push
 - Rule: Because the Kindle DOCX is reflowable (no cover wrap, no spine, no gutter), it is immune to every spine/gutter/barcode rejection that hits print formats — ship it first. Note that live Kindle content updates do NOT auto-push to existing buyers.

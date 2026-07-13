@@ -29,7 +29,8 @@ me first, well and briefly:
   voice/register; and any hard constraints (a title, a refrain, an ending I will write by
   hand, real vs. changed names, passages that are sacred word-for-word). If there are
   multiple sources, ask whether to SYNTHESIZE them into one new book grown from the core
-  (the default) or keep them as an ANTHOLOGY.
+  (the default), keep them as an ANTHOLOGY, or REFORGE an existing manuscript to be reborn,
+  re-synthesized strictly better in the author's register.
 - Ask in small conversational rounds; react to my answers instead of dumping a
   questionnaire; and STOP asking the moment you have enough to proceed.
 - Voice: default to the author's own. If docs/author_voice/AUTHOR_VOICE_<me>.md exists,
@@ -53,7 +54,7 @@ EMIT, with these non-negotiables:
   chapter, so a compaction or a fresh session loses nothing and you resume with zero
   re-orientation (lean on docs/ENGINE.md and the rehydration machinery).
 - Produce all nine formats from ONE version-pinned source. Cover: bespoke SDXL if the GPU
-  stack is up (python _tools/cover_setup.py; ComfyUI serves :8000), otherwise
+  stack is up (python _tools/cover_setup.py; ComfyUI serves :8188 portable / :8000 desktop app — the kit probes both), otherwise
   python _tools/cover_pick.py (the prerendered catalog, or a hypergen abstract in the
   book's palette). A real cover, always.
 

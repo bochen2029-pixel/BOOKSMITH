@@ -151,7 +151,7 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 ### Interior generation (Node.js, `docx@9.6.1`)
 
 **`generate_book.js`** — *Parameterized print interior generator.*
-- PURPOSE: emit the print-interior DOCX for a given format profile (`kdp_paperback` | `kdp_hardcover` | `mixam_hardcover`) from the version-pinned manuscript. One script, format selected by config; the *only* difference between KDP and Mixam interiors is the four margin constants + output filename + page-count multiple.
+- PURPOSE: emit the print-interior DOCX for a given format profile (`kdp_paperback` | `kdp_hardcover` | `mixam_hardcover` | `mixam_paperback` | `blurb_paperback` | `blurb_hardcover`) from the version-pinned manuscript. One script, format selected by config; the *only* difference between KDP and Mixam interiors is the four margin constants + output filename + page-count multiple.
 - I/O: `node generate_book.js --config book_config.json --format <profile>` → reads `outputs/markdown/<slug>_vN.md` + `book_config.json`; writes `outputs/<profile>/<naming>.docx`. Emits the mirror-margin + evenAndOddHeaders JSZip injection inline (post-Packer). Prints computed section count + margins.
 - Encodes: 6×9 (`PAGE_W=8640, PAGE_H=12960` DXA); Georgia body from `interior.body_pt`; per-chapter `SectionType.ODD_PAGE` recto sections + trailing `SectionType.EVEN_PAGE` blank; `emptyHeadersFooters()` on every header-free section; leading-PageBreak suppression on first-in-section; markdown parser splits **backticks-first, then math, then bold, then italic**; `[IMAGE …]` blocks skipped.
 - SOURCE: `C:\BOOK\generate_book_kdp.js` + `C:\BOOK\generate_book_mixam.js` + `C:\BOOK3\_tools\_titanic_source\generate_book_v12.js` (byte-identical modulo margins — unified here).
@@ -201,7 +201,7 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 ### Covers (Python, PIL + PyMuPDF)
 
 **`composite_cover.py`** — *Parameterized cover compositor (all print formats).*
-- PURPOSE: composite typography onto the AI-art source and assemble the cover for a given profile: `kdp-wrap` (single `[back│spine│front]`, 0.125" bleed), `kdp-hardcover` (single wrap, 0.708" turn-in + board-add spine, height hardcoded 10.417"), `mixam-3panel` (three separate PDFs, 0.80" bleed). Deterministic (no AI at composite time).
+- PURPOSE: composite typography onto the AI-art source and assemble the cover for a given profile: `kdp-wrap` (single `[back│spine│front]`, 0.125" bleed), `kdp-hardcover` (single wrap, 0.708" turn-in + board-add spine, height hardcoded 10.417"), `mixam-3panel` (three separate PDFs, 0.80" bleed), `mixam-paperback-wrap` (single wrap at 0.125" Mixam PB geometry), `blurb-wrap` (Blurb trade softcover wrap), `blurb-imagewrap` (Blurb hardcover ImageWrap), `kindle` (front-only ebook cover). Deterministic (no AI at composite time).
 - I/O: `python composite_cover.py --config book_config.json --profile <p> --pages <N>` → reads `cover_art/<source>` + `book_config.json` + re-derived `PAGES`; writes the profile's cover PDF(s)+JPG(s) to `outputs/<format>/`. Prints computed wrap dimensions (target-vs-actual inches) for self-verification.
 - Encodes: `load_font` (Cormorant Garamond variable via `set_variation_by_axes` + Bold TTF, from vendored `fonts/`); `measure_tracked`/`draw_tracked` (per-glyph tracking); `scale_to_cover` (full-bleed front) vs `scale_to_fit` (content-at-edges back art, letterboxed); cream/dark halo strokes; spine text double-drawn +1px, composed horizontal then `rotate(-90)`; typography ≥ `bleed+0.25"` from edges; PDFs written with **exact-inch MediaBox via PyMuPDF** (PIL truncates → KDP 4-decimal rejection); ISBN keep-out left clear (no baked box); Mixam names `front_cover.pdf`/`back_cover.pdf`/`spine.pdf`.
 - Spine math (from config): `spine = pages × per_page_paper + board_add`; `per_page` 0.0025 cream / 0.002252 white; `board_add` 0 (KDP paper) / `kdp_hardcover_board_add` default 0.348 (KDP HC) / `mixam_board_add` (Mixam, reverse-derived from Mixam's calculator).
@@ -212,6 +212,16 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 - I/O: `python cover_gen.py --prompt "<art prompt>" --negative "text, watermark, letters" --workflow sdxl_txt2img.json --seed -1 --steps 30 --out cover_art/<slug>_src.png` → shells to the hermes comfyui skill `run_workflow.py` (`comfy launch --background` on :8188; `run_workflow.py --workflow workflows/sdxl_txt2img.json --args '{…}' --output-dir …`); returns the PNG path as JSON. `run_batch.py --count 8 --randomize-seed` for variations.
 - REQUIRES: one checkpoint in `ComfyUI\models\checkpoints\` (empty by default) — default `stabilityai/stable-diffusion-xl-base-1.0/sd_xl_base_1.0.safetensors` (~6.5 GB), fetched via `comfy model download` or any downloader (the `default_checkpoint_url` in `kit_env.cover_gen`).
 - SOURCE: a hermes-style ComfyUI runner skill (`run_workflow.py`, `workflows/sdxl_txt2img.json`, `flux_dev_txt2img.json`) — all paths resolved via `kit_env.cover_gen` (historical provenance, not a runtime dependency).
+
+**`cover_layout.py`** — *Title-band auto-layout: propose → score → pick.*
+- PURPOSE: decide WHERE the title should sit on the cover art (`composite_cover.py` places it; this chooses the band). Proposes N candidate title bands, scores each for legibility, returns the best band's `y_frac` for `composite_cover.py --title-y-frac`. Closes the typography-placement loop the way the prose gates do.
+- I/O: `python cover_layout.py --art <img> --palette "<hex,…>" [--n 6] [--json]` (or `--config book_config.json` for palette + colour from `cover.palette`) → prints the best band `{y_frac,h_frac,score,calmness,contrast}` + ranked candidates. Mechanical scoring by default (`0.55*calmness + 0.45*contrast`, pure PIL, no GPU); `--vision` upgrades to a `vision_verify` per-candidate score; `--aspect` scores in the compositor's frame.
+- SOURCE: new (roadmap H1.4) — the auto-layout half of the cover typography loop.
+
+**`palette_transfer.py`** — *LAB recolor of catalog art to the book palette.*
+- PURPOSE: recolor any catalog / hypergen cover image toward a book's exact palette while preserving its structure (composition + the calm upper-third title zone), so one image can serve any book. Used by `cover_pick.py --recolor`.
+- I/O: `python palette_transfer.py --src <img> --palette "<hex,…>" --out <img> [--strength 0.8]` (or `--config book_config.json` for the palette from `cover.palette`) → writes the recoloured image; prints a JSON summary (mean LAB before/after + target). Reinhard-style mean/std transfer in CIELAB, pure Pillow (no numpy); `--strength` blends the shift so it stays tasteful.
+- SOURCE: new (roadmap H1.4) — the recolor stage of the prerendered-catalog cover path.
 
 ### Verification (the two-verifier model)
 
@@ -229,6 +239,16 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 - PURPOSE: block release on PDF-round-trip corruption (`a_Thursday` underscores, unbalanced emphasis, mid-word hyphen breaks, sentence ripped across a paragraph) AND on SEED-blacklist / anachronism drift. Excludes scaffolding + cached source dirs by default (they legitimately quote banned words / period vocabulary).
 - I/O: `python lint_manuscript.py --config book_config.json [--include-docs]` → scans `manuscript/current/` + `drafts/`; exit `0` clean / `1` drift (blocking) / `2` usage. Blacklist/greenlist/sacred-terms come from `book_config.voice`.
 - SOURCE: `PRODUCTION_LESSONS_LEARNED.md` lint rules + `C:\BOOK3\_tools\check_acp_vocabulary.py` (97-pattern scrubber; case-sensitive/insensitive/regex tiers; dir-exclusion).
+
+**`check_continuity.py`** — *`_CONTINUITY.md` self-consistency gate (invoked by `verify_build --final`).*
+- PURPOSE: prove a workspace's COMPACTION-SURVIVAL ledger (`_CONTINUITY.md`) is internally consistent, so a resuming session is never sent to a stale place (the one shipped book carried a header saying COMPLETE while its footer token still said IN_PROGRESS and its DONE list named 4 of 13 chapters — nothing gated it).
+- I/O: `python check_continuity.py --workspace <book_workspace/slug> [--ledger <path>] [--fix]` → JSON `{"ledger":…, "consistent":bool, "defects":[…], "status":{…}}`; exit 0 consistent / 1 any defect / 2 usage. Flags: STATUS disagreement (header vs footer vs SHIPPED marker), COMPLETE-but-still-mid-draft, DONE undercount vs `manuscript/current/*_current.md` on disk. Read-only by default (`--fix` is the export-path rewrite; `verify_build --final` calls it without `--fix`).
+- SOURCE: new — the mechanical gate for CLAUDE.md's COMPACTION SURVIVAL ledger discipline.
+
+**`check_synthesis.py`** — *Synthesis-mode anti-anthology audit (GATE-4).*
+- PURPOSE: make GATE-4's prose rule mechanical — in `synthesis` integration mode, fail any unit whose `## Canon Anchors` map ~1:1 onto a single source document while the corpus holds two or more (the "anthology tell", where a synthesis book quietly reverts to a stitched anthology along source boundaries).
+- I/O: `python check_synthesis.py --workspace <book_workspace/slug>` → per-unit rows + verdict as JSON. Discovers the source corpus from `canon_refs/_digest_<slug>.md` + `registry/canon_refs.md`; a unit's sources are the corpus slugs cited in its `contracts/<id>.md` Canon Anchors. Diagnostic + deterministic: a missing registry / unfilled template / single-source corpus becomes a SKIP row with a reason, never a crash.
+- SOURCE: new — mechanizes CLAUDE.md GATE-4 ("no unit maps ~1:1 onto a single source document").
 
 **`resize_image_safe.py`** — *2000px ingestion guard.*
 - PURPOSE: prevent the non-recoverable session crash from reading an image >2000px in any dimension. Run before ANY `Read`/vision ingest of a screenshot or cover.
@@ -256,6 +276,28 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 - PURPOSE: stitch `manuscript/current/{unit}_current.md` (front matter + every unit in order) into the ONE version-pinned master `outputs/markdown/<slug>_vN.md` that EVERY generator reads. This is the single fix for the Kindle-vs-print source-drift bug (a Kindle once shipped 8,476 words short of the print because generators read different source versions). All formats build from this one file, never from divergent sources.
 - I/O: `python assemble_manuscript.py --config book_config.json` → reads the ordered unit list + `manuscript/current/`; writes `outputs/markdown/<slug>_v{N}.md` (append-only version bump) and prints the total word count (the parity baseline every format is checked against).
 - SOURCE: new — formalizes the implicit stitch step every prior book did by hand.
+
+### Maintainer tools (run by the kit maintainer, not in a per-book pipeline)
+
+**`regression_fixtures.py`** — *Generator behavior regression (the QC-sweep fixture).*
+- PURPOSE: run both interior generators over a tiny synthetic book engineered to hit every historically-defective input (currency `$…$` pairs, `\rightarrow`/`\cdots`/`\bigcup` math, `####` deep headings, bold-wrapped code, rendered em-dashes, `page_number_align:"outer"` even/odd flags, `[IMAGE`-prefixed prose), then unzip the DOCX and assert the RENDERED text is right. The defects it guards were invisible under default configs.
+- I/O: `python _tools/regression_fixtures.py [--json]` → temp-dir workspace, repo untouched; exit 0 pass / 1 regression / 2 node absent (SKIP).
+- SOURCE: new — the 2026-07-13 QC sweep's fixture recommendations, made a standing gate.
+
+**`hypergen.py`** — *Abstract cover art from pure code (the no-GPU cover floor).*
+- PURPOSE: render a tasteful abstract cover BACKGROUND (no baked text; upper third calm for the title) on ANY machine in a fraction of a second — 8 styles × 8 mood palettes × seed, fully deterministic. `cover_pick.py` shortlists these beside catalog matches when no SDXL stack is up.
+- I/O: `python _tools/hypergen.py --style horizon --mood dark_literary --seed 7 --out cover_art/x.png` (or `--palette "hex,hex,…"`; `--contact-sheet` renders all styles into one grid). Pillow only.
+- SOURCE: new — the portability floor of the Cover 2.0 loop.
+
+**`catalog_build.py`** — *Prerendered cover-catalog builder.*
+- PURPOSE: run ONCE on a capable machine to populate `cover_catalog/` with a spread of covers that machines WITHOUT a render stack can then pick from (via `cover_pick.py`). The durable value is the genre×mood prompt MATRIX; images fill in per entry.
+- I/O: `python catalog_build.py [--dry-run | --hypergen | --sdxl | --all]` → `--dry-run` prints the matrix + writes stubs; `--hypergen` renders pure-code abstract entries (no GPU, keyless); `--sdxl` renders photographic/painterly entries via ComfyUI+SDXL (needs a GPU box); resumable (existing rendered entries skipped).
+- SOURCE: new — the build side of the prerendered-catalog cover fallback.
+
+**`make_giftable.py`** — *Stranger-safe distribution zip packager.*
+- PURPOSE: produce one clean `.zip` of the kit ready to hand to someone who will run Claude Code on their own desktop — drops everything private/heavy/third-party-encumbered per the portability audit, then runs a PERSONAL-DATA GATE over every shipped text file and REFUSES to write the zip on a hit. Never modifies the source tree.
+- I/O: `python make_giftable.py [--allow-personal-data] [--include-node-modules] [--keep-service-templates] [--full-example-outputs]` → writes the dist zip (or exits 1 with `file:line + pattern` if the personal-data gate finds the author name/email or a machine path). Excludes `.git/`, `__pycache__/`, `kit_env.json`, all `book_workspace/*` except a trimmed `testvoyage/`, rehydration scratch, and session logs by default.
+- SOURCE: new — the portability-audit packager for the giftable-kit initiative.
 
 ---
 

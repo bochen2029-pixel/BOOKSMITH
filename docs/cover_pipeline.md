@@ -73,7 +73,7 @@ For 6×9 @ 300 DPI + 0.125" bleed the art needs **≥ 1999×2775 px** (the highe
 
 ## COMPOSITE — `composite_cover.py` (deterministic PIL, all print profiles)
 
-Profiles: `kdp-wrap` (single `[back│spine│front]`, 0.125" bleed), `kdp-hardcover` (single wrap, 0.708" turn-in + board-added spine, height 10.417"), `mixam-3panel` (three separate PDFs, 0.80" bleed). Reads `cover_art/<source>` + `book_config.json` + a re-derived `PAGES`; writes the profile's cover PDF(s)+JPG(s); prints target-vs-actual wrap inches for self-verification.
+Profiles: `kdp-wrap` (single `[back│spine│front]`, 0.125" bleed), `kdp-hardcover` (single wrap, 0.708" turn-in + board-added spine, height 10.417"), `mixam-3panel` (three separate PDFs, 0.80" bleed), `mixam-paperback-wrap` (single wrap at 0.125" Mixam PB geometry), `blurb-wrap` (Blurb trade softcover wrap), `blurb-imagewrap` (Blurb hardcover ImageWrap), `kindle` (front-only ebook cover). Reads `cover_art/<source>` + `book_config.json` + a re-derived `PAGES`; writes the profile's cover PDF(s)+JPG(s); prints target-vs-actual wrap inches for self-verification.
 
 Shared PIL toolkit + the load-bearing rules (full numbers in `format_spec_sheet.md` §7–§8):
 

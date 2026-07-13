@@ -239,13 +239,174 @@ def _which(exe):
     return which(exe)
 
 
+# ---- 9. config keys the toolchain READS are declared in the schema -----------
+# Root additionalProperties:false means an undeclared-but-read key is a feature
+# NO valid config can ever use (the H1/H2/VER-4 gate-hole class). Include-list
+# of the book-config consumers; kit_env/infra tools are out of scope.
+_BOOKCFG_PY = [
+    "assemble_manuscript.py", "build_epub.py", "build_digital_pdf.py",
+    "lint_manuscript.py", "verify_build.py", "check_part_pages.py",
+    "composite_cover.py", "cover_gen.py", "cover_pick.py", "cover_layout.py",
+    "palette_transfer.py", "init_contracts.py", "engine.py", "authorial_act.py",
+    "check_synthesis.py", "check_continuity.py",
+]
+_BOOKCFG_JS = ["generate_book.js", "generate_kindle.js"]
+# keys read dynamically for legit non-schema reasons (none today; add sparingly)
+_CFGKEY_ALLOW: set = set()
+
+
+def check_config_key_drift():
+    schema_p = TOOLS / "book_config.schema.json"
+    try:
+        declared = set(json.load(open(schema_p, encoding="utf-8"))["properties"].keys())
+    except Exception as e:
+        add("config_keys_declared", FAIL, f"cannot read schema properties: {e}")
+        return
+    py_pat = re.compile(
+        r"\b(?:self\.)?(?:cfg|config|book_config)(?:\.get\(\s*|\[)\s*[\"']([a-z_][a-z0-9_]*)[\"']")
+    js_pat = re.compile(r"\bconfig\.([a-z_][a-z0-9_]*)\b")
+    js_skip = {"get", "slug"}  # attribute noise; slug obviously declared anyway
+    offenders = {}
+    for name in _BOOKCFG_PY:
+        f = TOOLS / name
+        if not f.exists():
+            continue
+        src = f.read_text(encoding="utf-8", errors="replace")
+        for m in py_pat.finditer(src):
+            k = m.group(1)
+            if k not in declared and k not in _CFGKEY_ALLOW:
+                offenders.setdefault(k, set()).add(name)
+    for name in _BOOKCFG_JS:
+        f = TOOLS / name
+        if not f.exists():
+            continue
+        src = f.read_text(encoding="utf-8", errors="replace")
+        for m in js_pat.finditer(src):
+            k = m.group(1)
+            if k in js_skip:
+                continue
+            if k not in declared and k not in _CFGKEY_ALLOW:
+                offenders.setdefault(k, set()).add(name)
+    if offenders:
+        detail = "; ".join(f"{k} (read by {sorted(v)})" for k, v in sorted(offenders.items()))
+        add("config_keys_declared", FAIL,
+            f"read-but-undeclared root config key(s): {detail} — a valid config "
+            f"cannot carry them (root additionalProperties:false)")
+    else:
+        add("config_keys_declared", PASS,
+            f"every root config key read by {len(_BOOKCFG_PY) + len(_BOOKCFG_JS)} "
+            f"toolchain files is schema-declared")
+
+
+# ---- 10. every shipped tool is documented; format/profile tokens in the spec --
+def check_doc_coverage():
+    corpus_files = [ROOT / "CLAUDE.md", ROOT / "KIT_ARCHITECTURE.md", ROOT / "README.md",
+                    ROOT / "START_HERE.md", ROOT / "START_A_BOOK.md", ROOT / "INSTALL.md",
+                    ROOT / "AGENTS.md"] + list((ROOT / "docs").glob("*.md"))
+    corpus = "\n".join(p.read_text(encoding="utf-8", errors="ignore")
+                       for p in corpus_files if p.exists())
+    undocumented = []
+    for f in sorted(list(TOOLS.glob("*.py")) + list(TOOLS.glob("*.js"))):
+        if f.name.startswith("_"):
+            continue
+        if f.name not in corpus:
+            undocumented.append(f.name)
+    problems = []
+    if undocumented:
+        problems.append(f"tool(s) documented NOWHERE: {undocumented}")
+    # token sets: the invariant spec must carry the real format/profile tokens
+    kit_arch = (ROOT / "KIT_ARCHITECTURE.md").read_text(encoding="utf-8", errors="ignore")
+    gb = (TOOLS / "generate_book.js").read_text(encoding="utf-8", errors="replace")
+    m = re.search(r"VALID_FORMATS\s*=\s*\[([^\]]+)\]", gb)
+    fmts = re.findall(r'"([a-z_]+)"', m.group(1)) if m else []
+    missing_fmt = [t for t in fmts if t not in kit_arch]
+    cc = (TOOLS / "composite_cover.py").read_text(encoding="utf-8", errors="replace")
+    m2 = re.search(r"choices=\[([^\]]+)\]", cc)
+    profs = re.findall(r'"([a-z0-9\-]+)"', m2.group(1)) if m2 else []
+    missing_prof = [t for t in profs if t not in kit_arch]
+    if missing_fmt:
+        problems.append(f"format token(s) absent from KIT_ARCHITECTURE.md: {missing_fmt}")
+    if missing_prof:
+        problems.append(f"profile token(s) absent from KIT_ARCHITECTURE.md: {missing_prof}")
+    if problems:
+        add("doc_coverage", FAIL, "; ".join(problems))
+    else:
+        add("doc_coverage", PASS,
+            f"every shipped tool is named in the docs; all {len(fmts)} format + "
+            f"{len(profs)} profile tokens present in the invariant spec")
+
+
+# ---- 11. no em/en dash in JS STRING content (rendered-character guard) --------
+_DASH_SET = "—–―‒−"
+
+
+def check_js_dash_literals():
+    hits = []
+    for f in sorted(TOOLS.glob("*.js")):
+        src = f.read_text(encoding="utf-8", errors="replace")
+        src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)      # block comments
+        for i, line in enumerate(src.splitlines(), 1):
+            code = line.split("//", 1)[0]                     # line comments
+            if re.search(r"console\.(log|warn|error)", code):
+                continue                                      # console text never renders
+            if "const USAGE" in code:
+                continue                                      # CLI help header, never renders
+            if re.search(r"\[[^\]]*[—–][^\]]*\]", code):
+                continue                                      # regex char-class STRIPPING dashes
+            if "no_em_dashes === false" in code:
+                continue                                      # voice-gated: only when allowed
+            if any(ch in code for ch in _DASH_SET):
+                hits.append(f"{f.name}:{i}")
+    if hits:
+        add("js_no_dash_literals", FAIL,
+            f"em/en dash in JS code (a generator-injected dash ships into the "
+            f"artifact and the source lint can never see it): {hits[:6]}")
+    else:
+        add("js_no_dash_literals", PASS,
+            "no em/en dash in any JS string/code line (comments + console text exempt)")
+
+
+# ---- 12. spine/geometry constants agree: schema <-> compositor <-> verifier ---
+def check_spine_constant_parity():
+    schema_p = TOOLS / "book_config.schema.json"
+    try:
+        spine_props = (json.load(open(schema_p, encoding="utf-8"))
+                       ["properties"]["spine"]["properties"])
+    except Exception as e:
+        add("spine_constant_parity", WARN, f"cannot read spine schema block: {e}")
+        return
+    cc = (TOOLS / "composite_cover.py").read_text(encoding="utf-8", errors="replace")
+    vb = (TOOLS / "verify_build.py").read_text(encoding="utf-8", errors="replace")
+    pl = (TOOLS / "preset_lookup.py").read_text(encoding="utf-8", errors="replace")
+    bad = []
+    for key, prop in spine_props.items():
+        v = prop.get("default")
+        if not isinstance(v, (int, float)):
+            continue
+        forms = {str(v), f"{v:g}", f"{v:.2f}", f"{v:.3f}", f"{v:.4f}", f"{v:.6f}"}
+        in_cc = any(s in cc for s in forms)
+        in_check = any(s in vb for s in forms) or any(s in pl for s in forms)
+        if not (in_cc and in_check):
+            bad.append(f"{key}={v} (compositor={'y' if in_cc else 'MISSING'}, "
+                       f"verifier/preset={'y' if in_check else 'MISSING'})")
+    if bad:
+        add("spine_constant_parity", FAIL,
+            "schema spine default(s) not mirrored in code fallbacks: " + "; ".join(bad))
+    else:
+        add("spine_constant_parity", PASS,
+            f"all {len(spine_props)} schema spine defaults mirrored in "
+            f"compositor AND verifier/preset fallbacks")
+
+
 def main():
     ap = argparse.ArgumentParser(description="BOOKSMITH kit self-consistency meta-gate")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
     for fn in (check_py_compile, check_js_parse, check_json_valid, check_schema,
-               check_kit_env_parity, check_requirements, check_dead_script_refs, check_fonts):
+               check_kit_env_parity, check_requirements, check_dead_script_refs, check_fonts,
+               check_config_key_drift, check_doc_coverage, check_js_dash_literals,
+               check_spine_constant_parity):
         try:
             fn()
         except Exception as e:

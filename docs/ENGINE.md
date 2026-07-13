@@ -78,7 +78,9 @@ end. An already-architected book (seed.md + units present) skips it untouched.
 - **produce:<format>** — the interior generator for the format, then
   `verify_build.py --format <fmt>` as the gate.
 - **cover** — best-effort (skipped in `--dry-run`; a missing art stack never hard-stops).
-- **verify** — `verify_build.py --format all`.
+- **verify** — `verify_build.py --format all`. The engine's verify stage passes
+  `--final` to verify_build: word-count parity vs print and cover presence are
+  enforced there (interim per-format verifies defer them loudly).
 - **emit** — write `outputs/MANIFEST.json`.
 
 ## Usage
@@ -102,7 +104,7 @@ python _tools/engine.py --config .../book_config.json --status     # print on-di
 python _tools/engine.py --config .../book_config.json --from verify # run a sub-range
 ```
 
-Flags: `--backend mock|anthropic|openai`, `--to STAGE`, `--from STAGE`,
+Flags: `--backend mock|anthropic|openai|harness`, `--to STAGE`, `--from STAGE`,
 `--dry-run`, `--no-cover`, `--status`, `--fresh`.
 
 ## The model seam (backends)

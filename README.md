@@ -10,7 +10,7 @@ This README is for a human. If you are the harness (Claude Code), your operating
 
 From one intake drop, BOOKSMITH produces nine upload-ready deliverables plus a cover:
 
-- **Kindle** — reflowable DOCX for direct KDP upload + a 1600×2560 front-cover JPG.
+- **Kindle** — reflowable DOCX for direct KDP upload + a 1600×2400 front-cover JPG (trim-matched 6:9).
 - **EPUB 3** — standards-valid (with EPUB 2 compat) for Apple Books / Kobo / Google Play / Nook / Draft2Digital — and KDP's now-preferred reflowable upload.
 - **KDP paperback** — interior DOCX + page-faithful PDF + a single `[back│spine│front]` cover wrap.
 - **KDP hardcover** — the same interior + a hardcover wrap (case-board turn-in, board-added spine).

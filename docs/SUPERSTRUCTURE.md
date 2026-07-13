@@ -1,7 +1,7 @@
 # BOOKSMITH — THE SUPERSTRUCTURE
 ### The wiring diagram, decision flowchart, and checklist‑of‑checklists that hold the whole book‑production frame so nothing can be forgotten.
 
-*This is the root‑and‑branch map of the entire "vibe‑write a book" process — every stage, every gate, every tool, and (the point) every "cannot‑forget" bound to the mechanism that fails loudly if it is skipped. If you are a harness resuming or a fresh instance: this file + `CLAUDE.md` + `KIT_ARCHITECTURE.md` + `docs/LESSONS_LEDGER.md` are the four corners. Detail for any node lives in `LESSONS_LEDGER.md` (the 64 rules) and `format_spec_sheet.md` (the numbers). Companion picture: `BOOKSMITH_WIRING.svg`.*
+*This is the root‑and‑branch map of the entire "vibe‑write a book" process — every stage, every gate, every tool, and (the point) every "cannot‑forget" bound to the mechanism that fails loudly if it is skipped. If you are a harness resuming or a fresh instance: this file + `CLAUDE.md` + `KIT_ARCHITECTURE.md` + `docs/LESSONS_LEDGER.md` are the four corners. Detail for any node lives in `LESSONS_LEDGER.md` (the full rule set) and `format_spec_sheet.md` (the numbers). Companion picture: `BOOKSMITH_WIRING.svg`.*
 
 **The governing principle — why there are no gaps.** Every requirement in this kit is bound to a **gate** that is either *mechanical* (`verify_build.py` — a deterministic check that returns pass/fail JSON) or *perceptual* (`vision_verify.py` — a vision model judging a rendered image against a rubric). A step is not "remembered by discipline"; it is *enforced by a check that fails if the step did not happen*. Forgetting to generate the cover art fails the vision gate (a blank gradient does not match the Book Bible). Forgetting recto starts fails `check_part_pages.py`. Forgetting mirror margins fails the `mirror_flags` check. **The anti‑forgetting matrix (§6) is the proof: every "million things" maps to an enforcer.**
 
@@ -100,7 +100,7 @@ BOOKSMITH  (drop gist + docs → walk away → finished folder, 9 formats + cove
 │   │                       fitz EXACT MediaBox (not PIL) · cover_meta.json sidecar written ·
 │   │                       Mixam filenames inner_/front_cover/back_cover/spine (never bare back.pdf)
 │   ├─ SEE                imguard.py resize <2000px → render/view the image
-│   └─ PERCEPTUAL GATE    vision_verify.py --backend keel|claude
+│   └─ PERCEPTUAL GATE    vision_verify.py --backend auto|keel|claude
 │         art rubric: no baked text · subject+palette match Bible · focal room for title
 │         wrap rubric: title/author legible+spelled · tracking clean · spine centered ·
 │                      bleed‑safe · ISBN keep‑out clear
@@ -255,7 +255,7 @@ flowchart LR
 | 25 | Continuity survives compaction | 0 | `_CONTINUITY.md` + hooks | SessionStart(compact) inject | resume from summary → drift |
 | 26 | **Kit stays internally coherent / giftable** (clone runs cold) | all | `selfcheck.py` | `selfcheck` meta-gate (nonzero exit on FAIL) | py won't compile / dead script ref / schema drift / missing font in a fresh clone |
 
-*(The full 64 rules with exact params live in `docs/LESSONS_LEDGER.md`; the exact numbers per service in `docs/format_spec_sheet.md`; service geometry in `_tools/print_presets.json`.)*
+*(The full rule set with exact params live in `docs/LESSONS_LEDGER.md`; the exact numbers per service in `docs/format_spec_sheet.md`; service geometry in `_tools/print_presets.json`.)*
 
 ---
 
@@ -330,7 +330,7 @@ flowchart LR
 | Node | Detail document |
 |---|---|
 | whole pipeline + folder taxonomy + component I/O contracts | `KIT_ARCHITECTURE.md` |
-| the 64 enforceable rules (symptom → cause → fix) | `docs/LESSONS_LEDGER.md` |
+| the full rule set (symptom → cause → fix) | `docs/LESSONS_LEDGER.md` |
 | exact numbers per format (margins, spine, bleed, page multiples) | `docs/format_spec_sheet.md` |
 | Mixam + Blurb service geometry, provenance‑tagged | `_tools/print_presets.json` (+ `preset_lookup.py`) |
 | cover art prompt rules + composite + verify loop | `docs/cover_pipeline.md` |
