@@ -48,6 +48,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -87,6 +88,16 @@ _TITLE_COMPOSITION_PHRASES = (
     "room for the title", "for the title", "quiet for title",
 )
 
+# Generic baked-lettering INTENT ("a banner reading WELCOME", "graffiti spelling
+# FEAR") — arbitrary words are just as fatal to the no-text invariant as the
+# book's own title, and the trimmed token list above cannot see them.
+_LETTERING_INTENT = re.compile(
+    r"\b(?:reading|that\s+says|saying|spelling|spells|inscribed\s+with|"
+    r"emblazoned\s+with|stamped\s+with)\s+[\"'“‘A-Z0-9]"
+    r"|\b(?:banner|sign|graffiti|neon|poster|billboard|label|headline|marquee)\s+"
+    r"(?:reading|saying|with\s+the\s+words|that\s+says)\b",
+    re.IGNORECASE)
+
 
 # ============================================================
 # kit_env + config loading
@@ -122,6 +133,10 @@ def check_prompt_no_text(prompt: str, config: dict | None) -> list[str]:
     for tok in TEXT_SIGNAL_TOKENS:
         if tok in low:
             violations.append(f"prompt contains text-signal token {tok.strip()!r}")
+
+    m = _LETTERING_INTENT.search(low)
+    if m:
+        violations.append(f"prompt requests baked lettering ({m.group(0).strip()!r})")
 
     if config:
         # If the prompt uses a compositional "…for the title" idiom, don't let a
@@ -179,7 +194,8 @@ def launch_server(server_url: str, comfy_bin: str = "comfy",
         # block on its pipes.
         subprocess.run(
             [comfy_bin, "launch", "--background"],
-            check=False, capture_output=True, text=True, timeout=120,
+            check=False, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=120,
         )
     except (subprocess.SubprocessError, OSError):
         return False
@@ -299,7 +315,8 @@ def run_single(run_workflow_py: Path, workflow_path: Path, args_obj: dict,
     ]
     if timeout and timeout > 0:
         cmd += ["--timeout", str(timeout)]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace")
     return _parse_runner_json(proc)
 
 
@@ -318,7 +335,8 @@ def run_batch_shell(run_batch_py: Path, workflow_path: Path, args_obj: dict,
     ]
     if timeout and timeout > 0:
         cmd += ["--timeout", str(timeout)]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace")
     return _parse_runner_json(proc)
 
 
@@ -541,15 +559,32 @@ def do_single(args) -> int:
     if out_path.suffix:
         try:
             out_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.move(png, out_path)
+            if Path(png).suffix.lower() != out_path.suffix.lower():
+                # a custom workflow may emit webp/jpeg: transcode instead of
+                # lying about the byte format via the filename
+                from PIL import Image
+                Image.open(png).convert("RGB").save(out_path)
+                Path(png).unlink(missing_ok=True)
+            else:
+                shutil.move(png, out_path)
             final_png = str(out_path.resolve())
-        except OSError:
-            final_png = png  # keep the runner's location if the move fails
+        except Exception:
+            final_png = png  # keep the runner's location if the move/transcode fails
 
+    # a dropped negative prompt voids the anti-baked-text backstop (FLUX has no
+    # negative CLIPTextEncode) — that must be a loud caveat, not a buried note
+    caveats = [w for w in (run_json.get("warnings") or [])
+               if "negative" in str(w).lower() and "no " in str(w).lower()]
+    for c in caveats:
+        print(f"[cover_gen] CAVEAT: {c} — the text/watermark negative did NOT land; "
+              f"rely on the perceptual gate", file=sys.stderr)
     print(json.dumps({
         "status": "success",
         "png": str(Path(final_png).resolve()),
-        "seed": args.seed,
+        "caveats": caveats,
+        # the RESOLVED seed (a -1 request expands server-side); without it the
+        # winning cover could never be regenerated
+        "seed": run_json.get("seed", args.seed),
         "steps": args.steps,
         "checkpoint": checkpoint,
         "workflow": str(workflow_path),
@@ -590,6 +625,7 @@ def do_batch(args) -> int:
         return 1
     effective_wf = patch_checkpoint(workflow_path, checkpoint)
 
+    _adopt_live_server(paths)
     if not args.no_launch:
         if not launch_server(paths["server"]):
             print(json.dumps({
@@ -634,6 +670,9 @@ def do_batch(args) -> int:
         "status": "success",
         "pngs": pngs,
         "count": len(pngs),
+        "seeds": [r.get("seed") for r in (run_json.get("results")
+                                          or run_json.get("runs") or [])
+                  if isinstance(r, dict)],
         "checkpoint": checkpoint,
         "workflow": str(workflow_path),
         "negative_prompt": negative,

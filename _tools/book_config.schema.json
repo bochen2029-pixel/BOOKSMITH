@@ -14,6 +14,7 @@
     "genre": { "type": "string", "description": "Free-text genre/register label (e.g. 'literary fiction', 'AI-career nonfiction'). (orchestrator/agent-consumed; not read by the build toolchain)." },
     "is_fiction": { "type": "boolean", "description": "Selects the fiction copyright disclaimer + fiction_refs handling; false enables the LaTeX->Unicode math path." },
     "language": { "type": "string", "default": "en", "description": "BCP-47 language tag for EPUB dc:language + xml:lang (read by build_epub.py). Defaults to 'en'." },
+    "math": { "type": "boolean", "description": "Explicit math-book flag for the residual-LaTeX gate (verify_build.py). Defaults to (is_fiction == false) when absent; set true to force the check for a fiction book with equations, or false to silence it for a $-bearing nonfiction book." },
     "domain": { "type": "string", "default": "book", "description": "Production domain. Default 'book' = the full nine-format book pipeline (this schema). A non-book domain (e.g. 'course') is declared in domains/<name>/domain.json and drives the deterministic engine's stages + producers + verifier; such a config is validated by its domain, not this schema. A book config may omit this or set 'book'." },
     "integration_mode": {
       "type": "string",
@@ -156,10 +157,14 @@
       "description": "Cover typography + palette + AI-art generation params. Rule: NO title/author text baked into the AI art; typography composited afterward.",
       "additionalProperties": false,
       "properties": {
+        "mood": {
+          "type": "string",
+          "description": "Optional no-GPU cover mood override (cover_pick/hypergen): dark_literary, warm_memoir, cool_scifi, bold_thriller, soft_romance, earthy_nonfiction, noir, botanical. Inferred from genre when absent."
+        },
         "title_face": {
           "type": "string",
           "default": "CormorantGaramond",
-          "description": "Cover display face. Cormorant Garamond (variable Light 300-700 + Bold TTF) for literary; a sans (Inter-Bold/Helvetica-Neue-Bold) for tech register. Loaded from vendored repo-relative fonts/."
+          "description": "Cover display face. Currently INFORMATIONAL ONLY: composite_cover.py always renders the vendored Cormorant Garamond (variable Light 300-700 + Bold TTF); a family override here has no effect on the composited typography yet. See fonts/library/FONTS.md for candidate faces should the override be wired."
         },
         "palette": {
           "type": "object",

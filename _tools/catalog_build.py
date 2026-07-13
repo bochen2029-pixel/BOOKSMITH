@@ -211,9 +211,11 @@ def main(argv=None):
             s["rendered"] = True   # keep a prior render
         by_id[s["id"]] = s
     cat["entries"] = list(by_id.values())
-    if not args.dry_run or True:
-        (CAT / "catalog.json").write_text(json.dumps(cat, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(f"wrote {CAT/'catalog.json'} ({len(cat['entries'])} entries)")
+    # The manifest ALWAYS writes: --dry-run means "render no images", and the
+    # stub catalog.json IS the documented dry-run output. (The old
+    # `if not args.dry_run or True` was a dead conditional saying this confusingly.)
+    (CAT / "catalog.json").write_text(json.dumps(cat, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"wrote {CAT/'catalog.json'} ({len(cat['entries'])} entries)")
     return 0
 
 

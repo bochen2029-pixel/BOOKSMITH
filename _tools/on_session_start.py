@@ -52,8 +52,21 @@ def _status_of(continuity_path):
             head = "".join([next(f, "") for _ in range(HEAD_LINES)])
     except Exception:
         return "UNKNOWN", ""
-    m = re.search(r"STATUS[:*)\s]*\**\s*([A-Za-z_\-]+)", head, re.IGNORECASE)
-    status = (m.group(1).upper() if m else "UNKNOWN")
+    # Anchored per-line against a known vocabulary: the old first-occurrence
+    # regex grabbed the next word after ANY "STATUS" (prose "the STATUS of the
+    # world is COMPLETE" -> OF; a legend line -> _TOKEN_LEGEND) and missed
+    # table forms entirely.
+    vocab = r"(COMPLETE|IN[_\- ]?PROGRESS|DRAFTING|SHIPPED|PAUSED|ABANDONED)"
+    status = "UNKNOWN"
+    for line in head.splitlines():
+        # two documented shapes: a line-led token ("STATUS: X", "**STATUS:** X",
+        # "| STATUS | X |") and the header-paren form ("# _CONTINUITY — T  (STATUS: X)")
+        m = (re.match(r"\s*(?:[#>*|\s]*)?\**\s*STATUS\b[:*)\s|]*\**\s*" + vocab,
+                      line, re.IGNORECASE)
+             or re.search(r"\(\s*STATUS\b[:\s]*" + vocab, line, re.IGNORECASE))
+        if m:
+            status = m.group(1).upper().replace("-", "_").replace(" ", "_")
+            break
     return status, head
 
 
@@ -138,8 +151,16 @@ def main():
     if not trigger:
         return 0
 
-    cont_path, status, head = inflight[0]  # act on the first in-flight book
+    # Act on the most RECENTLY TOUCHED in-flight book, not the alphabetically
+    # first: with two in-flight workspaces the recovery block must point at the
+    # one actually being worked.
+    inflight.sort(key=lambda t: t[0].stat().st_mtime if t[0].exists() else 0,
+                  reverse=True)
+    cont_path, status, head = inflight[0]
     workspace = cont_path.parent
+    if len(inflight) > 1:
+        others = ", ".join(t[0].parent.name for t in inflight[1:])
+        head += f"\n(NOTE: other in-flight workspace(s): {others})"
 
     head_lines = head.splitlines()[:HEAD_LINES]
     bar = "=" * 74

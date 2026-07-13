@@ -137,7 +137,13 @@ def build():
         cg["comfyui_server"] = srv
         found.append(f"ComfyUI server: LIVE on {srv} (probed :8000 desktop / :8188 portable)")
     else:
+        # not running at config time: keep the portable default but SAY so —
+        # an unprobed port must not read like a verified value
         cg["comfyui_server"] = cg.get("comfyui_server") or "http://127.0.0.1:8188"
+        gaps.append(f"ComfyUI not RUNNING during autoconfig -> comfyui_server left at "
+                    f"{cg['comfyui_server']} (unprobed guess; desktop app serves :8000, "
+                    "portable :8188). cover_gen live-probes both at run time; re-run "
+                    "autoconfig with ComfyUI up to pin the real port.")
     app = detect_comfy_app()
     if app:
         cg["comfyui_app"] = app

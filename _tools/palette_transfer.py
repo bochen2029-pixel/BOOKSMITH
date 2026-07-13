@@ -159,13 +159,23 @@ def main(argv=None) -> int:
     if not hexes:
         print("no palette: pass --palette or --config with cover.palette", file=sys.stderr)
         return 2
-    src = Image.open(args.src).convert("RGB")
+    src_img = Image.open(args.src)
+    # transparency survives the transfer: transfer the RGB, re-attach the alpha
+    # (silently flattening a transparent source made it opaque against nothing)
+    alpha = src_img.getchannel("A") if src_img.mode in ("RGBA", "LA") else None
+    src = src_img.convert("RGB")
     swatch = make_swatch(hexes)
     before = lab_mean(src)
     target = lab_mean(swatch)
     out, _, _ = lab_transfer(src, swatch, strength=max(0.0, min(1.0, args.strength)))
     after = lab_mean(out)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+    if alpha is not None:
+        if Path(args.out).suffix.lower() == ".png":
+            out = out.convert("RGBA")
+            out.putalpha(alpha)
+        else:
+            print("note: source alpha flattened (non-PNG output)", file=sys.stderr)
     out.save(args.out)
     print(json.dumps({"src": args.src, "out": args.out, "palette": hexes,
                       "lab_mean_before": before, "lab_mean_after": after,

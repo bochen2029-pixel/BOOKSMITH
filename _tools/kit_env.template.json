@@ -30,6 +30,8 @@
     "checkpoints_dir": "",
     "default_checkpoint": "sd_xl_base_1.0.safetensors",
     "default_checkpoint_url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors",
+    "default_checkpoint_sha256": "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b",
+    "default_checkpoint_size": 6938078334,
     "note": "EXTERNAL pieces (the only ones): (1) ComfyUI itself, running and serving comfyui_server; (2) a GPU (~8 GB VRAM for SDXL base); (3) the ~6.5 GB checkpoint. Fill checkpoints_dir with your ComfyUI checkpoints folder, then fetch the model with `python _tools/fetch_weights.py sdxl` (resumable). run_workflow / workflows_dir already point at the vendored client + workflow JSONs — leave them unless you supply your own runner. comfyui_skill_dir is legacy/optional (the original hermes runner path); the vendored comfy_client.py supersedes it. AUTO-LAUNCH of ComfyUI requires comfy-cli on PATH (cover_gen runs `comfy launch --background`); the vendored comfy_client.py is a CLIENT only and cannot start a server. If comfy-cli is absent, start ComfyUI yourself so it serves comfyui_server, or pass --no-launch."
   },
 

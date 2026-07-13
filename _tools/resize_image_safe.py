@@ -44,27 +44,34 @@ R2K_SUFFIX = "_r2k"
 
 
 def resize_if_needed(src: Path) -> Path:
-    """Return a path <=2000px in both dims. Echoes the source if already
-    safe; otherwise downsamples with LANCZOS to a 2000x2000 box and returns
-    the `_r2k`-suffixed output path. Raises on missing Pillow / bad image."""
+    """Return a path that is BOTH <=2000px in each dimension AND in an
+    ingestion-safe mode (RGB/RGBA/L). Echoes the source only when both hold;
+    otherwise writes a `_r2k`-suffixed copy (never touches the source). A
+    CMYK print JPEG at 1500px used to pass straight through on size alone and
+    then fail or color-invert at vision time — mode is normalized regardless
+    of size. Raises on missing Pillow / bad image."""
     from PIL import Image
 
     img = Image.open(src)
     w, h = img.size
+    exotic = img.mode not in ("RGB", "RGBA", "L")
 
-    if w <= MAX_DIM and h <= MAX_DIM:
-        # Already safe — do not touch the file, echo the original path.
+    if w <= MAX_DIM and h <= MAX_DIM and not exotic:
+        # Already safe in size AND mode — do not touch the file.
         return src
 
-    # Compute the scale that fits the image inside MAX_DIM x MAX_DIM.
-    scale = min(MAX_DIM / w, MAX_DIM / h)
-    new_w = max(1, int(round(w * scale)))
-    new_h = max(1, int(round(h * scale)))
-
-    # Normalize exotic modes so resize + save behave; keep RGB/RGBA/L as-is.
-    if img.mode not in ("RGB", "RGBA", "L"):
+    if exotic:
         img = img.convert("RGB")
-    resized = img.resize((new_w, new_h), Image.LANCZOS)
+
+    if w <= MAX_DIM and h <= MAX_DIM:
+        new_w, new_h = w, h
+        resized = img          # mode-only conversion; dimensions kept
+    else:
+        # Compute the scale that fits the image inside MAX_DIM x MAX_DIM.
+        scale = min(MAX_DIM / w, MAX_DIM / h)
+        new_w = max(1, int(round(w * scale)))
+        new_h = max(1, int(round(h * scale)))
+        resized = img.resize((new_w, new_h), Image.LANCZOS)
 
     # Output next to the source with a `_r2k` suffix before the extension.
     out = src.with_name(src.stem + R2K_SUFFIX + src.suffix)
@@ -77,7 +84,8 @@ def resize_if_needed(src: Path) -> Path:
             resized = resized.convert("RGB")
 
     resized.save(out, **save_kwargs)
-    print(f"[INFO] resized {w}x{h} -> {new_w}x{new_h}  (saved to {out.name})",
+    print(f"[INFO] {'resized' if (new_w, new_h) != (w, h) else 'mode-normalized'} "
+          f"{w}x{h} -> {new_w}x{new_h}  (saved to {out.name})",
           file=sys.stderr)
     return out
 

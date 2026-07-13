@@ -137,6 +137,11 @@ def _estimate_turns(jsonl_path):
             except Exception:
                 continue
             if isinstance(r, dict) and r.get("type") in ("user", "assistant", "summary"):
+                # skip records that render to nothing (empty/meta carriers) so
+                # the "tail N of TOTAL" label matches what convert() can keep
+                msg = r.get("message")
+                if isinstance(msg, dict) and msg.get("content") in (None, "", []):
+                    continue
                 n += 1
     return n
 
@@ -172,10 +177,12 @@ def tiered_convert(jsonl_path, budget_tokens):
         meta["chosen_tokens"] = tok_strip_notools
         meta["chosen_md"] = md_strip_notools
     else:
-        # Tier 3: tail-fit. Binary-search the number of tail turns that fits.
+        # Tier 3: tail-fit — coarse geometric probe, THEN a real refine. The
+        # halving alone leaves up to half the budget unused on exactly the
+        # sessions where fidelity matters most (the biggest ones).
         total_turns = _estimate_turns(jsonl_path)
-        lo, hi, best_md, best_tok, best_n = 1, max(1, total_turns), None, None, 1
-        # coarse geometric probe then refine
+        best_md, best_tok, best_n = None, None, 1
+        fail_hi = None
         n = max(1, total_turns)
         while n >= 1:
             md = t2m.convert(jsonl_path, strip_thinking=True, no_tools=True, tail_turns=n)
@@ -183,7 +190,19 @@ def tiered_convert(jsonl_path, budget_tokens):
             if tok <= budget_tokens:
                 best_md, best_tok, best_n = md, tok, n
                 break
+            fail_hi = n
             n = n // 2
+        if best_md is not None and fail_hi is not None and fail_hi - best_n > 1:
+            lo_n, hi_n = best_n, fail_hi     # largest fitting tail is in (lo_n, hi_n)
+            while hi_n - lo_n > 1:
+                mid = (lo_n + hi_n) // 2
+                md = t2m.convert(jsonl_path, strip_thinking=True, no_tools=True, tail_turns=mid)
+                tok, _ = _count_tokens(md)
+                if tok <= budget_tokens:
+                    best_md, best_tok, best_n = md, tok, mid
+                    lo_n = mid
+                else:
+                    hi_n = mid
         if best_md is None:
             # even 1 turn over budget (pathological) — take it anyway, truncated hard
             best_md = t2m.convert(jsonl_path, strip_thinking=True, no_tools=True,

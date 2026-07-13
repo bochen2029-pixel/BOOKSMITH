@@ -435,16 +435,21 @@ def _set_first_site(wf: dict, sites: list[tuple[str, str]], value) -> bool:
     return changed
 
 
-def apply_overrides(workflow: dict, args: dict) -> tuple[dict, list[str]]:
+def apply_overrides(workflow: dict, args: dict) -> tuple[dict, list[str], int | None]:
     """Patch prompt / negative_prompt / seed / steps / width / height / checkpoint
-    into the workflow by class_type. Returns (patched_copy, notes).
+    into the workflow by class_type. Returns (patched_copy, notes, resolved_seed).
 
-    `args` uses cover_gen's names: prompt, negative_prompt, seed, steps, width,
-    height, checkpoint / ckpt_name. Extra keys are ignored (with a note).
+    resolved_seed is the ACTUAL seed patched into the graph (a -1 request is
+    expanded to a real random value here) — it must travel in the machine-
+    readable result, not only in the notes, or the winning cover can never be
+    regenerated. `args` uses cover_gen's names: prompt, negative_prompt, seed,
+    steps, width, height, checkpoint / ckpt_name. Extra keys are ignored
+    (with a note).
     """
     import copy
     wf = copy.deepcopy(workflow)
     notes: list[str] = []
+    resolved_seed: int | None = None
 
     pos_id, neg_id = _find_prompt_nodes(wf)
 
@@ -473,6 +478,7 @@ def apply_overrides(workflow: dict, args: dict) -> tuple[dict, list[str]]:
         seed_val = coerce_seed(args["seed"])
         if _set_first_site(wf, SEED_SITES, seed_val):
             notes.append(f"seed={seed_val}")
+            resolved_seed = seed_val
         else:
             notes.append("no seed field found to set")
 
@@ -499,7 +505,7 @@ def apply_overrides(workflow: dict, args: dict) -> tuple[dict, list[str]]:
         if k not in known:
             notes.append(f"unknown parameter {k!r} ignored")
 
-    return wf, notes
+    return wf, notes, resolved_seed
 
 
 # ============================================================
@@ -525,7 +531,7 @@ def _unreachable_error(server: str) -> dict:
 def run_single(client: ComfyClient, workflow: dict, args_obj: dict,
                output_dir: Path) -> tuple[dict, int]:
     """One generation. Returns (result_json, exit_code)."""
-    patched, notes = apply_overrides(workflow, args_obj)
+    patched, notes, resolved_seed = apply_overrides(workflow, args_obj)
     for n in notes:
         log(n)
     ok, pid, err = client.submit(patched)
@@ -553,6 +559,7 @@ def run_single(client: ComfyClient, workflow: dict, args_obj: dict,
         "status": "success",
         "prompt_id": pid,
         "outputs": downloaded,
+        "seed": resolved_seed,
         "warnings": notes,
     }, 0
 
@@ -698,8 +705,11 @@ def main(argv=None) -> int:
     is_batch = _detect_batch(args, sys.argv[0] if argv is None else "comfy_client")
     if is_batch:
         count = args.count if args.count and args.count > 0 else 1
+        # randomize when asked OR when no base seed was supplied; an explicit
+        # seed without --randomize-seed is honored (the old `or True` made the
+        # flag dead and every batch unreproducible)
         result, code = run_batch(client, workflow, args_obj, output_dir,
-                                 count, args.randomize_seed or True)
+                                 count, args.randomize_seed or "seed" not in args_obj)
     else:
         result, code = run_single(client, workflow, args_obj, output_dir)
 

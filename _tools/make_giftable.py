@@ -51,7 +51,9 @@ PROVENANCE
 
 import argparse
 import fnmatch
+import json
 import re
+import subprocess
 import sys
 import time
 import zipfile
@@ -95,10 +97,44 @@ PERSONAL_PATTERNS = [
     (r"C:\llama.cpp", re.compile(re.escape(r"C:\llama.cpp"), re.IGNORECASE)),
     (r"C:\models", re.compile(re.escape(r"C:\models"), re.IGNORECASE)),
     ("hermes skill path", re.compile(r"AppData\\+Local\\+hermes", re.IGNORECASE)),
+    # A hook command pointing at an absolute reference-machine path would make a
+    # stranger's every SessionStart/PreCompact error out.
+    (r"C:\RECALL", re.compile(re.escape(r"C:\RECALL"), re.IGNORECASE)),
 ]
 
 # Simple scratch/junk filename globs excluded anywhere.
-JUNK_GLOBS = ["*_r2k.*", "Thumbs.db", "desktop.ini", ".DS_Store"]
+JUNK_GLOBS = ["*_r2k.*", "Thumbs.db", "desktop.ini", ".DS_Store", "*.bak", "*.bak_*"]
+
+# The hooks a stranger's copy needs — the BOOKSMITH pair only, relative paths.
+# The live .claude/settings.json may carry machine-private extra hooks, so the
+# gift never ships the live file; this synthesized one ships instead.
+SANITIZED_SETTINGS = json.dumps({
+    "hooks": {
+        "SessionStart": [
+            {"hooks": [{"type": "command", "command": "python _tools/on_session_start.py"}]}
+        ],
+        "PreCompact": [
+            {"hooks": [{"type": "command", "command": "python _tools/on_precompact.py"}]}
+        ],
+    }
+}, indent=2) + "\n"
+
+
+def git_tracked_set():
+    """Tracked-file allowlist (repo-relative posix paths) via `git ls-files`.
+    Returns None when git/the repo is unavailable (zip exports). With the
+    allowlist active, UNTRACKED files — session scratch, audit ledgers, private
+    intake drops, machine organ copies, worktrees — can never leak into the
+    gift, because .gitignore + tracking status are the single source of truth."""
+    try:
+        r = subprocess.run(["git", "-C", str(REPO), "ls-files", "-z"],
+                           capture_output=True, timeout=30)
+        if r.returncode != 0:
+            return None
+        names = [n for n in r.stdout.decode("utf-8", "replace").split("\0") if n]
+        return set(names) if names else None
+    except Exception:
+        return None
 
 
 def _rel_posix(path):
@@ -119,10 +155,24 @@ def is_excluded(path, opts):
     name = path.name
 
     # --- always-excluded top-level trees ------------------------------------
-    if parts[0] == ".git":
-        return True, ".git/"
+    if ".git" in parts:
+        return True, ".git/ (incl. nested worktree pointers)"
     if parts[0] == "dist":
         return True, "dist/ (build output)"
+    if parts[0] == "_snapshots":
+        return True, "_snapshots/ (pre-edit backups; machine-private)"
+    if parts[0] == ".recall":
+        return True, ".recall/ (machine-private continuity)"
+    if parts[0] == ".claude":
+        return True, ".claude/ (session-private; a sanitized settings.json ships instead)"
+    if parts[0] == "intake":
+        return True, "intake/ (author's private drop zone)"
+    if parts[0] == "chunker" or (len(parts) >= 2 and parts[0] == "_tools" and parts[1] == "chunker"):
+        return True, "chunker/ (machine-local organ copy)"
+    if len(parts) == 1 and (name.startswith("_QC_") or name.startswith("_KIT_AUDIT")
+                            or name.startswith("_SESSION_MEMORY") or name.startswith("SITREP_")
+                            or name.startswith("_LESSONS")):
+        return True, "root session/audit scratch (private)"
 
     # --- pycache / compiled -------------------------------------------------
     if "__pycache__" in parts:
@@ -231,6 +281,14 @@ def walk_repo(opts):
                     excluded.append((e, reason))
                 else:
                     included.append(e)
+    # git-allowlist pass: anything the walker admitted that git does not track
+    # is session/machine-private by definition and never ships.
+    tracked = git_tracked_set()
+    if tracked is not None:
+        untracked = [p for p in included if _rel_posix(p) not in tracked]
+        if untracked:
+            included = [p for p in included if _rel_posix(p) in tracked]
+            excluded.extend((p, "untracked (git ls-files allowlist)") for p in untracked)
     included.sort(key=lambda p: _rel_posix(p))
     excluded.sort(key=lambda pr: _rel_posix(pr[0]))
     return included, excluded
@@ -386,6 +444,8 @@ def main(argv=None):
 
     if opts.dry_run:
         print("  RESULT:        DRY RUN -- nothing written.")
+        print("  (would also synthesize: .claude/settings.json -- sanitized "
+              "BOOKSMITH hooks only)")
         print("=" * 66)
         return 0
 
@@ -414,6 +474,10 @@ def main(argv=None):
             except Exception as exc:
                 print(f"  !! skip {(_rel_posix(p))}: "
                       f"{exc.__class__.__name__}: {exc}")
+        # the live settings.json never ships (machine-private hook paths);
+        # a stranger still needs the compaction-survival hooks wired
+        zf.writestr(".claude/settings.json", SANITIZED_SETTINGS)
+        written += 1
 
     zsize = out_path.stat().st_size
     print(f"  RESULT:        WROTE {out_path}")

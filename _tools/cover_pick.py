@@ -70,7 +70,9 @@ def derive(cfg):
         palette = hypergen.MOODS.get(mood, hypergen.MOODS["dark_literary"])
     # keywords describing the wanted art (for catalog scoring)
     art = cover.get("art", {}) if isinstance(cover.get("art"), dict) else {}
-    kw = re.findall(r"[a-z]{4,}", (art.get("prompt", "") + " " + genre + " " + mood).lower())
+    # prompt_seed is the schema key (cover_gen reads the same one); "prompt" was
+    # a phantom that silently blanked the catalog keyword scoring
+    kw = re.findall(r"[a-z]{4,}", (art.get("prompt_seed", "") + " " + genre + " " + mood).lower())
     return mood, palette, set(kw)
 
 
@@ -169,7 +171,8 @@ def main(argv=None):
             rr = subprocess.run([sys.executable, str(TOOLS / "palette_transfer.py"),
                                  "--src", str(dest), "--palette", pal, "--out", str(dest),
                                  "--strength", str(args.recolor_strength)],
-                                capture_output=True, text=True)
+                                capture_output=True, text=True,
+                                encoding="utf-8", errors="replace")
             print(f"recoloured catalog art to the book palette (strength {args.recolor_strength})"
                   if rr.returncode == 0 else
                   f"(palette recolour skipped: {(rr.stderr or rr.stdout).strip()[-120:]})")

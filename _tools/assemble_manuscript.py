@@ -71,36 +71,44 @@ def word_count(text: str) -> int:
     return len(text.split())
 
 
-def resolve_workspace(cfg, workspace_arg):
-    slug = cfg["slug"]
+def resolve_workspace(cfg, workspace_arg, config_path):
+    """Workspace root = the CONFIG's directory (the engine/compositor/verifier
+    convention). The old kit-root book_workspace/<slug> default silently wrote
+    into a DIFFERENT book's tree whenever a workspace dirname and its slug
+    diverged (e.g. a scratch copy carrying the original slug)."""
     if workspace_arg:
         return os.path.abspath(workspace_arg)
-    kit_root = os.path.dirname(_THIS_DIR)
-    return os.path.join(kit_root, "book_workspace", slug)
+    ws = os.path.dirname(os.path.abspath(config_path))
+    if os.path.basename(ws) != cfg.get("slug"):
+        print(f"[assemble] NOTE: workspace dirname {os.path.basename(ws)!r} != slug "
+              f"{cfg.get('slug')!r}; using the config's parent as the workspace root",
+              file=sys.stderr)
+    return ws
 
 
 def resolve_unit_ids(cfg):
-    """Ordered body-unit ids from an EXPLICIT config list — never a glob."""
-    for key in ("units", "structure", "unit_order"):
-        v = cfg.get(key)
-        if isinstance(v, list) and v:
-            ids = []
-            for item in v:
-                if isinstance(item, str):
-                    ids.append(item)
-                elif isinstance(item, dict):
-                    ids.append(item.get("id") or item.get("unit_id") or "")
-            ids = [i for i in ids if i]
-            if ids:
-                return ids
+    """Ordered body-unit ids from the EXPLICIT config units[] — never a glob.
+    (The old structure[]/unit_order[] aliases were schema-forbidden — root
+    additionalProperties:false — so they were dead branches for any config
+    that passes GATE-2.)"""
+    v = cfg.get("units")
+    if isinstance(v, list) and v:
+        ids = []
+        for item in v:
+            if isinstance(item, str):
+                ids.append(item)
+            elif isinstance(item, dict):
+                ids.append(item.get("id") or item.get("unit_id") or "")
+        ids = [i for i in ids if i]
+        if ids:
+            return ids
     overrides = (cfg.get("authorship") or {}).get("per_chapter_overrides") or {}
     if isinstance(overrides, dict) and overrides:
         return list(overrides.keys())
     raise ValueError(
         "Cannot resolve an ordered unit list from book_config "
-        "(need units[]/structure[]/unit_order[] or "
-        "authorship.per_chapter_overrides). Refusing to glob the directory "
-        "(risk of shipping a superseded mirror copy).")
+        "(need units[] or authorship.per_chapter_overrides). Refusing to glob "
+        "the directory (risk of shipping a superseded mirror copy).")
 
 
 def find_unit_file(current_dir, unit_id):
@@ -149,7 +157,7 @@ def next_version(markdown_dir, slug, forced=None):
 def assemble(config_path, workspace_arg, forced_version, overwrite=False):
     cfg = load_json(config_path)
     slug = cfg["slug"]
-    ws = resolve_workspace(cfg, workspace_arg)
+    ws = resolve_workspace(cfg, workspace_arg, config_path)
     current_dir = os.path.join(ws, "manuscript", "current")
     markdown_dir = os.path.join(ws, "outputs", "markdown")
 

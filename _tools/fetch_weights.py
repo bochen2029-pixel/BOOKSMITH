@@ -222,6 +222,23 @@ def download(url: str, dest: Path, *, sha256: str | None = None,
 
     dest.parent.mkdir(parents=True, exist_ok=True)
 
+    # ---- disk-space preflight: a ~6.5GB pull onto a full disk must fail in
+    # one actionable line, not as a raw OSError minutes into the stream ----
+    if expected_size:
+        import shutil as _sh
+        try:
+            free = _sh.disk_usage(str(dest.parent)).free
+        except OSError:
+            free = None
+        have = part.stat().st_size if part.exists() else 0
+        need = int(expected_size * 1.02) - have + (64 << 20)
+        if free is not None and need > 0 and free < need:
+            sys.stderr.write(
+                f"[fetch-weights] INSUFFICIENT DISK SPACE: ~{_human(need)} more "
+                f"needed for {dest.name}, only {_human(free)} free on "
+                f"{dest.parent}\n")
+            return 1
+
     last_err: str | None = None
     for attempt in range(1, retries + 1):
         have = part.stat().st_size if part.exists() else 0
@@ -310,6 +327,13 @@ def _load_kit_env(path: str | None) -> tuple[dict, Path]:
     return json.loads(p.read_text(encoding="utf-8")), p
 
 
+# Integrity constants for the well-known SDXL-base checkpoint (read from the
+# HuggingFace tree API for stabilityai/stable-diffusion-xl-base-1.0, 2026-07-13).
+# kit_env cover_gen.default_checkpoint_sha256/_size override; CLI flags win.
+SDXL_BASE_SHA256 = "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b"
+SDXL_BASE_SIZE = 6938078334
+
+
 def do_sdxl(args) -> int:
     try:
         env, env_path = _load_kit_env(args.kit_env)
@@ -321,6 +345,12 @@ def do_sdxl(args) -> int:
     url = args.url or cg.get("default_checkpoint_url")
     ckpt_dir = (cg.get("checkpoints_dir") or "").strip()
     ckpt_name = cg.get("default_checkpoint") or "sd_xl_base_1.0.safetensors"
+    # a 6.5GB artifact promoted on size-match alone is an integrity hole: default
+    # the hash for the known checkpoint so verification is on unless overridden
+    sha = (args.sha256 or cg.get("default_checkpoint_sha256")
+           or (SDXL_BASE_SHA256 if ckpt_name == "sd_xl_base_1.0.safetensors" else None))
+    size = (args.expected_size or cg.get("default_checkpoint_size")
+            or (SDXL_BASE_SIZE if ckpt_name == "sd_xl_base_1.0.safetensors" else None))
 
     if not url:
         sys.stderr.write(
@@ -338,9 +368,10 @@ def do_sdxl(args) -> int:
     dest = Path(ckpt_dir).expanduser() / ckpt_name
     sys.stderr.write(
         f"[fetch-weights] SDXL profile:\n  url : {url}\n  dest: {dest}\n"
+        f"  sha256: {sha or '(none — verification off)'}\n"
         "  (~6.5 GB; resumable — safe to Ctrl+C and re-run)\n")
-    return download(url, dest, sha256=args.sha256,
-                    expected_size=args.expected_size,
+    return download(url, dest, sha256=sha,
+                    expected_size=size,
                     retries=args.retries, timeout=args.timeout)
 
 

@@ -186,10 +186,10 @@ function resolveMargins(interior, format) {
 // filenames so the folder is unambiguous. The two blurb formats share ONE
 // interior block but each gets its own outputs/ dir (covers differ).
 // ============================================================
-function resolveOutPath(config, format, cliOut) {
+function resolveOutPath(config, format, cliOut, wsRoot) {
   if (cliOut) return path.isAbsolute(cliOut) ? cliOut : path.resolve(process.cwd(), cliOut);
   const slug = config.slug;
-  const workspaceOut = path.join(REPO_ROOT, "book_workspace", slug, "outputs");
+  const workspaceOut = path.join(wsRoot, "outputs");
   let dir, file;
   if (format === "kdp_paperback") {
     dir = path.join(workspaceOut, "kdp_paperback");
@@ -218,10 +218,10 @@ function resolveOutPath(config, format, cliOut) {
 // assemble_manuscript.py writes outputs/markdown/<slug>_v{N}.md (append-only
 // version bump). We pick the highest N unless --src overrides.
 // ============================================================
-function resolveSrc(config, cliSrc) {
+function resolveSrc(config, cliSrc, wsRoot) {
   if (cliSrc) return path.isAbsolute(cliSrc) ? cliSrc : path.resolve(process.cwd(), cliSrc);
   const slug = config.slug;
-  const mdDir = path.join(REPO_ROOT, "book_workspace", slug, "outputs", "markdown");
+  const mdDir = path.join(wsRoot, "outputs", "markdown");
   if (!fs.existsSync(mdDir)) {
     throw new Error(`markdown source dir not found: ${mdDir} (run assemble_manuscript.py, or pass --src)`);
   }
@@ -706,6 +706,15 @@ async function main() {
   }
   const config = loadConfig(args.config);
 
+  // The workspace root is the CONFIG's directory — the same convention the
+  // engine and compositor use. The old kit-root/book_workspace/<slug> form
+  // silently wrote into a DIFFERENT book's tree whenever the workspace dirname
+  // and the slug diverged (e.g. a scratch copy carrying the original slug).
+  const wsRoot = path.dirname(path.resolve(args.config));
+  if (path.basename(wsRoot) !== config.slug) {
+    console.warn(`[generate_book] NOTE: workspace dirname '${path.basename(wsRoot)}' != slug '${config.slug}'; using the config's parent as the workspace root`);
+  }
+
   const T = resolveTypography(config);
   const buildInlineRuns = makeInlineBuilder(T, config.is_fiction === false);
   const F = makeFactories(T, buildInlineRuns);
@@ -770,7 +779,7 @@ async function main() {
   // ---- Load + split the manuscript ----
   const unitNoun = (config.voice && config.voice.unit_noun) ? config.voice.unit_noun : "chapter";
   const unitLevel = unitNoun === "part" ? "##" : "#";
-  const srcPath = resolveSrc(config, args.src);
+  const srcPath = resolveSrc(config, args.src, wsRoot);
   const masterMd = fs.readFileSync(srcPath, "utf8");
   const unitBodies = splitUnits(masterMd, unitLevel);
   const unitContents = unitBodies.map((md) => parseUnitMarkdown(md, unitLevel, F, /*sectionStartUnit=*/true));
@@ -868,7 +877,7 @@ async function main() {
   });
 
   // ---- Write ----
-  const outPath = resolveOutPath(config, args.format, args.out);
+  const outPath = resolveOutPath(config, args.format, args.out, wsRoot);
   const outDir = path.dirname(outPath);
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
   const buf = await Packer.toBuffer(doc);

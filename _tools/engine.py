@@ -371,7 +371,11 @@ class Engine:
         intake = self.ws / "intake"
         if not intake.exists() or not any(p.is_file() for p in intake.rglob("*")):
             return False
-        return not list((self.ws / "canon_refs").glob("_digest_*.md"))
+        if not list((self.ws / "canon_refs").glob("_digest_*.md")):
+            return True
+        # digests exist: re-ingest when the intake SIGNATURE changed (a source
+        # added after the first ingest must not be a silent no-op)
+        return not self.state.is_satisfied("ingest", self.input_sha("ingest", "ingest", ""))
 
     def _read_brief(self) -> str:
         p = self._brief_path()
@@ -813,6 +817,10 @@ class Engine:
             pass
         except Exception as e:
             raise HardStop("precheck", f"book_config invalid vs schema: {str(e).splitlines()[0][:200]}")
+        if self.ws.name != self.slug:
+            # the toolchain roots the workspace at the config's parent; a
+            # dirname/slug mismatch is legal but worth a loud note
+            self.log("precheck.slug_mismatch", workspace=self.ws.name, slug=self.slug)
         return "ok"
 
     def stage_draft(self, unit: dict):
@@ -1062,16 +1070,18 @@ class Engine:
                   "'VERDICT: PASS' or 'VERDICT: FAIL', then list issues.")
         rc, o, e = run([sys.executable, str(TOOLS / "vision_verify.py"), "--image", str(image),
                         "--rubric", rubric, "--backend", "auto"], timeout=300)
-        if rc != 0:
-            return "SKIP", f"vision_verify exit {rc}: {(o + e).strip()[-160:]}"
+        # parse the verdict FIRST: PENDING intentionally exits nonzero (4) so
+        # naive callers can't read it as pass — the JSON is still the truth
         try:
             data = json.loads(o.strip())
         except Exception:
             data = self._extract_json(o)
-        if not isinstance(data, dict):
-            return "SKIP", "unparseable vision_verify output"
-        verdict = str(data.get("verdict", "FAIL")).upper()
-        return verdict, "; ".join(str(i) for i in data.get("issues", [])[:4])
+        if isinstance(data, dict) and data.get("verdict"):
+            verdict = str(data.get("verdict")).upper()
+            return verdict, "; ".join(str(i) for i in data.get("issues", [])[:4])
+        if rc != 0:
+            return "SKIP", f"vision_verify exit {rc}: {(o + e).strip()[-160:]}"
+        return "SKIP", "unparseable vision_verify output"
 
     def stage_cover(self):
         if self.no_cover:

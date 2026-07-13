@@ -22,7 +22,7 @@ Usage:
   (Pillow only.)
 """
 from __future__ import annotations
-import argparse, math, random, sys
+import argparse, math, random, re, sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter
 
@@ -41,7 +41,14 @@ MOODS = {
 
 
 def _hex(c):
-    c = c.lstrip("#")
+    """Accept '#RGB'/'RGB'/'#RRGGBB'/'RRGGBB' — the SAME contract as
+    palette_transfer.hex_to_rgb, so the two art engines can never disagree on
+    a schema-legal palette value (a 3-digit color used to crash render())."""
+    c = str(c).strip().lstrip("#")
+    if len(c) == 3:
+        c = "".join(ch * 2 for ch in c)
+    if not re.fullmatch(r"[0-9a-fA-F]{6}", c):
+        raise ValueError(f"palette color must be 3- or 6-digit hex, got {c!r}")
     return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16))
 
 
@@ -72,8 +79,21 @@ def vgrad(size, colors):
     return strip.resize(size)
 
 
-def grain(img, amount=14, blur=0.0):
-    n = Image.effect_noise(img.size, amount).convert("L")
+def grain(img, amount=14, blur=0.0, rng=None):
+    """Film grain, SEEDED. PIL's Image.effect_noise draws from an unseedable C
+    RNG, which silently broke the (style x palette x seed) reproducibility
+    contract — identical inputs produced different pixels. The noise now comes
+    from the style's own random.Random: a deterministic quarter-size tile,
+    contrast-scaled so `amount` still behaves like effect_noise's sigma, then
+    resized (the upscale reads as slightly soft film grain)."""
+    w, h = img.size
+    if rng is None:
+        rng = random.Random(0)
+    tw, th = max(1, w // 4), max(1, h // 4)
+    n = Image.frombytes("L", (tw, th), rng.randbytes(tw * th))
+    k = max(0.05, min(1.0, amount / 64.0))
+    n = n.point(lambda v: int(128 + (v - 128) * k))
+    n = n.resize((w, h))
     if blur:
         n = n.filter(ImageFilter.GaussianBlur(blur))
     noise_rgb = Image.merge("RGB", (n, n, n))
@@ -96,7 +116,7 @@ def s_gradient(size, pal, seed):
     if r.random() < 0.5:
         cols = list(reversed(cols))
     img = vgrad(size, cols)
-    return grain(img, 10)
+    return grain(img, 10, rng=r)
 
 
 def s_duotone(size, pal, seed):
@@ -111,7 +131,7 @@ def s_duotone(size, pal, seed):
         d.ellipse([cx - rad, cy - rad, cx + rad, cy + rad],
                   fill=light + (26,))
     img = img.filter(ImageFilter.GaussianBlur(w * 0.02))
-    return grain(img, 12)
+    return grain(img, 12, rng=r)
 
 
 def s_horizon(size, pal, seed):
@@ -129,7 +149,7 @@ def s_horizon(size, pal, seed):
     d.ellipse([dx - dr, dy - dr, dx + dr, dy + dr], fill=disc + (235,))
     # faint reflection
     d.ellipse([dx - dr, hz + (hz - dy) - dr, dx + dr, hz + (hz - dy) + dr], fill=disc + (40,))
-    return grain(img, 9)
+    return grain(img, 9, rng=r)
 
 
 def s_geometric(size, pal, seed):
@@ -151,7 +171,7 @@ def s_geometric(size, pal, seed):
             d.polygon([(cx, cy - s), (cx - s, cy + s), (cx + s, cy + s)], fill=col)
     img = Image.alpha_composite(vgrad(size, [pal[0], pal[1]]).convert("RGBA"),
                                 img.convert("RGBA")).convert("RGB")
-    return grain(img, 8)
+    return grain(img, 8, rng=r)
 
 
 def s_contours(size, pal, seed):
@@ -170,7 +190,7 @@ def s_contours(size, pal, seed):
             y = base + amp * math.sin(x / w * math.tau * r.uniform(1.2, 2.5) + ph)
             pts.append((x, y))
         d.line(pts, fill=line + (70,), width=2)
-    return grain(img, 8)
+    return grain(img, 8, rng=r)
 
 
 def s_halftone(size, pal, seed):
@@ -186,7 +206,7 @@ def s_halftone(size, pal, seed):
             rad = step * 0.5 * (t ** 1.6) * r.uniform(0.7, 1.1)
             if rad > 0.6:
                 d.ellipse([gx - rad, gy - rad, gx + rad, gy + rad], fill=dot + (150,))
-    return grain(img, 7)
+    return grain(img, 7, rng=r)
 
 
 def s_arcs(size, pal, seed):
@@ -199,7 +219,7 @@ def s_arcs(size, pal, seed):
         rad = int(w * (0.15 + 0.12 * i))
         col = _multi_stop(pal[1:], i / 14) + (90,)
         d.arc([cx - rad, cy - rad, cx + rad, cy + rad], 180, 360, fill=col, width=max(3, w // 220))
-    return grain(img, 8)
+    return grain(img, 8, rng=r)
 
 
 def s_deco(size, pal, seed):
@@ -212,7 +232,7 @@ def s_deco(size, pal, seed):
     for i in range(-h, w, w // 14):           # diagonal deco bands, lower weight
         d.line([(i, h), (i + h, 0)], fill=gold + (46,), width=bw)
     d.rectangle([w * 0.08, h * 0.08, w * 0.92, h * 0.92], outline=gold + (140,), width=bw)
-    return grain(img, 7)
+    return grain(img, 7, rng=r)
 
 
 _STYLE_FN = {

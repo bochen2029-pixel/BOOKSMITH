@@ -25,7 +25,7 @@ PURPOSE (KIT_ARCHITECTURE (c) vision_verify.py; LESSONS_LEDGER §6.5)
 
 CONTRACT
     python vision_verify.py --image <png> --rubric <rubric.txt|inline text>
-                            [--backend keel|claude] [--config kit_env.json]
+                            [--backend auto|keel|claude] [--config kit_env.json]
                             [--start-server] [--timeout 120] [--max-tokens 1024]
 
     Machine paths (llama_server, qwen_model, mmproj, host, port, start_cmd)
@@ -324,6 +324,8 @@ def _resolve_auto_backend(config_path: Path) -> str:
     try:
         import requests  # noqa: F401
     except ImportError:
+        print("[vision_verify] note: 'requests' unavailable — auto backend "
+              "downgraded keel->claude", file=sys.stderr)
         return "claude"
     try:
         vision = load_kit_env(config_path).get("vision", {}) if config_path.exists() else {}
@@ -336,6 +338,11 @@ def _resolve_auto_backend(config_path: Path) -> str:
     server = str(vision.get("llama_server", ""))
     if server and Path(server).exists():
         return "keel"
+    if server:
+        # a configured local verifier silently vanishing must be visible
+        print(f"[vision_verify] note: kit_env.vision.llama_server not found on "
+              f"disk ({server}) — auto backend downgraded keel->claude",
+              file=sys.stderr)
     return "claude"
 
 
@@ -385,7 +392,10 @@ def main() -> int:
 
     if backend == "claude":
         emit(run_claude(safe_image, rubric))
-        return 0
+        # exit 4 = PENDING: the verdict is deferred to the harness. Distinct
+        # from 0 so a naive returncode check can never read an UNFILLED
+        # perceptual verdict as a PASS.
+        return 4
 
     # keel backend
     config_path = Path(args.config)

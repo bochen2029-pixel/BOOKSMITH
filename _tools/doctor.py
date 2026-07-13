@@ -796,6 +796,14 @@ def run_smoke():
     sentinel_md = md_dir / f"{slug}_v{_SMOKE_VERSION}.md"
     kindle_out = _TESTVOYAGE / "outputs" / "kindle" / f"_smoke_{slug}_KINDLE.docx"
     cleanup = [sentinel_md, kindle_out]
+    for p in cleanup:
+        # a prior smoke killed mid-run may have stranded its sentinels in the
+        # shipped example tree — clear them before, not only in the finally
+        try:
+            if p.exists():
+                p.unlink()
+        except OSError:
+            pass
 
     try:
         # 1) assemble to a throwaway sentinel version (overwrite-safe, repeatable).
@@ -813,7 +821,9 @@ def run_smoke():
                 except ValueError:
                     pass
         try:
-            summary = json.loads((out or "").split("TOTAL_WORDS=")[0].strip())
+            # the summary JSON is followed by BODY_WORDS= then TOTAL_WORDS= lines
+            jtxt = (out or "").split("BODY_WORDS=")[0].split("TOTAL_WORDS=")[0].strip()
+            summary = json.loads(jtxt)
             parity_ok = summary.get("parity_ok")
         except Exception:
             parity_ok = None

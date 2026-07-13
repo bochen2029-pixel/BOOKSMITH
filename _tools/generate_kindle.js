@@ -81,10 +81,10 @@ function loadConfig(configPath) {
 function num(v, d) { return (typeof v === "number" && !Number.isNaN(v)) ? v : d; }
 function str(v, d) { return (typeof v === "string" && v.length) ? v : d; }
 
-function resolveSrc(config, cliSrc) {
+function resolveSrc(config, cliSrc, wsRoot) {
   if (cliSrc) return path.isAbsolute(cliSrc) ? cliSrc : path.resolve(process.cwd(), cliSrc);
   const slug = config.slug;
-  const mdDir = path.join(REPO_ROOT, "book_workspace", slug, "outputs", "markdown");
+  const mdDir = path.join(wsRoot, "outputs", "markdown");
   if (!fs.existsSync(mdDir)) {
     throw new Error(`markdown source dir not found: ${mdDir} (run assemble_manuscript.py, or pass --src)`);
   }
@@ -98,10 +98,10 @@ function resolveSrc(config, cliSrc) {
   return path.join(mdDir, best);
 }
 
-function resolveOutPath(config, cliOut) {
+function resolveOutPath(config, cliOut, wsRoot) {
   if (cliOut) return path.isAbsolute(cliOut) ? cliOut : path.resolve(process.cwd(), cliOut);
   const slug = config.slug;
-  return path.join(REPO_ROOT, "book_workspace", slug, "outputs", "kindle", `${slug}_KINDLE.docx`);
+  return path.join(wsRoot, "outputs", "kindle", `${slug}_KINDLE.docx`);
 }
 
 // ============================================================
@@ -331,6 +331,12 @@ async function main() {
     return;
   }
   const config = loadConfig(args.config);
+  // workspace root = the config's directory (matches engine/compositor;
+  // kept identical to generate_book.js)
+  const wsRoot = path.dirname(path.resolve(args.config));
+  if (path.basename(wsRoot) !== config.slug) {
+    console.warn(`[generate_kindle] NOTE: workspace dirname '${path.basename(wsRoot)}' != slug '${config.slug}'; using the config's parent as the workspace root`);
+  }
   const T = resolveTypography(config);
   const buildInlineRuns = makeInlineBuilder(T, config.is_fiction === false);
   const F = makeFactories(T, buildInlineRuns);
@@ -447,7 +453,7 @@ async function main() {
   // ---- Body ----
   const unitNoun = (config.voice && config.voice.unit_noun) ? config.voice.unit_noun : "chapter";
   const unitLevel = unitNoun === "part" ? "##" : "#";
-  const srcPath = resolveSrc(config, args.src);
+  const srcPath = resolveSrc(config, args.src, wsRoot);
   const masterMd = fs.readFileSync(srcPath, "utf8");
   const body = bodyFromFirstUnit(masterMd, unitLevel);
   children.push(...parseMarkdown(body, unitLevel, F));
@@ -496,7 +502,7 @@ async function main() {
     }],
   });
 
-  const outPath = resolveOutPath(config, args.out);
+  const outPath = resolveOutPath(config, args.out, wsRoot);
   const outDir = path.dirname(outPath);
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
   const buf = await Packer.toBuffer(doc);
