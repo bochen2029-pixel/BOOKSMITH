@@ -222,6 +222,10 @@ class CoverConfig:
 
         self.title_tracking = float(cover.get("title_tracking_em", 0.05))
         self.author_tracking = float(cover.get("author_tracking_em", 0.18))
+        # Optional title vertical placement (fraction of panel height below the trim top).
+        # None = the house default (0.030). Set via the --title-y-frac CLI flag, e.g. from
+        # cover_layout.py's chosen band. Leaves default renders byte-identical.
+        self.title_y_frac = None
 
         # ISBN keep-out (bottom-right by default) — we draw NOTHING here.
         keep = cover.get("isbn_keepout") or {}
@@ -584,7 +588,8 @@ def render_front_text(canvas: Image.Image, cfg: CoverConfig,
         line1 = " ".join(words[:best])
         line2 = " ".join(words[best:])
 
-    y = trim_top + int(panel_h * 0.030)
+    _tyf = cfg.title_y_frac if getattr(cfg, "title_y_frac", None) is not None else 0.030
+    y = trim_top + int(panel_h * _tyf)
     for ln in ([line1, line2] if line2 else [line1]):
         w, h = measure_tracked(ln, title_font, title_tracking)
         # Shrink an individual over-wide line to fit.
@@ -1275,6 +1280,9 @@ def main(argv=None) -> int:
                    help="Path to kit_env.json (machine paths). Optional for compositing.")
     p.add_argument("--out", default=None,
                    help="Override the output dir (default <workspace>/outputs/<format>).")
+    p.add_argument("--title-y-frac", type=float, default=None,
+                   help="Optional: title top as a fraction of panel height below the trim top "
+                        "(default 0.030). Feed cover_layout.py's chosen band ('best.y_frac') here.")
     args = p.parse_args(argv)
 
     cfg_path = Path(args.config).expanduser().resolve()
@@ -1282,6 +1290,8 @@ def main(argv=None) -> int:
         print(json.dumps({"error": f"config not found: {cfg_path}"}))
         return 1
     cfg = CoverConfig(load_json(cfg_path))
+    if getattr(args, "title_y_frac", None) is not None:
+        cfg.title_y_frac = float(args.title_y_frac)
 
     workspace = Path(args.workspace).expanduser().resolve() if args.workspace else cfg_path.parent
     art_path = resolve_art_path(cfg, workspace, args.art)

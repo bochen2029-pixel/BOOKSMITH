@@ -54,8 +54,10 @@ legibility proxy over the title band); pick the best. Testable via the mechanica
 cover ART and scores each: mechanical by default (`0.55*calmness + 0.45*contrast` over the band —
 keeps the title off busy areas, onto negative space), `--vision` re-ranks the top-K via
 `vision_verify` (the perceptual loop). `--selftest` (calm-top beats busy-bottom) + a real catalog
-cover (picked the calm upper band, score 0.60) verified. Wiring TODO: feed the chosen band into
-`composite_cover.py` (`--title-y-frac`). **#6 now fully done** (palette-transfer + typography loop).
+cover (picked the calm upper band, score 0.60) verified. **WIRED 2026-07-13:** `composite_cover.py`
+now takes `--title-y-frac` (guarded; default = house 0.030, so default renders are byte-identical)
+and `cover_layout`'s `best.y_frac` feeds it — proven (override moves the title; default unchanged;
+render exit 0). **#6 fully done + wired** (palette-transfer + typography loop + compositor wiring).
 
 ## Outcome
 Both #10 (domain-general engine, proven via `domains/course/` + smoketest J) and #6 (cover
