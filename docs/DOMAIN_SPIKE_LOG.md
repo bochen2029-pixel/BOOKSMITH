@@ -50,5 +50,18 @@ was reading only `}`) — the advisory + the `quality_gate` opt-in now actually 
 `composite_cover` proposes N title layouts; score each (vision when available, else a mechanical
 legibility proxy over the title band); pick the best. Testable via the mechanical proxy.
 
+**Result ✅ (2026-07-13):** `_tools/cover_layout.py` — proposes N candidate title bands over the
+cover ART and scores each: mechanical by default (`0.55*calmness + 0.45*contrast` over the band —
+keeps the title off busy areas, onto negative space), `--vision` re-ranks the top-K via
+`vision_verify` (the perceptual loop). `--selftest` (calm-top beats busy-bottom) + a real catalog
+cover (picked the calm upper band, score 0.60) verified. Wiring TODO: feed the chosen band into
+`composite_cover.py` (`--title-y-frac`). **#6 now fully done** (palette-transfer + typography loop).
+
+## Outcome
+Both #10 (domain-general engine, proven via `domains/course/` + smoketest J) and #6 (cover
+palette-transfer + typography vision-loop) landed with **zero regression** — the full green sweep
+(engine smoketest A–J + selfcheck + every tool `--selftest`) passed after every step. Branch
+`domain-typography-2026-07-13`, snapshots in `_snapshots/`.
+
 ---
-*(entries appended below as each phase lands)*
+*(entries appended above as each phase landed)*
