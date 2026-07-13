@@ -153,8 +153,12 @@ class Engine:
         self.config_path = config_path.resolve()
         self.cfg = load_json(self.config_path)
         self.slug = self.cfg["slug"]
+        self.domain = str(self.cfg.get("domain", "book"))
+        self.domain_spec = self._load_domain_spec()
         self.dry_run = dry_run
         self.no_cover = no_cover or dry_run
+        if self.domain_spec and self.domain_spec.get("no_cover"):
+            self.no_cover = True  # non-book domains have no book cover stage
         # workspace = the folder that holds this book_config.json
         self.ws = self.config_path.parent
         self.eng_dir = self.ws / "_engine"
@@ -174,6 +178,32 @@ class Engine:
         self.model = model_client.make_client(
             kit_env, log_dir=self.eng_dir / "calls", backend_override=backend)
         self.log_path = self.eng_dir / "log.jsonl"
+
+    # -- domain descriptor (book = built-in default; others in domains/<name>/) --
+    def _load_domain_spec(self):
+        """A non-book domain declares its stages/producers/verifier in
+        domains/<domain>/domain.json. Book ('book' or absent) uses the built-in path."""
+        if self.domain == "book":
+            return None
+        p = ROOT / "domains" / self.domain / "domain.json"
+        if not p.exists():
+            return None
+        try:
+            return load_json(p)
+        except Exception:
+            return None
+
+    def _resolve_token(self, x) -> str:
+        """Expand a producer/verifier command token: 'python' -> this interpreter;
+        {config}/{ws}/{slug} placeholders; repo-relative script paths -> absolute."""
+        x = str(x)
+        if x == "python":
+            return sys.executable
+        x = (x.replace("{config}", str(self.config_path))
+              .replace("{ws}", str(self.ws)).replace("{slug}", self.slug))
+        if x.startswith(("domains/", "_tools/")):
+            return str(ROOT / x)
+        return x
 
     # -- logging ----------------------------------------------------------
     def log(self, event: str, **kw) -> None:
@@ -198,6 +228,14 @@ class Engine:
         for u in self.units():
             steps.append((f"draft:{u['id']}", "draft"))
         steps.append(("integrate", "integrate"))
+        if self.domain != "book" and self.domain_spec:
+            # Non-book domain: producers read manuscript/current directly; no book
+            # assemble / cover / print-format machinery. (The book branch below is unchanged.)
+            for t in self.domain_spec.get("produce_targets", []):
+                steps.append((f"produce:{t}", "produce"))
+            steps.append(("verify", "verify"))
+            steps.append(("emit", "emit"))
+            return steps
         steps.append(("assemble", "assemble"))
         fmts = list(self.cfg.get("formats", []))
         # Cover-consuming formats MUST follow the cover stage: epub embeds the cover
@@ -251,20 +289,28 @@ class Engine:
         seed = seed_p.read_text(encoding="utf-8")[:8000] if seed_p.exists() else ""
         target = int(unit.get("target_words", 1500))
 
+        # Domain wording. Book stays BYTE-IDENTICAL (role='book author', noun='chapter',
+        # 'Book Bible'); a non-book domain generalizes the nouns from its descriptor.
+        if self.domain != "book" and self.domain_spec:
+            noun = self.cfg.get("voice", {}).get("unit_noun", "chapter")
+            role = self.domain_spec.get("author_role", f"{noun} author")
+            bible_label = self.domain_spec.get("bible_label", "Outline")
+        else:
+            role, noun, bible_label = "book author", "chapter", "Book Bible"
         system = (
-            "You are a book author writing one chapter. You are a pure text "
+            f"You are a {role} writing one {noun}. You are a pure text "
             "function: you receive context and return finished prose, nothing else. "
-            "No preamble, no meta-commentary, no 'in this chapter'. "
+            f"No preamble, no meta-commentary, no 'in this {noun}'. "
             f"Honor the author's voice. {'Do NOT use em-dashes (U+2014/U+2013); use semicolons, colons, or periods. ' if no_em else ''}"
             + (f"Never use these words: {', '.join(blacklist)}. " if blacklist else "")
         )
         prompt = (
-            (f"# Book Bible (excerpt)\n{seed}\n\n" if seed else "")
-            + (f"# Previous chapter (for continuity; echo its close with variation, do not quote)\n{prior}\n\n" if prior else "")
-            + f"# Your contract for this chapter\n{contract}\n\n"
-            + f"# Task\nWrite the chapter titled \"{title}\" at ~{target} words. "
+            (f"# {bible_label} (excerpt)\n{seed}\n\n" if seed else "")
+            + (f"# Previous {noun} (for continuity; echo its close with variation, do not quote)\n{prior}\n\n" if prior else "")
+            + f"# Your contract for this {noun}\n{contract}\n\n"
+            + f"# Task\nWrite the {noun} titled \"{title}\" at ~{target} words. "
             + f"Begin with the exact line: # {title}\n"
-            + "Return only the chapter markdown."
+            + f"Return only the {noun} markdown."
         )
         return system, prompt
 
@@ -305,6 +351,8 @@ class Engine:
         return self.ws / "brief.md"
 
     def _seed_needed(self) -> bool:
+        if self.domain != "book":
+            return not self.cfg.get("units")  # non-book domains supply units directly (no book-seed)
         return (not (self.ws / "seed.md").exists()) or (not self.cfg.get("units"))
 
     def _ingest_needed(self) -> bool:
@@ -665,6 +713,10 @@ class Engine:
 
     # -- stages -----------------------------------------------------------
     def stage_precheck(self):
+        if self.domain != "book":
+            if not self.units():
+                raise HardStop("precheck", f"domain '{self.domain}': no units declared in config")
+            return f"ok (domain={self.domain}, {len(self.units())} units)"
         # schema validation (best-effort) + contracts/seed presence
         schema_p = TOOLS / "book_config.schema.json"
         try:
@@ -804,6 +856,14 @@ class Engine:
         return self.ws / "outputs" / d / f
 
     def stage_produce(self, fmt: str):
+        if self.domain != "book" and self.domain_spec:
+            spec = (self.domain_spec.get("producers", {}) or {}).get(fmt)
+            if not spec:
+                raise HardStop(f"produce:{fmt}", f"domain '{self.domain}' declares no producer for '{fmt}'")
+            rc, o, e = run([self._resolve_token(x) for x in spec])
+            if rc != 0:
+                raise HardStop(f"produce:{fmt}", f"{fmt} producer exit {rc}: {(o + e).strip()[-300:]}")
+            return f"produced {fmt} (domain={self.domain})"
         cfgp = str(self.config_path)
         # --- interior (the real §12 build order, per format family) ---
         if fmt == "kindle":
@@ -860,6 +920,14 @@ class Engine:
         return "cover art UNRESOLVED (gen rc=%d, pick rc=%d) — place art in cover_art/" % (rc, rc2)
 
     def stage_verify(self):
+        if self.domain != "book" and self.domain_spec:
+            spec = self.domain_spec.get("verifier")
+            if not spec:
+                return f"domain '{self.domain}': no verifier declared"
+            rc, o, e = run([self._resolve_token(x) for x in spec])
+            if rc != 0:
+                raise HardStop("verify", f"domain '{self.domain}' verify FAIL: {(o + e).strip()[-400:]}")
+            return f"domain '{self.domain}' verified"
         # Verify ONLY the formats this book actually produces. verify_build's own
         # "all" spans every possible format; a book that ships a subset must not be
         # failed for formats it never requested (and never produced on disk).
@@ -875,11 +943,18 @@ class Engine:
         return f"{len(fmts)} configured format(s) verified: {', '.join(fmts)}"
 
     def stage_emit(self):
-        manifest = {
-            "slug": self.slug, "emitted": now(),
-            "formats": self.cfg.get("formats", []),
-            "outputs_root": str((self.ws / "outputs").resolve()),
-        }
+        if self.domain != "book" and self.domain_spec:
+            manifest = {
+                "slug": self.slug, "emitted": now(), "domain": self.domain,
+                "produce_targets": self.domain_spec.get("produce_targets", []),
+                "outputs_root": str((self.ws / "outputs").resolve()),
+            }
+        else:
+            manifest = {
+                "slug": self.slug, "emitted": now(),
+                "formats": self.cfg.get("formats", []),
+                "outputs_root": str((self.ws / "outputs").resolve()),
+            }
         save_json_atomic(self.ws / "outputs" / "MANIFEST.json", manifest)
         return "emitted manifest"
 
@@ -941,6 +1016,9 @@ class Engine:
             # config included: lint scans config ceremonial/marketing fields too
             return sha_text("integrate|" + sha_file(self.config_path) + "|" + "|".join(sha_file(p) for p in cur))
         if kind == "produce":
+            if self.domain != "book":
+                cur = sorted((self.ws / "manuscript" / "current").glob("*_current.md"))
+                return sha_text(f"produce|{self.domain}|{arg}|" + "|".join(sha_file(p) for p in cur))
             master = sorted((self.ws / "outputs" / "markdown").glob(f"{self.slug}_v*.md"))
             msha = sha_file(master[-1]) if master else "-"
             return sha_text(f"produce|{arg}|{msha}")

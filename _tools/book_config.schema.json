@@ -14,6 +14,7 @@
     "genre": { "type": "string", "description": "Free-text genre/register label (e.g. 'literary fiction', 'AI-career nonfiction'). (orchestrator/agent-consumed; not read by the build toolchain)." },
     "is_fiction": { "type": "boolean", "description": "Selects the fiction copyright disclaimer + fiction_refs handling; false enables the LaTeX->Unicode math path." },
     "language": { "type": "string", "default": "en", "description": "BCP-47 language tag for EPUB dc:language + xml:lang (read by build_epub.py). Defaults to 'en'." },
+    "domain": { "type": "string", "default": "book", "description": "Production domain. Default 'book' = the full nine-format book pipeline (this schema). A non-book domain (e.g. 'course') is declared in domains/<name>/domain.json and drives the deterministic engine's stages + producers + verifier; such a config is validated by its domain, not this schema. A book config may omit this or set 'book'." },
     "integration_mode": {
       "type": "string",
       "enum": ["synthesis", "anthology", "reforge"],

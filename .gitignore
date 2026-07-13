@@ -54,6 +54,8 @@ _refcheck/
 # lessons staging: auto-drafted candidate lessons (ledger_stage.py) awaiting human
 # endorsement + promotion into LESSONS_LEDGER.md; regenerable scratch, never shipped
 docs/_lessons_staging.md
+# pre-edit safety snapshots (belt-and-suspenders backups taken before risky edits; local)
+_snapshots/
 # engine runtime state (engine.py owns it; regenerable, per-machine; never track)
 **/_engine/
 # prerendered cover-catalog IMAGES: large + regenerable (hypergen renders live;
