@@ -171,11 +171,22 @@ def check_mirror_flags(docx: Path):
             settings = z.read("word/settings.xml").decode("utf-8", "replace")
     except (KeyError, zipfile.BadZipFile, OSError) as exc:
         return (name, False, f"could not read word/settings.xml: {exc}")
-    has_mirror = "<w:mirrorMargins" in settings
-    has_evenodd = "<w:evenAndOddHeaders" in settings
-    ok = has_mirror and has_evenodd
-    detail = (f"mirrorMargins={'y' if has_mirror else 'MISSING'}, "
-              f"evenAndOddHeaders={'y' if has_evenodd else 'MISSING'}")
+    def _flag_state(tag: str) -> str:
+        # presence is NOT enough: docx@9 emits <w:evenAndOddHeaders w:val="false"/>,
+        # which a substring test reads as present while the feature is OFF
+        m = re.search(r"<w:" + tag + r"\b([^>]*?)/?>", settings)
+        if not m:
+            return "MISSING"
+        if re.search(r'w:val="(?:false|0|off)"', m.group(1)):
+            return "DISABLED"
+        return "y"
+
+    mirror = _flag_state("mirrorMargins")
+    evenodd = _flag_state("evenAndOddHeaders")
+    ok = mirror == "y" and evenodd == "y"
+    detail = f"mirrorMargins={mirror}, evenAndOddHeaders={evenodd}"
+    if not ok:
+        detail += '  (a w:val="false" flag counts as DISABLED, not present)'
     return (name, ok, detail)
 
 
@@ -245,6 +256,7 @@ def check_empty_headers(docx: Path, cfg: dict = None):
             # each sectPr's headerReference to classify SECTIONS (not parts).
             empty_ref_sections = None
             titled_ref_sections = None
+            sect_count = None
             try:
                 rels = z.read("word/_rels/document.xml.rels").decode("utf-8", "replace")
                 rid_to_part = {}
@@ -255,6 +267,7 @@ def check_empty_headers(docx: Path, cfg: dict = None):
                     if "header" in target.lower():
                         rid_to_part[rid] = target.split("/")[-1]
                 doc = z.read("word/document.xml").decode("utf-8", "replace")
+                sect_count = len(re.findall(r"<w:sectPr[\s/>]", doc))
                 empty_ref_sections = 0
                 titled_ref_sections = 0
                 for m in re.finditer(r'<w:headerReference\b[^>]*\br:id="([^"]+)"', doc):
@@ -271,6 +284,15 @@ def check_empty_headers(docx: Path, cfg: dict = None):
         return (name, False, f"could not inspect headers: {exc}")
 
     expected = _expected_headerfree_sections(cfg)
+    fm = cfg.get("front_matter") if isinstance(cfg, dict) else None
+    if (not isinstance(fm, list) or not fm) and sect_count:
+        # no front_matter declared: derive the header-free demand from the docx
+        # itself — every non-body section (ceremonial + trailing blank) must be
+        # header-free, and body sections are one per configured unit. The legacy
+        # floor of 1 would otherwise let a single stray empty section pass.
+        units_n = len(cfg.get("units") or []) if isinstance(cfg, dict) else 0
+        if units_n and sect_count > units_n:
+            expected = max(sect_count - units_n, 1)
     detail = "; ".join(summary)
 
     if empty_ref_sections is not None:
@@ -283,14 +305,21 @@ def check_empty_headers(docx: Path, cfg: dict = None):
             detail += "  FAIL: fewer header-free sections than the front-matter demands"
         return (name, ok, detail)
 
-    # Fallback (rels/document.xml unreadable): count empty header PARTS, and
-    # report a lone empty as WEAK rather than a clean pass.
-    ok = empties >= 1
-    if not ok:
+    # Fallback (rels/document.xml unreadable): only PARTS are visible, and Word
+    # dedupes parts across sections, so section coverage cannot be proven here.
+    # No empty part at all, or a lone empty part beside titled parts, FAILS —
+    # "cannot confirm" must not read as green.
+    titled_parts = len(header_parts) - empties
+    if empties == 0:
+        ok = False
         detail += "  (NO empty header found — empty-header fix likely missing)"
-    elif empties == 1 and empties < len(header_parts):
-        detail += ("  WEAK: only one empty header PART and titled headers exist "
-                   "(cannot confirm the fix reached the right sections)")
+    elif titled_parts and empties == 1:
+        ok = False
+        detail += ("  FAIL(unconfirmable): rels/document.xml unreadable and only one "
+                   "empty header PART exists beside titled parts — cannot prove the "
+                   "fix reached the right sections")
+    else:
+        ok = True
     return (name, ok, detail)
 
 
@@ -537,9 +566,13 @@ def _find_cover_pdf(fmt_dir: Path, fmt: str):
 def _is_cover_name(name: str) -> bool:
     """True if a PDF name is a COVER file. Uses precise markers that do NOT
     collide with interior format tokens (bare 'cover' matches 'hardcover';
-    bare 'back' matches 'paperback')."""
+    bare 'back' matches 'paperback'). A file whose STEM is exactly 'cover' or
+    ends in '_cover' is also a cover — otherwise a stray cover.pdf gets
+    selected as the interior and drives the page checks."""
     n = name.lower()
     if n == "spine.pdf" or n.endswith("_spine.pdf"):
+        return True
+    if n == "cover.pdf" or n.endswith("_cover.pdf"):
         return True
     return any(m in n for m in ("cover_wrap", "front_cover", "back_cover", "_wrap.", "wrap.pdf"))
 
@@ -605,6 +638,14 @@ def check_cover_wrap_dims(cfg: dict, fmt: str, fmt_dir: Path, pages, final=False
                 meta_target = (float(t[0]), float(t[1]))
             except (TypeError, ValueError):
                 meta_target = None
+
+    if meta_pages is not None and pages is None:
+        # trusting the sidecar's own page count would make the check self-
+        # consistent by construction — the exact stale-cover blindness
+        return (name, False,
+                f"cover_meta records pages={meta_pages} but the live interior page "
+                f"count could not be derived — cover dims uncorroborated (rebuild "
+                f"or fix the interior PDF first)")
 
     pages_used = meta_pages if meta_pages is not None else pages
     pages_src = ("cover_meta.json" if meta_pages is not None
@@ -746,8 +787,11 @@ def check_mixam_spine_panel(cfg: dict, fmt_dir: Path, pages, final=False):
     """Mixam 3-panel hardcover ships an independent spine.pdf whose width is
     page-count dependent; only the front panel was ever measured. Recompute the
     expected spine-panel width the SAME way composite_cover.build_mixam does
-    (spine_override wins, else pages*per_page(paper)+mixam_board_add, then
-    +2*mixam_bleed for the panel), and compare the spine.pdf MediaBox width."""
+    (spine_override wins, else pages*per_page(paper)+mixam_board_add), and
+    compare the spine.pdf MediaBox width. Per Mixam's own template-generator
+    PDFs (docs/service_templates/mixam_template_*.pdf, measured 2026-07-13) the
+    separate spine file is EXACTLY spine-width — bleed on top/bottom only,
+    none left/right."""
     name = "mixam_spine_panel_width"
     spine_pdf = None
     if fmt_dir.exists():
@@ -779,17 +823,37 @@ def check_mixam_spine_panel(cfg: dict, fmt_dir: Path, pages, final=False):
         spine_in = round(pages * per_page + board, 4)
     if spine_in is None:
         return (name, False, "could not compute expected mixam spine width")
-    bleed = float(spine.get("mixam_bleed_in", 0.80))
-    expected_panel_w = round(spine_in + 2 * bleed, 4)
+    expected_panel_w = round(spine_in, 4)   # NO left/right bleed on the spine file
     actual = _cover_mediabox_inches(spine_pdf)
     if actual is None:
         return (name, False, f"could not read MediaBox from {spine_pdf.name}")
     dw = abs(actual[0] - expected_panel_w)
     ok = dw <= 0.001
     return (name, ok, f"{spine_pdf.name}: spine panel width actual {actual[0]} vs "
-                      f"expected {expected_panel_w} in (spine {spine_in}+2x{bleed} "
-                      f"bleed; pages={pages}; Δw={dw:.4f}) — "
+                      f"expected {expected_panel_w} in (exact spine width per the "
+                      f"Mixam template — no L/R bleed; pages={pages}; Δw={dw:.4f}) — "
                       f"{'ok' if ok else 'MISMATCH — recomposite for the current page count'}")
+
+
+def check_renderer_page_faithful(fmt_dir: Path):
+    """A print PDF must come from the page-faithful renderer (Word COM). The
+    docx_to_pdf sidecar (<pdf>.render.json) records which engine rendered it; a
+    LibreOffice-rendered print PDF has unverified pagination feeding the spine
+    math and recto parity. No sidecar (a pre-upgrade PDF) is informational."""
+    name = "renderer_page_faithful"
+    pdf = _find_interior_pdf(fmt_dir)
+    if pdf is None:
+        return (name, False, "interior PDF not found")
+    sidecar = Path(str(pdf) + ".render.json")
+    if not sidecar.exists():
+        return (name, True, "no render sidecar (pre-upgrade PDF) — renderer unknown, not enforced")
+    try:
+        renderer = str(load_json(sidecar).get("renderer", "unknown"))
+    except (json.JSONDecodeError, OSError):
+        return (name, False, "render sidecar unreadable")
+    ok = renderer == "word"
+    return (name, ok, f"renderer={renderer}"
+            + ("" if ok else " — NOT page-faithful for print; re-render on a Word box"))
 
 
 def check_digital_pdf(cfg: dict, root: Path):
@@ -870,7 +934,10 @@ def check_no_residual_latex(root: Path, cfg: dict, fmt: str):
                 return (name, True, "no .epub to scan (informational)")
             with zipfile.ZipFile(epub) as z:
                 for nn in z.namelist():
-                    if nn.startswith("OEBPS/text/") and nn.endswith(".xhtml"):
+                    # nav/ncx/opf carry titles too — a math chapter title with
+                    # residual LaTeX would ship in navigation while the body scans clean
+                    if ((nn.startswith("OEBPS/text/") and nn.endswith(".xhtml"))
+                            or nn.endswith(("nav.xhtml", "toc.ncx", "content.opf"))):
                         bodies.append(z.read(nn).decode("utf-8", "replace"))
         else:  # kindle DOCX
             kindle = find_one(root / "outputs" / "kindle", ".docx",
@@ -878,7 +945,11 @@ def check_no_residual_latex(root: Path, cfg: dict, fmt: str):
             if kindle is None:
                 return (name, True, "no kindle DOCX to scan (informational)")
             with zipfile.ZipFile(kindle) as z:
-                bodies.append(z.read("word/document.xml").decode("utf-8", "replace"))
+                for nn in z.namelist():
+                    # headers/footers render the running title on every page
+                    if nn == "word/document.xml" or re.match(
+                            r"word/(?:header|footer)\d*\.xml$", nn):
+                        bodies.append(z.read(nn).decode("utf-8", "replace"))
     except (zipfile.BadZipFile, OSError, KeyError) as exc:
         return (name, False, f"could not scan body for LaTeX: {exc}")
     joined = "\n".join(bodies)
@@ -911,8 +982,11 @@ def check_lint(config_path: Path):
 
 
 def _docx_word_count(docx: Path):
-    """Approximate word count from a DOCX by extracting <w:t> text. Adequate
-    for a parity comparison (both sides counted the same way)."""
+    """Word count from a DOCX. Within a paragraph, <w:t> runs are joined with
+    NO separator: Word routinely splits a single word across runs at
+    formatting/proofing boundaries, and joining with spaces would count
+    'state-of' as three words — systematically inflating the print side of the
+    parity comparison. Paragraphs (and explicit breaks/tabs) join with a space."""
     if docx is None or not docx.exists():
         return None
     try:
@@ -920,16 +994,21 @@ def _docx_word_count(docx: Path):
             xml = z.read("word/document.xml").decode("utf-8", "replace")
     except (KeyError, zipfile.BadZipFile, OSError):
         return None
-    texts = re.findall(r"<w:t[^>]*>([^<]*)</w:t>", xml)
-    joined = " ".join(texts)
-    return len(joined.split())
+    xml = re.sub(r"<w:(?:br|tab|cr)\b[^>]*/>", '<w:t xml:space="preserve"> </w:t>', xml)
+    paras = []
+    for pxml in xml.split("</w:p>"):
+        runs = re.findall(r"<w:t[^>]*>([^<]*)</w:t>", pxml)
+        if runs:
+            paras.append("".join(runs))
+    return len(" ".join(paras).split())
 
 
 def _epub_body_word_count(epub: Path):
     """Word count of the EPUB's body chapters (text/*.xhtml minus front/back
     ceremonial pages), counted by stripping tags — adequate for parity."""
     ceremonial = {"cover.xhtml", "titlepage.xhtml", "copyright.xhtml",
-                  "dedication.xhtml", "epigraph.xhtml", "about.xhtml"}
+                  "dedication.xhtml", "epigraph.xhtml", "readersnote.xhtml",
+                  "about.xhtml"}
     total = 0
     try:
         with zipfile.ZipFile(epub) as z:
@@ -1021,11 +1100,15 @@ def check_epub_parity(root: Path, cfg: dict, final: bool = False):
             return (name, True, f"epub={ew} words; parity DEFERRED (print "
                                 f"{', '.join(declared)} not built yet — the final sweep enforces)")
         return (name, True, f"epub={ew} words; no print format declared (ebook-only) — parity n/a")
-    # Print DOCX carries front matter the EPUB body count excludes; allow a
-    # small ceremonial allowance but never a body-sized shortfall.
-    ok = ew >= pw - 150
+    # Print DOCX carries front matter/TOC the EPUB body count excludes; allow a
+    # ceremonial allowance that scales with book size (a flat constant under-
+    # allows a long TOC and over-allows a short book) but never a body-sized
+    # shortfall.
+    allowance = max(150, int(pw * 0.02))
+    ok = ew >= pw - allowance
     return (name, ok, f"epub body={ew} words vs print={pw} words "
-                      f"({'parity ok' if ok else 'BELOW print — source drift!'})")
+                      f"(allowance {allowance}; "
+                      f"{'parity ok' if ok else 'BELOW print — source drift!'})")
 
 
 def check_kindle_parity(root: Path, cfg: dict, final: bool = False):
@@ -1130,6 +1213,7 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
         checks.append(check_no_artifact_emdash(docx, cfg))
         checks.append(check_recto_parity(docx, config_path))
         checks.append(check_page_multiple(pdf, fmt))
+        checks.append(check_renderer_page_faithful(fmt_dir))
         note = check_min_pages_note(pdf, fmt)   # INFORMATIONAL, never fails
         if note is not None:
             checks.append(note)

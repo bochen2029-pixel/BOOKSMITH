@@ -270,6 +270,11 @@ function makeInlineBuilder(T, mathEnabled) {
   return function buildInlineRuns(text, baseOpts) {
     // Prose-mode subscript fix (safe before math split: math uses \Omega, not Ω).
     text = fixProseSubscripts(text);
+    // Nested-emphasis degradations the split pipeline cannot express — without
+    // these the outer ** survive as literal orphaned asterisks in the output:
+    // bold-italic renders bold; bold-wrapped code renders as code (bold dropped).
+    text = text.replace(/\*\*\*([^*]+)\*\*\*/g, "**$1**");
+    text = text.replace(/\*\*(`[^`]+`)\*\*/g, "$1");
     const runs = [];
     const codeParts = text.split(/(`[^`]+`)/g);
     for (const codePart of codeParts) {
@@ -421,12 +426,19 @@ function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit) {
     const line = raw.replace(/\s+$/, "");
 
     // [IMAGE ...] block — consume through its closing "]" and skip.
-    if (line.trim().startsWith("[IMAGE")) {
-      while (i + 1 < lines.length) {
-        if (lines[i].trim().endsWith("]")) break;
-        i++;
+    if (/^\[IMAGE[:\s\]]/.test(line.trim())) {
+      // Consume only a WELL-FORMED image block (closing "]" on this line or
+      // within a short window). Anchored: a prose line beginning "[IMAGES ..."
+      // is not an image token, and an unclosed [IMAGE must not silently eat
+      // the rest of the unit to EOF.
+      let j = i;
+      let closed = lines[j].trim().endsWith("]");
+      while (!closed && j + 1 < lines.length && j - i < 10) {
+        j++;
+        closed = lines[j].trim().endsWith("]");
       }
-      continue;
+      if (closed) { i = j; continue; }
+      console.warn(`[generate_book] unclosed [IMAGE block at line ${i + 1} treated as prose`);
     }
 
     // Display math block $$...$$
@@ -454,7 +466,9 @@ function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit) {
 
     const isH1 = line.startsWith("# ") && !line.startsWith("## ");
     const isH2 = line.startsWith("## ") && !line.startsWith("### ");
-    const isH3 = line.startsWith("### ");
+    // H3 through H6 all render as subsection headings — an unmatched deep
+    // heading must never fall through to body text with its hashes visible.
+    const isH3plus = /^#{3,6}\s/.test(line);
 
     // Unit heading at the configured level.
     if ((isChapterLevel && isH1) || (!isChapterLevel && isH2)) {
@@ -470,7 +484,7 @@ function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit) {
     if (isChapterLevel && isH2) continue;
     if (!isChapterLevel && isH1) continue;
     // Sub-subsection headings become styled bold left headings.
-    if (isH3) { paragraphs.push(F.createSubsectionHeading(line.replace(/^###\s+/, "").trim())); continue; }
+    if (isH3plus) { paragraphs.push(F.createSubsectionHeading(line.replace(/^#{1,6}\s+/, "").trim())); continue; }
 
     if (line.trim() === "---") { paragraphs.push(F.createSectionBreak()); continue; }
     if (line.trim().startsWith("> ")) { paragraphs.push(F.createBlockquote(line.trim().slice(2))); continue; }
@@ -591,7 +605,7 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
   // read them defensively.)
   function dedicationChildren() {
     const ded = str(config.dedication, "");
-    if (!ded) return [new Paragraph({ children: [new TextRun({ text: " " })] })];
+    if (!ded) return [new Paragraph({})];
     return ded.split("\n").map((l) => new Paragraph({
       spacing: { after: 120 }, alignment: AlignmentType.CENTER,
       children: [new TextRun({ text: l, font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR, italics: true })],
@@ -600,7 +614,7 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
 
   function epigraphChildren() {
     const epi = config.epigraph;
-    if (!epi) return [new Paragraph({ children: [new TextRun({ text: " " })] })];
+    if (!epi) return [new Paragraph({})];
     // Accept either a string or { text, attribution }.
     const text = typeof epi === "string" ? epi : str(epi.text, "");
     const attribution = typeof epi === "string" ? "" : str(epi.attribution, "");
@@ -639,8 +653,9 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
   }
 
   function blankChildren() {
-    // Truly-empty paragraph; the page exists only to keep recto/verso parity.
-    return [new Paragraph({ children: [new TextRun({ text: " " })] })];
+    // TRULY empty — a "blank" page carrying even an invisible space run is the
+    // pattern that drew a KDP "text outside margins" rejection (§3.5/§4).
+    return [new Paragraph({})];
   }
 
   const CONTENT_BY_TYPE = {

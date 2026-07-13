@@ -217,13 +217,17 @@ def main() -> int:
     total_pages, results = check_pages(docx_path, cfg, headings_override)
 
     found = [r for r in results if r["page"] is not None]
-    all_recto = bool(found) and all(r["recto"] for r in found)
+    missing = [r for r in results if r["page"] is None]
+    # A heading that was never FOUND cannot be assumed recto: the standalone
+    # exit code fails on misses too (verify_build's re-read already did).
+    all_recto = bool(found) and all(r["recto"] for r in found) and not missing
 
     print(json.dumps({
         "docx": os.path.abspath(docx_path),
         "total_pages": total_pages,
         "unit_noun": (cfg.get("voice") or {}).get("unit_noun", "chapter"),
         "results": results,
+        "not_found": len(missing),
         "all_recto": all_recto,
     }))
 

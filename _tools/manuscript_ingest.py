@@ -119,18 +119,39 @@ def docx_to_md(path: Path) -> str:
     with zipfile.ZipFile(path) as z:
         root = ET.fromstring(z.read("word/document.xml"))
     out: list[str] = []
+    headings = 0
     for p in root.iter(f"{W}p"):
         style = ""
+        outline = None
         ppr = p.find(f"{W}pPr")
         if ppr is not None:
             ps = ppr.find(f"{W}pStyle")
             if ps is not None:
                 style = ps.get(f"{W}val", "")
+            # outlineLvl survives localization/custom style names ("Überschrift1",
+            # "ChapterTitle") that the English "Heading N" match cannot see
+            ol = ppr.find(f"{W}outlineLvl")
+            if ol is not None:
+                try:
+                    outline = int(ol.get(f"{W}val", ""))
+                except (TypeError, ValueError):
+                    outline = None
         text = "".join(t.text or "" for t in p.iter(f"{W}t")).strip()
         if not text:
             continue
         m = re.match(r"(?i)heading\s*([1-6])", style)
-        out.append(("#" * int(m.group(1)) + " " + text) if m else text)
+        level = (int(m.group(1)) if m
+                 else outline + 1 if outline is not None and 0 <= outline <= 5
+                 else None)
+        if level:
+            headings += 1
+            out.append("#" * level + " " + text)
+        else:
+            out.append(text)
+    if not headings and len(out) > 20:
+        print(f"[manuscript_ingest] WARNING: no headings detected in {path.name} "
+              f"({len(out)} paragraphs) — heading styles unrecognized; unit "
+              f"boundaries may be lost downstream", file=sys.stderr)
     return "\n\n".join(out)
 
 

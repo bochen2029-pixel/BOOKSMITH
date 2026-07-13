@@ -459,9 +459,11 @@ def is_documentation_file(path: Path) -> bool:
     authentic language — excluded from the voice scrub by default. Manuscript
     prose lives at manuscript/current/ and manuscript/drafts/; drafts under a
     manuscript/ dir are IN scope."""
-    if path.name.lower() in EXCLUDED_NAMES:
-        return True
     parts_l = [p.lower() for p in path.parts]
+    # A name-based exclusion must never reach into the manuscript tree: a unit
+    # file saved as manuscript/current/readme.md is PROSE and stays in scope.
+    if path.name.lower() in EXCLUDED_NAMES and "manuscript" not in parts_l:
+        return True
     # The workspace slug (the segment directly under book_workspace/) is never a
     # meta-dir even if its name happens to be a marker word (e.g. a book slugged
     # 'state'). Anchoring the META_DIR_MARKERS test to skip that one segment stops

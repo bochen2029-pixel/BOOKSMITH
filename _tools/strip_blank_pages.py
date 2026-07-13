@@ -49,19 +49,32 @@ def non_ws_count(text: str) -> int:
     return len(re.sub(r"\s+", "", text or ""))
 
 
-def is_header_ghost(text: str) -> bool:
-    """True when a below-min-chars page is a print-only header-only 'ghost' (a
-    running head + folio) rather than legitimate minimalist front matter or a
-    short recto part-title (e.g. 'PART III').
+FOLIO_BAND_IN = 1.2   # running heads + folios live within this much of the page edge
 
-    A header ghost carries a folio digit ('THENIGHTWASYOUNG 42') OR is a single
-    unspaced all-caps run left by a running head that lost its inter-word spacing.
-    A real part-title is spaced words with no folio ('PART III'), so it is
-    preserved. (The task's proposed r'[A-Z ]+\\d*' fullmatch was NOT used: it also
-    matches 'PART III' and would wrongly strip it.)"""
+
+def is_header_ghost(page, text: str) -> bool:
+    """True when a below-min-chars page is a print-only header/folio 'ghost'.
+
+    POSITIONAL test first: a ghost's text lives ENTIRELY in the top/bottom folio
+    bands (a running head at the top, a page number at an edge). Real short
+    content sits mid-page — a chapter-number display page ('13', 'IX'), a
+    single-word page ('FINIS'), an epigraph, a part-title — and is preserved no
+    matter how short, which a character-class heuristic cannot guarantee.
+
+    Falls back to the old text heuristic only when block geometry is
+    unavailable: folio digit present, or a single unspaced all-caps run."""
     norm = re.sub(r"\s+", " ", text or "").strip()
     if not norm:
         return True
+    try:
+        blocks = [b for b in page.get_text("blocks") if (b[4] or "").strip()]
+    except Exception:
+        blocks = []
+    if blocks:
+        h = page.rect.height
+        band = FOLIO_BAND_IN * 72.0
+        # b = (x0, y0, x1, y1, text, ...): every block fully inside a folio band?
+        return all((b[3] <= band) or (b[1] >= h - band) for b in blocks)
     upperish = re.fullmatch(r"[A-Z0-9 .·—–\-]+", norm) is not None
     if not upperish:
         return False  # contains lowercase / real words -> content, keep it
@@ -96,9 +109,10 @@ def strip_blank_pages(in_pdf: str, out_pdf: str,
         text = doc[i].get_text() or ""
         compact = non_ws_count(text)
         # Truly-empty pages always go. Below-min-chars pages go ONLY if they are
-        # header-only ghosts — a short recto part-title ('PART III') or other
-        # minimalist front matter is content and is preserved.
-        if compact == 0 or (compact < min_chars and is_header_ghost(text)):
+        # header-only ghosts (all text in the top/bottom folio bands) — a short
+        # recto part-title, a chapter-number page, or other minimalist front
+        # matter sits mid-page and is preserved.
+        if compact == 0 or (compact < min_chars and is_header_ghost(doc[i], text)):
             preview = text.strip().replace("\n", " ")[:80]
             remove_0idx.append(i)
             removed_manifest.append({"page": page_num, "chars": compact, "preview": preview})

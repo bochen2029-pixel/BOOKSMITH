@@ -124,6 +124,12 @@ const LATEX_SYMBOLS = [
   ['\\quad', '  '], ['\\qquad', '    '],
 ];
 
+// STRUCTURAL guarantee of the longest-first invariant. Hand-ordering drifted
+// twice (\in before \int; \cdot before \cdots) because the replacement loop is
+// a bare split/join with no word boundary. A stable sort by descending pattern
+// length makes prefix collisions impossible no matter where an entry is added.
+LATEX_SYMBOLS.sort((a, b) => b[0].length - a[0].length);
+
 // Precomposed letter-with-dot-above codepoints. For letters without a
 // precomposed form, we fall back to letter + combining dot above (U+0307).
 const DOT_ABOVE_MAP = {
@@ -146,13 +152,17 @@ function latexToUnicode(input) {
 
   // 1. Strip delimiter-sizing commands. \left/\right followed by delimiter:
   //    keep the delimiter, drop the \left or \right. \left. / \right. are
-  //    "invisible" delimiters — drop both.
+  //    "invisible" delimiters — drop both. The (?![a-zA-Z]) lookahead is
+  //    load-bearing: without it these strippers eat the prefix of REAL
+  //    commands (\rightarrow -> "arrow", \bigcup -> "cup") before the symbol
+  //    table can ever match them.
   s = s.replace(/\\left\s*\./g, '');
   s = s.replace(/\\right\s*\./g, '');
-  s = s.replace(/\\left\s*/g, '');
-  s = s.replace(/\\right\s*/g, '');
-  // \big, \Big, \bigg, \Bigg followed by delimiter: drop the size command
-  s = s.replace(/\\[Bb]igg?\s*/g, '');
+  s = s.replace(/\\left(?![a-zA-Z])\s*/g, '');
+  s = s.replace(/\\right(?![a-zA-Z])\s*/g, '');
+  // \big/\Big/\bigg/\Bigg (+ the l/r/m positional variants) followed by a
+  // delimiter: drop the size command, never a letter-continuing command name.
+  s = s.replace(/\\[Bb]igg?[lrm]?(?![a-zA-Z])\s*/g, '');
 
   // 2. \text{...}, \mathrm{...}, \mathcal{...}, \mathbb{...}, \mathbf{...},
   //    \mathit{...} — strip wrapper, keep inner content as plain letters.

@@ -34,21 +34,19 @@ async function injectMirrorMargins(docxPath) {
   let settings = await settingsFile.async("string");
   const before = settings;
 
-  // Insert <w:mirrorMargins/> as the first child of <w:settings>.
-  if (!settings.includes("<w:mirrorMargins")) {
-    settings = settings.replace(
-      /(<w:settings[^>]*>)/,
-      "$1<w:mirrorMargins/>"
-    );
+  // Ensure ENABLED on/off flags. docx@9 emits <w:evenAndOddHeaders w:val="false"/>
+  // by default, so a bare substring-presence guard sees it and skips — leaving the
+  // feature DISABLED (verso page numbers render on the wrong side while the flag
+  // "exists"). Normalize any existing element (val="false"/"0") to the bare
+  // enabled form; insert it if absent. Idempotent: an already-bare flag maps to
+  // itself and the before/after compare skips the rewrite.
+  function ensureOnOffFlag(xml, tag) {
+    const anyRe = new RegExp("<w:" + tag + "\\b[^>]*/>", "g");
+    if (anyRe.test(xml)) return xml.replace(anyRe, "<w:" + tag + "/>");
+    return xml.replace(/(<w:settings[^>]*>)/, "$1<w:" + tag + "/>");
   }
-  // Also inject <w:evenAndOddHeaders/> so the Footer(even) vs Footer(default)
-  // split renders correctly as separate verso/recto footers.
-  if (!settings.includes("<w:evenAndOddHeaders")) {
-    settings = settings.replace(
-      /(<w:settings[^>]*>)/,
-      "$1<w:evenAndOddHeaders/>"
-    );
-  }
+  settings = ensureOnOffFlag(settings, "mirrorMargins");
+  settings = ensureOnOffFlag(settings, "evenAndOddHeaders");
 
   if (settings !== before) {
     zip.file("word/settings.xml", settings);

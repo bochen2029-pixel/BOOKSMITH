@@ -165,9 +165,13 @@ def _docx_to_pdf_libreoffice(soffice: str, docx_path: str, pdf_path: str):
     return pages, words
 
 
-def docx_to_pdf(docx_path: str, pdf_path: str):
+def docx_to_pdf(docx_path: str, pdf_path: str, allow_lo_after_word_error: bool = False):
     """Convert DOCX -> PDF. Primary: Word COM (page-faithful). Fallback: LibreOffice
-    (Tier-2, best-effort) only when Word is unavailable. Returns (pages, words, renderer)."""
+    (Tier-2, best-effort) only when Word is ABSENT — a Word ERROR on a Tier-1 box
+    re-raises rather than silently substituting the non-page-faithful renderer
+    (pagination drift would feed spine math + recto parity unmarked). Pass
+    allow_lo_after_word_error=True (--allow-libreoffice-fallback) to opt in.
+    Returns (pages, words, renderer)."""
     docx_path = os.path.abspath(docx_path)
     pdf_path = os.path.abspath(pdf_path)
 
@@ -183,10 +187,11 @@ def docx_to_pdf(docx_path: str, pdf_path: str):
             pages, words = _docx_to_pdf_word(docx_path, pdf_path)
             return pages, words, "word"
         except Exception:
-            soffice = _soffice_bin()
-            if soffice:
-                pages, words = _docx_to_pdf_libreoffice(soffice, docx_path, pdf_path)
-                return pages, words, "libreoffice_after_word_error"
+            if allow_lo_after_word_error:
+                soffice = _soffice_bin()
+                if soffice:
+                    pages, words = _docx_to_pdf_libreoffice(soffice, docx_path, pdf_path)
+                    return pages, words, "libreoffice_after_word_error"
             raise
     soffice = _soffice_bin()
     if soffice:
@@ -263,18 +268,23 @@ def pad_pdf_to_multiple(pdf_path, multiple):
 def main() -> int:
     args = sys.argv[1:]
     pad_multiple = 0
+    allow_lo = False
     positional = []
     i = 0
     while i < len(args):
         if args[i] == "--pad-multiple":
             pad_multiple = int(args[i + 1]); i += 2; continue
+        if args[i] == "--allow-libreoffice-fallback":
+            allow_lo = True; i += 1; continue
         positional.append(args[i]); i += 1
     if len(positional) != 2:
-        print("Usage: python docx_to_pdf.py <input.docx> <output.pdf> [--pad-multiple N]",
+        print("Usage: python docx_to_pdf.py <input.docx> <output.pdf> "
+              "[--pad-multiple N] [--allow-libreoffice-fallback]",
               file=sys.stderr)
         return 2
     docx_path, pdf_path = positional
-    pages, words, renderer = docx_to_pdf(docx_path, pdf_path)
+    pages, words, renderer = docx_to_pdf(docx_path, pdf_path,
+                                          allow_lo_after_word_error=allow_lo)
     final_pages = pages
     if pad_multiple:
         final_pages = pad_pdf_to_multiple(os.path.abspath(pdf_path), pad_multiple)
@@ -287,6 +297,13 @@ def main() -> int:
     }
     if pad_multiple:
         out["pages_before_pad"] = pages
+    # Renderer sidecar: lets verify_build mechanically assert a print PDF came
+    # from the page-faithful engine long after this process is gone.
+    try:
+        with open(os.path.abspath(pdf_path) + ".render.json", "w", encoding="utf-8") as f:
+            json.dump(out, f)
+    except OSError:
+        pass
     print(json.dumps(out))
     return 0
 

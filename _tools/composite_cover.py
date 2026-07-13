@@ -93,6 +93,7 @@ Ported from:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -248,18 +249,16 @@ class CoverConfig:
         return self.per_page_cream if self.paper == "cream" else self.per_page_white
 
     def spine_in(self, pages: int, profile: str) -> float:
-        """spine = pages * per_page + board_add. KDP HC forces white math."""
+        """spine = pages * per_page + board_add — mixam-3panel ONLY. Every other
+        profile sources its spine exclusively from preset_lookup (the module
+        verify_build recomputes with); a second copy of that math here is a
+        drift surface, so requesting it is an error rather than a silent
+        divergent answer."""
         if self.spine_override is not None:
             return round(float(self.spine_override), 4)
-
-        if profile == "kdp-hardcover":
-            # KDP hardcover is WHITE-ONLY regardless of book paper.
-            paper_w = pages * self.per_page_white
-            return round(paper_w + self.kdp_hc_board_add, 4)
         if profile == "mixam-3panel":
             return round(pages * self.per_page(False) + self.mixam_board_add, 4)
-        # kdp-wrap paperback: no board add
-        return round(pages * self.per_page(False), 4)
+        raise ValueError(f"spine_in: unsupported profile {profile!r} — use preset_lookup")
 
 
 # ============================================================
@@ -536,10 +535,20 @@ def render_back_text(canvas: Image.Image, cfg: CoverConfig,
         refrain_font = load_font(refrain_size, weight=500)
         rw = int(refrain_font.getlength(refrain))
         refrain_line_h = int(refrain_size * 1.5)
-        if (not isbn_keepout) or (y + refrain_line_h <= barcode_top_y):
-            x = text_left + (text_width - rw) // 2
-        else:
-            x = text_left + (narrow_text_width - rw) // 2
+        in_wide = (not isbn_keepout) or (y + refrain_line_h <= barcode_top_y)
+        avail = text_width if in_wide else narrow_text_width
+        # Shrink to fit the column: an unclamped refrain wider than the narrow
+        # column would center NEGATIVE and run its right edge into the ISBN
+        # keep-out (we draw NOTHING there).
+        floor = max(12, int(panel_h * 0.014))
+        while rw > avail and refrain_size > floor:
+            refrain_size -= 2
+            refrain_font = load_font(refrain_size, weight=500)
+            rw = int(refrain_font.getlength(refrain))
+        if rw > avail:
+            print("  Refrain: DROPPED (cannot fit clear of the barcode keep-out)")
+            return
+        x = text_left + (avail - rw) // 2
         draw.text((x, y), refrain, font=refrain_font, fill=cfg.col_gold)
 
 
@@ -569,7 +578,10 @@ def render_front_text(canvas: Image.Image, cfg: CoverConfig,
     words = title.split()
     line1, line2 = title, ""
     tw, _ = measure_tracked(title, title_font, title_tracking)
-    max_title_w = int((TRIM_W_IN - 1.0) * DPI)  # keep ~0.5" clear each side of trim
+    # Keep ~0.5" clear each side of the BOOK'S trim — the module-constant 6.00
+    # would let a 5x8 title overflow its safe zone and force a premature wrap
+    # on an 8x10.
+    max_title_w = int((cfg.trim_w - 1.0) * DPI)
     if tw > max_title_w and len(words) > 1:
         # Greedy split near the middle by word count.
         mid = len(words) // 2
@@ -863,7 +875,13 @@ def build_kdp_wrap(cfg: CoverConfig, pages: int, profile: str,
 # PROFILE: MIXAM 3-PANEL
 # ============================================================
 def build_mixam(cfg: CoverConfig, pages: int, art_path: Path, out_dir: Path) -> dict:
-    """Build front_cover.pdf / back_cover.pdf / spine.pdf, each at 0.80" bleed."""
+    """Build front_cover.pdf / back_cover.pdf / spine.pdf. Front/back carry
+    0.80" bleed on ALL sides; the separate spine.pdf is EXACTLY spine-width
+    with bleed on TOP/BOTTOM only — measured from Mixam's own template-
+    generator PDFs (docs/service_templates/mixam_template_6x9_hardcover_
+    spine060.pdf: spine page 0.6000 x 10.6000 in for a 0.60" spine). An
+    L/R-bled spine would also mis-size the spine TITLE, which keys off the
+    panel width."""
     trim_w = cfg.trim_w
     trim_h = cfg.trim_h
     spine_in = cfg.spine_in(pages, "mixam-3panel")
@@ -871,7 +889,7 @@ def build_mixam(cfg: CoverConfig, pages: int, art_path: Path, out_dir: Path) -> 
 
     front_w = int((trim_w + 2 * bleed_in) * DPI)
     front_h = int((trim_h + 2 * bleed_in) * DPI)
-    spine_panel_w = int((spine_in + 2 * bleed_in) * DPI)
+    spine_panel_w = int(spine_in * DPI)     # exact spine width — NO L/R bleed
 
     bleed_px = int(bleed_in * DPI)
     quiet_px = int(0.25 * DPI)          # general content quiet from trim edge
@@ -880,9 +898,9 @@ def build_mixam(cfg: CoverConfig, pages: int, art_path: Path, out_dir: Path) -> 
     print(f"\n=== MIXAM-3PANEL ===")
     print(f"  Pages: {pages} | paper: {cfg.paper}")
     print(f"  Spine: {spine_in:.4f}\"  (= {pages} x per_page + {cfg.mixam_board_add} board add)")
-    print(f"  Bleed: {bleed_in}\" all sides")
+    print(f"  Bleed: {bleed_in}\" all sides on front/back; top/bottom only on the spine file")
     print(f"  Front/Back panel: {trim_w + 2*bleed_in:.2f}\" x {trim_h + 2*bleed_in:.2f}\"  ({front_w} x {front_h} px)")
-    print(f"  Spine panel: {spine_in + 2*bleed_in:.4f}\" x {trim_h + 2*bleed_in:.2f}\"  ({spine_panel_w} x {front_h} px)")
+    print(f"  Spine panel: {spine_in:.4f}\" x {trim_h + 2*bleed_in:.2f}\"  ({spine_panel_w} x {front_h} px; exact spine width per the Mixam template)")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     src_raw = Image.open(art_path).convert("RGB")
@@ -920,12 +938,14 @@ def build_mixam(cfg: CoverConfig, pages: int, art_path: Path, out_dir: Path) -> 
     print(f"  -> {b_pdf}  ({bw_pts/PT_PER_IN:.4f}\" x {bh_pts/PT_PER_IN:.4f}\")")
     files += [str(b_pdf), str(b_jpg)]
 
-    # ---- SPINE (own panel = spine width + bleed both sides) ----
+    # ---- SPINE (own panel = EXACT spine width; T/B bleed only). Passing the
+    # true spine width also makes render_spine's title sizing and its blank-
+    # below-minimum floor operate on the real spine thickness. ----
     spine_final = render_spine(spine_panel_w, front_h, cfg, top_bottom_pad_px=bleed_px)
     s_jpg = out_dir / "spine.jpg"
     s_pdf = out_dir / "spine.pdf"
     spine_final.save(s_jpg, "JPEG", quality=95, dpi=(DPI, DPI))
-    sw_pts, sh_pts = save_pdf_exact(spine_final, s_pdf, spine_in + 2 * bleed_in, trim_h + 2 * bleed_in)
+    sw_pts, sh_pts = save_pdf_exact(spine_final, s_pdf, spine_in, trim_h + 2 * bleed_in)
     print(f"  -> {s_pdf}  ({sw_pts/PT_PER_IN:.4f}\" x {sh_pts/PT_PER_IN:.4f}\")")
     files += [str(s_pdf), str(s_jpg)]
 
@@ -942,7 +962,7 @@ def build_mixam(cfg: CoverConfig, pages: int, art_path: Path, out_dir: Path) -> 
         # front_cover.pdf MediaBox against; the 3-panel form has no spread).
         "target_wrap_in": [round(trim_w + 2 * bleed_in, 4), round(trim_h + 2 * bleed_in, 4)],
         "front_panel_in": [round(trim_w + 2 * bleed_in, 4), round(trim_h + 2 * bleed_in, 4)],
-        "spine_panel_in": [round(spine_in + 2 * bleed_in, 4), round(trim_h + 2 * bleed_in, 4)],
+        "spine_panel_in": [round(spine_in, 4), round(trim_h + 2 * bleed_in, 4)],
         "files": files,
         "inner_upload_name": f"inner_{cfg.slug}.pdf",
     }
@@ -1253,10 +1273,11 @@ def resolve_art_path(cfg: CoverConfig, workspace: Path, override: str | None) ->
 
 def build_kindle_front(cfg: CoverConfig, art_path: Path, out_dir: Path):
     """Front-only cover image for Kindle upload AND the digital PDF front page.
-    High-res at the book trim ratio (6:9). No bleed — ebook covers are full-image."""
+    High-res at the BOOK'S trim ratio (6:9 -> 1600x2400). No bleed — ebook
+    covers are full-image."""
     out_dir.mkdir(parents=True, exist_ok=True)
     W = 1600
-    H = int(round(W * (TRIM_H_IN / TRIM_W_IN)))   # 6:9 -> 2400
+    H = int(round(W * (cfg.trim_h / cfg.trim_w)))   # trim-matched; 6:9 -> 2400
     art = Image.open(str(art_path)).convert("RGB")
     canvas = scale_to_cover(art, W, H)
     render_front_text(canvas, cfg, center_x=W // 2,
@@ -1264,7 +1285,7 @@ def build_kindle_front(cfg: CoverConfig, art_path: Path, out_dir: Path):
     jpg_path = out_dir / f"{cfg.slug}_KINDLE_cover.jpg"
     canvas.save(str(jpg_path), "JPEG", quality=92)
     print("\n=== KINDLE FRONT COVER ===")
-    print(f"  {W}x{H}px  (trim ratio {TRIM_W_IN:.0f}:{TRIM_H_IN:.0f}, full-image, no bleed)")
+    print(f"  {W}x{H}px  (trim ratio {cfg.trim_w:g}:{cfg.trim_h:g}, full-image, no bleed)")
     print(f"  -> {jpg_path}")
     return {"profile": "kindle", "size_px": [W, H], "files": [str(jpg_path)]}
 
@@ -1353,6 +1374,10 @@ def main(argv=None) -> int:
         "pages": args.pages,
         "spine_in": result.get("spine_in"),
         "target_wrap_in": result.get("target_wrap_in"),
+        # source-art identity: lets a verifier detect a wrap composited from
+        # OUTDATED art after a re-roll (page-count staleness alone can't)
+        "art": str(art_path),
+        "art_sha256": hashlib.sha256(art_path.read_bytes()).hexdigest(),
         "files": result.get("files", []),
     }
     meta_path = out_dir / "cover_meta.json"

@@ -210,6 +210,8 @@ def assemble(config_path, workspace_arg, forced_version, overwrite=False):
     # --- Stitch (single trailing newline between units) ---
     master_text = "\n\n".join(pieces).rstrip() + "\n"
     total_words = word_count(master_text)
+    body_words = sum(u["words"] for u in unit_report)
+    front_words = sum(f["words"] for f in front_report)
 
     version = next_version(markdown_dir, slug, forced_version)
     master_path = os.path.join(markdown_dir, f"{slug}_v{version}.md")
@@ -239,6 +241,8 @@ def assemble(config_path, workspace_arg, forced_version, overwrite=False):
         "master": master_path,
         "version": version,
         "words": total_words,
+        "body_words": body_words,
+        "front_matter_words": front_words,
         "front_matter": front_report,
         "units": unit_report,
         "unit_count": len(unit_report),
@@ -252,9 +256,12 @@ def assemble(config_path, workspace_arg, forced_version, overwrite=False):
               f"stitched master {total_words} (a source file changed on disk "
               f"during assembly, or a piece was dropped/duplicated).",
               file=sys.stderr)
-    # Also print the bare word count on its own line: the parity baseline that
-    # every format is checked against (mirrors `wc -w` in the ledger). On STDOUT
-    # per the module docstring's promise, so a stdout parser can read it.
+    # BODY_WORDS is the parity baseline every format is checked against: the
+    # generators render front matter FROM CONFIG and drop any stitched front-
+    # matter markdown, so the master total would overstate what a format
+    # actually renders whenever front_*.md files exist on disk. TOTAL_WORDS
+    # stays (same format, last line) for existing stdout parsers.
+    print(f"BODY_WORDS={body_words}")
     print(f"TOTAL_WORDS={total_words}")
     return summary
 

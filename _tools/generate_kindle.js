@@ -133,6 +133,10 @@ function resolveTypography(config) {
 function makeInlineBuilder(T, mathEnabled) {
   return function buildInlineRuns(text, baseOpts) {
     text = fixProseSubscripts(text);
+    // Nested-emphasis degradations (identical to generate_book.js): bold-italic
+    // renders bold; bold-wrapped code renders as code — never orphaned asterisks.
+    text = text.replace(/\*\*\*([^*]+)\*\*\*/g, "**$1**");
+    text = text.replace(/\*\*(`[^`]+`)\*\*/g, "$1");
     const runs = [];
     const codeParts = text.split(/(`[^`]+`)/g);
     for (const codePart of codeParts) {
@@ -254,9 +258,17 @@ function parseMarkdown(text, unitLevel, F) {
     const raw = lines[i];
     const line = raw.replace(/\s+$/, "");
 
-    if (line.trim().startsWith("[IMAGE")) {
-      while (i + 1 < lines.length) { if (lines[i].trim().endsWith("]")) break; i++; }
-      continue;
+    if (/^\[IMAGE[:\s\]]/.test(line.trim())) {
+      // Well-formed image blocks only (see generate_book.js): anchored token,
+      // closing "]" within a short window, never consume-to-EOF.
+      let j = i;
+      let closed = lines[j].trim().endsWith("]");
+      while (!closed && j + 1 < lines.length && j - i < 10) {
+        j++;
+        closed = lines[j].trim().endsWith("]");
+      }
+      if (closed) { i = j; continue; }
+      console.warn(`[generate_kindle] unclosed [IMAGE block at line ${i + 1} treated as prose`);
     }
 
     if (line.trim().startsWith("$$")) {
@@ -279,7 +291,8 @@ function parseMarkdown(text, unitLevel, F) {
 
     const isH1 = line.startsWith("# ") && !line.startsWith("## ");
     const isH2 = line.startsWith("## ") && !line.startsWith("### ");
-    const isH3 = line.startsWith("### ");
+    // H3-H6 all render as subsection headings (kept identical to generate_book.js).
+    const isH3plus = /^#{3,6}\s/.test(line);
 
     if ((isChapterLevel && isH1) || (!isChapterLevel && isH2)) {
       paragraphs.push(...F.createUnitHeading(line.replace(/^#{1,2}\s+/, "").trim()));
@@ -287,7 +300,7 @@ function parseMarkdown(text, unitLevel, F) {
     }
     if (isChapterLevel && isH2) continue;
     if (!isChapterLevel && isH1) continue;
-    if (isH3) { paragraphs.push(F.createSubsectionHeading(line.replace(/^###\s+/, "").trim())); continue; }
+    if (isH3plus) { paragraphs.push(F.createSubsectionHeading(line.replace(/^#{1,6}\s+/, "").trim())); continue; }
 
     if (line.trim() === "---") { paragraphs.push(F.createSectionBreak()); continue; }
     if (line.trim().startsWith("> ")) { paragraphs.push(F.createBlockquote(line.trim().slice(2))); continue; }

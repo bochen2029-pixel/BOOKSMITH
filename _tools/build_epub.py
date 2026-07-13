@@ -120,6 +120,12 @@ def esc(t: str) -> str:
     return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def esc_attr(t: str) -> str:
+    """Attribute-safe escaping: a title containing a double quote must not break
+    out of an alt="..." sink (malformed XML hard-blocks the whole build)."""
+    return esc(t).replace('"', "&quot;")
+
+
 def inline(t: str) -> str:
     """Inline markup AFTER escaping. Order mirrors the print generator:
     backticks -> bold -> italic (backticks first so code spans shield markers)."""
@@ -292,7 +298,7 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         cover_name = f"cover.{'jpg' if cover_ext in ('jpg', 'jpeg') else cover_ext}"
         docs.append(("coverpage", "cover.xhtml", "Cover", simple_page(
             lang, "Cover",
-            f'<div class="coverwrap"><img class="cover" src="../images/{cover_name}" alt="{esc(title)}"/></div>'),
+            f'<div class="coverwrap"><img class="cover" src="../images/{cover_name}" alt="{esc_attr(title)}"/></div>'),
             False))
     else:
         cover_name = None
@@ -325,14 +331,34 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
 
     epi = cfg.get("epigraph") or {}
     if isinstance(epi, dict) and epi.get("text"):
-        attr = (f'<p class="attribution centered">— {inline(epi.get("attribution", ""))}</p>'
+        # same rendered-character rule as the print/kindle generators: no
+        # em-dash prefix unless the voice contract explicitly allows em-dashes
+        dash = "— " if (cfg.get("voice") or {}).get("no_em_dashes", True) is False else ""
+        attr = (f'<p class="attribution centered">{dash}{inline(epi.get("attribution", ""))}</p>'
                 if epi.get("attribution") else "")
         docs.append(("epigraph", "epigraph.xhtml", "Epigraph", simple_page(
             lang, "Epigraph",
             f'<div class="epigraph"><p class="centered">{inline(epi["text"])}</p>{attr}</div>'),
             False))
 
+    if cfg.get("readers_note"):
+        # print (generate_book.js readersNoteChildren) renders this; the EPUB
+        # must too, or the editions diverge and parity drifts
+        paras = [p.strip() for p in re.split(r"\n\s*\n", str(cfg["readers_note"])) if p.strip()]
+        inner = ('<div class="readersnote">\n<p class="centered">A NOTE TO THE READER</p>\n'
+                 + "\n".join(f"<p>{inline(p)}</p>" for p in paras) + "\n</div>")
+        docs.append(("readersnote", "readersnote.xhtml", "A Note to the Reader",
+                     simple_page(lang, "A Note to the Reader", inner), False))
+
     unit_ids = [u.get("id") for u in (cfg.get("units") or []) if isinstance(u, dict)]
+    if unit_ids and len(units) != len(unit_ids):
+        # ids are bound to headings BY POSITION: a count mismatch would silently
+        # mislabel every chapter's filename/manifest/spine/nav entry
+        raise SystemExit(
+            f"unit count mismatch: master has {len(units)} unit heading(s) at level "
+            f"{'#' * unit_level} but config declares {len(unit_ids)} unit(s) — "
+            f"positional id binding would mislabel every chapter. Fix the master or "
+            f"config before building the EPUB.")
     body_words = 0
     for n, (heading, body_lines) in enumerate(units):
         uid = unit_ids[n] if n < len(unit_ids) and unit_ids[n] else f"unit_{n+1:02d}"
