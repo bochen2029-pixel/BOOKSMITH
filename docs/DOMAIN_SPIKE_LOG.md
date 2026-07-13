@@ -63,7 +63,13 @@ render exit 0). **#6 fully done + wired** (palette-transfer + typography loop + 
 Both #10 (domain-general engine, proven via `domains/course/` + smoketest J) and #6 (cover
 palette-transfer + typography vision-loop) landed with **zero regression** — the full green sweep
 (engine smoketest A–J + selfcheck + every tool `--selftest`) passed after every step. Branch
-`domain-typography-2026-07-13`, snapshots in `_snapshots/`.
+`domain-typography-2026-07-13` (merged to `main`), snapshots in `_snapshots/`.
+
+**Bonus wiring (2026-07-13, on `main`):** the full Cover 2.0 loop is now connected —
+`cover_pick.py --recolor` recolours a catalog pick to the book palette (via `palette_transfer`)
+on install; `cover_layout.py` picks the calm title band; `composite_cover.py --title-y-frac`
+places the title there. Each guarded so defaults are byte-identical; all proven end-to-end. The
+only piece left is auto-orchestrating these three from the engine's cover stage.
 
 ---
 *(entries appended above as each phase landed)*

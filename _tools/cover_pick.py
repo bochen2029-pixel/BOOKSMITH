@@ -102,6 +102,10 @@ def main(argv=None):
     ap.add_argument("--write", action="store_true", help="install the choice to cover_art/<slug>_src.png")
     ap.add_argument("--size", default="1600x2400")
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--recolor", action="store_true",
+                    help="recolour a CATALOG pick to the book palette via palette_transfer "
+                         "(hypergen picks already render in-palette, so they are left as-is)")
+    ap.add_argument("--recolor-strength", type=float, default=0.75)
     args = ap.parse_args(argv)
 
     cfg_path = Path(args.config).resolve()
@@ -159,6 +163,16 @@ def main(argv=None):
                   file=sys.stderr)
             return 1
         shutil.copy2(src, dest)
+        if args.recolor and palette:
+            import subprocess
+            pal = ",".join(str(c) for c in palette)
+            rr = subprocess.run([sys.executable, str(TOOLS / "palette_transfer.py"),
+                                 "--src", str(dest), "--palette", pal, "--out", str(dest),
+                                 "--strength", str(args.recolor_strength)],
+                                capture_output=True, text=True)
+            print(f"recoloured catalog art to the book palette (strength {args.recolor_strength})"
+                  if rr.returncode == 0 else
+                  f"(palette recolour skipped: {(rr.stderr or rr.stdout).strip()[-120:]})")
     else:
         print(f"bad --pick {choice}", file=sys.stderr)
         return 1
