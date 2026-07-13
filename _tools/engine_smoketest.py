@@ -18,6 +18,7 @@ engine.py with the mock model backend through the real gates and asserts:
   H. HARNESS SEED — the architect turn is fulfilled keyless over the disk bridge too.
   I. PLAN ORDER   — cover-consuming formats (epub, digital_pdf) are sequenced AFTER cover.
   J. DOMAIN       — a non-book 'course' domain runs end-to-end through the SAME engine.
+  K. AUTO-ARCHITECT — a non-book domain (course) is architected from a BRIEF (no units given).
 
 No network, no API key, no Word COM (stops at 'assemble'). This is the
 "graduation-exam" check: the machine, not a book.
@@ -359,6 +360,36 @@ def main() -> int:
         fails.append(f"J: could not read course engine state: {e}")
     if CWS.exists():
         shutil.rmtree(CWS)
+
+    # --- K. AUTO-ARCHITECT a non-book domain from a BRIEF (no pre-declared units) ---
+    KWS = ROOT / "book_workspace" / "_coursearchtest"
+    if KWS.exists():
+        shutil.rmtree(KWS)
+    KWS.mkdir(parents=True)
+    (KWS / "book_config.json").write_text(json.dumps(
+        {"title": "Auto Course", "author": "BOOKSMITH", "slug": "_coursearchtest", "domain": "course",
+         "voice": {"unit_noun": "lesson", "no_em_dashes": True, "blacklist": []}}, indent=2), "utf-8")
+    (KWS / "brief.md").write_text("# Brief\n\nA short course on control inversion.\n\nlessons: 3\nwords: 120\n", "utf-8")
+    r = subprocess.run([PY, ENGINE, "--config", str(KWS / "book_config.json"), "--dry-run", "--fresh"],
+                       capture_output=True, text=True, cwd=str(ROOT))
+    print("K/AUTO-ARCHITECT-course rc=", r.returncode)
+    if r.returncode != 0:
+        fails.append(f"K: course auto-architect rc={r.returncode}\n{r.stdout[-900:]}\n{r.stderr[-300:]}")
+    kc = json.loads((KWS / "book_config.json").read_text("utf-8"))
+    if len(kc.get("units", [])) != 3:
+        fails.append(f"K: expected 3 architected lessons from the brief, got {len(kc.get('units', []))}")
+    if not (KWS / "seed.md").exists():
+        fails.append("K: no domain outline (seed.md) written by auto-architect")
+    if not (KWS / "outputs" / "course" / "_coursearchtest_course.json").exists():
+        fails.append("K: course not produced after auto-architect")
+    try:
+        stK = json.loads((KWS / "_engine" / "state.json").read_text("utf-8"))["stages"]
+        if stK.get("seed", {}).get("status") != "done":
+            fails.append("K: seed (architect) stage not done")
+    except Exception as e:
+        fails.append(f"K: state read failed: {e}")
+    if KWS.exists():
+        shutil.rmtree(KWS)
 
     print("\n" + ("=" * 50))
     if fails:

@@ -3,6 +3,7 @@
   "unit_noun": "lesson",
   "author_role": "instructional designer",
   "bible_label": "Course outline",
+  "seed_unit_fields": "module",
   "no_cover": true,
   "produce_targets": ["course_md", "course_json"],
   "producers": {

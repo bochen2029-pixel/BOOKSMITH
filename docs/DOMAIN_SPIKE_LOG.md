@@ -80,5 +80,16 @@ smoketest skip it). **Proven:** a real `proof_oneshot` run `--from cover` → `c
 → verify → emit, rc 0. Smoketest A–J + selfcheck green. **#6 fully complete** (all four pieces + the
 engine auto-orchestration).
 
+## Phase 5 — non-book auto-architect ✅ (#10 completion)
+DONE: a non-book domain can now be architected from a BRIEF (no pre-declared units), matching the
+book's brief→structure capability. `stage_seed` branches to `_seed_domain` for non-book: the model
+(or the deterministic fallback) outlines the domain's units from the brief, writes them into the
+config + a simple domain outline (`seed.md`); gate = units exist. No book schema / §1–§7 / contracts.
+`_seed_prompt` + `_fallback_seed_plan` + `_slugify_units` generalized (domain `unit_noun`, `module`
+preserved), all guarded so the book path is byte-identical. **Proven:** a course from a `lessons: 3`
+brief → `architected 3 lesson(s)` → drafted → produce:course_md+json → verify → emit, rc 0. Locked as
+smoketest scenario **K**. Bonus fix: the fallback count regex was missing `lessons|modules` (caught by
+a debug trace). Sweep **A–K + all selftests + selfcheck: 8/8 green.** #10 fully complete.
+
 ---
 *(entries appended above as each phase landed)*

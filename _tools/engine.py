@@ -429,27 +429,46 @@ class Engine:
             tw = u.get("target_words")
             if isinstance(tw, int) and tw > 0:
                 item["target_words"] = tw
+            if u.get("module"):
+                item["module"] = str(u["module"])[:60]  # preserve domain grouping (e.g. course modules)
             out.append(item)
         return out
 
     def _fallback_seed_plan(self, brief: str) -> dict:
-        m = re.search(r"(?:chapters|units|parts)\s*[:=]\s*(\d{1,3})", brief, re.I)
+        m = re.search(r"(?:chapters|units|parts|lessons|modules|sections)\s*[:=]\s*(\d{1,3})", brief, re.I)
         n = max(1, min(int(m.group(1)) if m else 5, 60))
         mw = re.search(r"(?:words|target_words)\s*[:=]\s*(\d{2,6})", brief, re.I)
         tw = int(mw.group(1)) if mw else 1500
-        units = [{"id": f"ch_{i:02d}", "title": f"Chapter {self._num_word(i)}",
-                  "class": "C", "target_words": tw} for i in range(1, n + 1)]
+        if self.domain != "book" and self.domain_spec:
+            noun = self.cfg.get("voice", {}).get("unit_noun", "unit")
+            pre = (noun[:1] or "u")
+            units = [{"id": f"{pre}_{i:02d}", "title": f"{noun.capitalize()} {self._num_word(i)}",
+                      "class": "C", "target_words": tw} for i in range(1, n + 1)]
+        else:
+            units = [{"id": f"ch_{i:02d}", "title": f"Chapter {self._num_word(i)}",
+                      "class": "C", "target_words": tw} for i in range(1, n + 1)]
         first = next((ln.strip() for ln in brief.splitlines() if ln.strip()), "")
         return {"units": units, "work_intent": first[:300], "_source": "fallback"}
 
     def _seed_prompt(self, brief: str, digests: str):
-        system = (
-            "You are a book architect. Given a brief (and optional source digests), return ONE "
-            "JSON object and NOTHING else. Keys: units (array of {id,title,class,target_words}), "
-            "work_intent, primary_theme, voice_one_line, division_scheme, refrain, blacklist (array), "
-            "sacred_terms (array), cover_prompt_seed. ids look like ch_01; class is A|B|C (default C); "
-            "target_words is an integer. cover_prompt_seed must contain NO title/author text. "
-            "Choose a natural unit count for the material.")
+        if self.domain != "book" and self.domain_spec:
+            role = self.domain_spec.get("author_role", "architect")
+            noun = self.cfg.get("voice", {}).get("unit_noun", "unit")
+            xf = self.domain_spec.get("seed_unit_fields")
+            fields = "id, title" + (f", {xf}" if xf else "") + ", target_words"
+            system = (
+                f"You are a {role}. Given a brief, return ONE JSON object and NOTHING else. Keys: "
+                f"units (array of {{{fields}}} - each one {noun}), work_intent, primary_theme. "
+                f"ids are short and filesystem-safe; target_words is an integer. Choose a natural "
+                f"number of {noun}s for the material. No prose outside the JSON.")
+        else:
+            system = (
+                "You are a book architect. Given a brief (and optional source digests), return ONE "
+                "JSON object and NOTHING else. Keys: units (array of {id,title,class,target_words}), "
+                "work_intent, primary_theme, voice_one_line, division_scheme, refrain, blacklist (array), "
+                "sacred_terms (array), cover_prompt_seed. ids look like ch_01; class is A|B|C (default C); "
+                "target_words is an integer. cover_prompt_seed must contain NO title/author text. "
+                "Choose a natural unit count for the material.")
         prompt = (f"# Brief\n{brief}\n\n"
                   + (f"# Source digests (each says how it relates to the core)\n{digests}\n\n" if digests else "")
                   + "# Task\nReturn the JSON object.")
@@ -631,6 +650,8 @@ class Engine:
         plan = (self._seed_plan_via_harness(brief, digests)
                 if self.model.backend == "harness"
                 else self._model_seed_plan(brief, digests))
+        if self.domain != "book" and self.domain_spec:
+            return self._seed_domain(plan, brief)
         self._apply_seed_to_config(plan)
         self._write_seed_md(plan, brief)
         rc, o, e = run([sys.executable, str(TOOLS / "init_contracts.py"),
@@ -640,6 +661,27 @@ class Engine:
         self._seed_registry_and_exemplars(plan)
         self._gate_seed()
         return f"seeded {len(plan['units'])} units ({plan.get('_source', 'model')}); GATE-2 pass"
+
+    def _seed_domain(self, plan: dict, brief: str) -> str:
+        """Architect a NON-book domain from a brief: write the model-outlined units into the
+        config (no book-schema validation - the domain owns its shape) + a simple outline the
+        draft reads. Gate: units exist. The book seed machinery (contracts, §1-§7, registries)
+        is book-specific and not required here."""
+        cfg = load_json(self.config_path)
+        cfg["units"] = plan["units"]
+        save_json_atomic(self.config_path, cfg)
+        self.cfg = cfg
+        noun = cfg.get("voice", {}).get("unit_noun", "unit")
+        lines = [f"# {cfg.get('title', self.slug)} - {self.domain} outline", "",
+                 str(plan.get("work_intent", "")).strip(), ""]
+        for u in plan["units"]:
+            extra = f"  [{u['module']}]" if u.get("module") else ""
+            lines.append(f"- {u['id']}: {u.get('title', '')}{extra}  (~{u.get('target_words', 400)}w)")
+        (self.ws / "seed.md").write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+        if not cfg.get("units"):
+            raise HardStop("seed", f"domain '{self.domain}': no {noun}s architected from the brief")
+        return (f"architected {len(plan['units'])} {noun}(s) "
+                f"({plan.get('_source', 'model')}) for domain '{self.domain}'")
 
     @staticmethod
     def _classify_intake(p: Path) -> str:
