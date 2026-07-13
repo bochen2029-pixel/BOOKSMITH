@@ -324,9 +324,13 @@ def main(argv=None) -> int:
     cfg_path = Path(args.config) if args.config else None
     md, where = load_manuscript(cfg_path, args.src) if (cfg_path or args.src) else ("", "")
     if not md.strip():
-        print(json.dumps({"pass": True, "units": 0, "findings": [], "note": "no manuscript"}) if args.json
-              else "authorial_act: no manuscript found; nothing to score.")
-        return 0
+        # a gate must never green a subject that does not exist: exit 2 =
+        # environment error, "the gate did NOT run" (mirrors lint_manuscript)
+        print(json.dumps({"pass": False, "units": 0, "findings": [],
+                          "error": "no manuscript found — authorial-act gate did not run",
+                          "source": where}) if args.json
+              else "authorial_act: NO MANUSCRIPT FOUND — gate did not run (exit 2).")
+        return 2
     exempts = exempts_from_cfg(cfg_path) if cfg_path else []
     result = analyze(md, exempt_texts=exempts, strict=args.strict)
     result["source"] = where

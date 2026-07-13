@@ -191,6 +191,24 @@ def launch_server(server_url: str, comfy_bin: str = "comfy",
     return server_up(server_url)
 
 
+_COMFY_PORT_CANDIDATES = ("http://127.0.0.1:8000", "http://127.0.0.1:8188")
+
+
+def _adopt_live_server(paths: dict) -> None:
+    """If the configured ComfyUI server is down, probe the two well-known local
+    ports (:8000 desktop app, :8188 comfy-cli/portable) and adopt a live one.
+    Configure-first-launch-later leaves a stale port in kit_env; a running
+    desktop app must not be reported unreachable because of it."""
+    if server_up(paths["server"]):
+        return
+    for cand in _COMFY_PORT_CANDIDATES:
+        if cand != paths["server"] and server_up(cand):
+            print(f"[cover_gen] configured server {paths['server']} down; using live {cand}",
+                  file=sys.stderr)
+            paths["server"] = cand
+            return
+
+
 # ============================================================
 # Workflow resolution + checkpoint injection
 # ============================================================
@@ -475,6 +493,7 @@ def do_single(args) -> int:
     effective_wf = patch_checkpoint(workflow_path, checkpoint)
 
     # ---- ensure server ----
+    _adopt_live_server(paths)
     if not args.no_launch:
         if not launch_server(paths["server"]):
             print(json.dumps({

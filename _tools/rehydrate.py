@@ -308,6 +308,13 @@ def main(argv=None):
     out_path = Path(args.out) if args.out else (workspace / "_REHYDRATION.md")
     out_path = _write_out(out_path, md, meta)
 
+    # consume-then-delete: the precompact flag is a one-shot session pointer; a
+    # flag that outlives its recovery pins future rehydrations to an OLD session
+    try:
+        (Path.cwd() / ".booksmith_rehydrate").unlink(missing_ok=True)
+    except Exception:
+        pass
+
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:

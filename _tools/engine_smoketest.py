@@ -19,6 +19,9 @@ engine.py with the mock model backend through the real gates and asserts:
   I. PLAN ORDER   — cover-consuming formats (epub, digital_pdf) are sequenced AFTER cover.
   J. DOMAIN       — a non-book 'course' domain runs end-to-end through the SAME engine.
   K. AUTO-ARCHITECT — a non-book domain (course) is architected from a BRIEF (no units given).
+  L. LOST DELIVERABLE + STALE RESPONSE — a produced artifact deleted after a green run is
+                RE-CREATED on resume (produce outputs are part of 'satisfied'), and a bridge
+                response with no matching request is DISCARDED, never placed as prose.
 
 No network, no API key, no Word COM (stops at 'assemble'). This is the
 "graduation-exam" check: the machine, not a book.
@@ -70,6 +73,10 @@ def state():
 
 
 def main() -> int:
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
     fails = []
 
     # --- A. FRESH ---
@@ -110,10 +117,8 @@ def main() -> int:
         fails.append(f"C: recovery rc={r.returncode}\n{r.stdout[-600:]}")
     if not ch2.exists():
         fails.append("C: ch_02 not regenerated after deletion")
-    if "draft:ch_02" not in r.stdout or "stage.done stage=draft:ch_02" not in r.stdout.replace("] ", "] event="):
-        # loose check: ch_02 must have been re-run, not skipped
-        if "skip_done stage=draft:ch_02" in r.stdout:
-            fails.append("C: ch_02 was skipped, not re-run (drift not detected)")
+    if "skip_done stage=draft:ch_02" in r.stdout:
+        fails.append("C: ch_02 was skipped, not re-run (drift not detected)")
 
     # --- D. HARD-STOP on an unpassable gate (loud failure, resumable) ---
     build_fixture()
@@ -391,15 +396,55 @@ def main() -> int:
     if KWS.exists():
         shutil.rmtree(KWS)
 
+    # --- L. LOST DELIVERABLE + STALE RESPONSE ---
+    # L1: a produced artifact deleted after a green run must be RE-CREATED on
+    # resume — produce outputs are part of 'satisfied', not just state.json.
+    LWS = ROOT / "book_workspace" / "_coursetest"
+    if LWS.exists():
+        shutil.rmtree(LWS)
+    LWS.mkdir(parents=True)
+    (LWS / "book_config.json").write_text(json.dumps(ccfg, indent=2), "utf-8")
+    r = subprocess.run([PY, ENGINE, "--config", str(LWS / "book_config.json"), "--dry-run", "--fresh"],
+                       capture_output=True, text=True, cwd=str(ROOT))
+    if r.returncode != 0:
+        fails.append(f"L: course setup run rc={r.returncode}\n{r.stdout[-400:]}")
+    ljs = LWS / "outputs" / "course" / "_coursetest_course.json"
+    if ljs.exists():
+        ljs.unlink()
+    r = subprocess.run([PY, ENGINE, "--config", str(LWS / "book_config.json"), "--dry-run"],
+                       capture_output=True, text=True, cwd=str(ROOT))
+    print("L/LOST-DELIVERABLE rc=", r.returncode)
+    if r.returncode != 0:
+        fails.append(f"L: resume after artifact deletion rc={r.returncode}\n{r.stdout[-500:]}")
+    if not ljs.exists():
+        fails.append("L: deleted course json NOT re-created on resume (lost-deliverable hole)")
+    if "skip_done stage=produce:course_json" in r.stdout:
+        fails.append("L: produce:course_json skipped as done with its artifact missing")
+    if LWS.exists():
+        shutil.rmtree(LWS)
+    # L2: a bridge response with no matching request (stale/uncorrelated) must
+    # be DISCARDED, not placed as canonical prose.
+    build_fixture()
+    bdir2 = WS / "_engine" / "bridge"
+    bdir2.mkdir(parents=True, exist_ok=True)
+    (bdir2 / "ch_01.response.md").write_text(canned("The First Movement"), "utf-8")
+    r = eng_h("--fresh")
+    print("L/STALE-RESPONSE rc=", r.returncode)
+    if r.returncode != 3:
+        fails.append(f"L: stale-response run expected rc=3 (fresh request emitted), got {r.returncode}")
+    if (WS / "manuscript" / "current" / "ch_01_current.md").exists():
+        fails.append("L: stale uncorrelated response was CONSUMED as canonical prose")
+
     print("\n" + ("=" * 50))
     if fails:
         print(f"ENGINE SMOKETEST: FAIL ({len(fails)})")
         for f in fails:
             print("  - " + f)
         return 1
-    print("ENGINE SMOKETEST: PASS — drive, idempotent resume, crash/drift recovery, "
-          "loud hard-stop, the keyless harness bridge, and the INGEST+SEED architect "
-          "front-half (brief -> seed.md + units + contracts, GATE-1/GATE-2) all verified.")
+    print("ENGINE SMOKETEST: PASS - drive, idempotent resume, crash/drift recovery, "
+          "loud hard-stop, the keyless harness bridge, the INGEST+SEED architect "
+          "front-half (brief -> seed.md + units + contracts, GATE-1/GATE-2), "
+          "lost-deliverable re-creation, and stale-bridge-response refusal all verified.")
     return 0
 
 

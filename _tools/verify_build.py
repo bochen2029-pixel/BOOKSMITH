@@ -992,7 +992,7 @@ def check_epub_structure(fmt_dir: Path):
             f"{epub.name}: mimetype/XML/manifest/spine/cover all valid")
 
 
-def check_epub_parity(root: Path):
+def check_epub_parity(root: Path, cfg: dict, final: bool = False):
     """EPUB body word count must NOT be below the print word count."""
     name = "epub_wordcount_parity_not_below_print"
     epub = find_one(root / "outputs" / "epub", ".epub")
@@ -1000,7 +1000,8 @@ def check_epub_parity(root: Path):
         return (name, False, "no .epub found")
     ew = _epub_body_word_count(epub)
     print_docx = None
-    for sub in ("kdp_paperback", "kdp_hardcover", "mixam_hardcover"):
+    for sub in ("kdp_paperback", "kdp_hardcover", "mixam_hardcover",
+                "mixam_paperback", "blurb_paperback", "blurb_hardcover"):
         print_docx = find_one(root / "outputs" / sub, ".docx")
         if print_docx is not None:
             break
@@ -1008,8 +1009,18 @@ def check_epub_parity(root: Path):
     if ew is None:
         return (name, False, "could not count EPUB words")
     if pw is None:
-        return (name, True, f"epub={ew} words; no print DOCX to compare "
-                            f"(informational — build print first)")
+        # never a vacuous pass when this book DECLARES a print edition: interim
+        # verifies say DEFERRED loudly; the final sweep hard-fails until the
+        # print baseline exists to compare against
+        declared = [f for f in (cfg.get("formats") or []) if f in PRINT_FORMATS]
+        if declared and final:
+            return (name, False,
+                    f"epub={ew} words; print format(s) {', '.join(declared)} declared but no "
+                    f"print DOCX found — parity NOT verified; build print first")
+        if declared:
+            return (name, True, f"epub={ew} words; parity DEFERRED (print "
+                                f"{', '.join(declared)} not built yet — the final sweep enforces)")
+        return (name, True, f"epub={ew} words; no print format declared (ebook-only) — parity n/a")
     # Print DOCX carries front matter the EPUB body count excludes; allow a
     # small ceremonial allowance but never a body-sized shortfall.
     ok = ew >= pw - 150
@@ -1017,15 +1028,17 @@ def check_epub_parity(root: Path):
                       f"({'parity ok' if ok else 'BELOW print — source drift!'})")
 
 
-def check_kindle_parity(root: Path):
+def check_kindle_parity(root: Path, cfg: dict, final: bool = False):
     """Kindle word count must NOT be below the print word count (never short)."""
     name = "kindle_wordcount_parity_not_below_print"
     kindle = find_one(root / "outputs" / "kindle", ".docx",
                       prefer_substr=["kindle"])
     print_docx = None
-    for sub in ("kdp_paperback", "kdp_hardcover", "mixam_hardcover"):
+    for sub in ("kdp_paperback", "kdp_hardcover", "mixam_hardcover",
+                "mixam_paperback", "blurb_paperback", "blurb_hardcover"):
         print_docx = find_one(root / "outputs" / sub, ".docx",
-                              prefer_substr=["kdp", "mixam", "paperback", "hardcover"])
+                              prefer_substr=["kdp", "mixam", "paperback", "hardcover",
+                                             "blurb", "inner_"])
         if print_docx is not None:
             break
     kw = _docx_word_count(kindle)
@@ -1033,11 +1046,66 @@ def check_kindle_parity(root: Path):
     if kw is None:
         return (name, False, "kindle DOCX not found / unreadable")
     if pw is None:
-        return (name, True, f"kindle={kw} words; no print DOCX to compare "
-                            f"(informational — build print first)")
+        # never a vacuous pass: a declared print edition with no baseline on
+        # disk is exactly how the 8,476-words-short Kindle shipped. Interim
+        # verifies say DEFERRED loudly; the final sweep hard-fails.
+        declared = [f for f in (cfg.get("formats") or []) if f in PRINT_FORMATS]
+        if declared and final:
+            return (name, False,
+                    f"kindle={kw} words; print format(s) {', '.join(declared)} declared but no "
+                    f"print DOCX found — parity NOT verified; build print first")
+        if declared:
+            return (name, True, f"kindle={kw} words; parity DEFERRED (print "
+                                f"{', '.join(declared)} not built yet — the final sweep enforces)")
+        return (name, True, f"kindle={kw} words; no print format declared (ebook-only) — parity n/a")
     ok = kw >= pw
     return (name, ok, f"kindle={kw} words vs print={pw} words "
                       f"({'>= print, ok' if ok else 'BELOW print — source drift!'})")
+
+
+_EM_DASH_SET = "—–―‒−"  # mirrors lint_manuscript EM_DASHES (§17 HARD gate)
+_EM_DASH_ENTITY = re.compile(r"&#(?:8210|8211|8212|8213|8722);|&(?:mdash|ndash|horbar|minus);")
+
+
+def check_no_artifact_emdash(path, cfg: dict):
+    """The §17 em-dash gate applied to the RENDERED artifact (docx/epub) — the
+    markdown-source lint can never see a dash a GENERATOR injects (epigraph
+    attribution prefixes were shipping one). Scans extracted document text plus
+    headers/footers (docx) and every xhtml/opf/ncx (epub)."""
+    name = "no_emdash_in_rendered_artifact"
+    if not ((cfg.get("voice") or {}).get("no_em_dashes", True)):
+        return (name, True, "voice.no_em_dashes=false — artifact dash scan n/a")
+    if path is None or not Path(path).exists():
+        return (name, False, "artifact not found — artifact dash scan could not run")
+    path = Path(path)
+    hits = []
+    try:
+        with zipfile.ZipFile(path) as z:
+            for member in z.namelist():
+                if path.suffix.lower() == ".docx":
+                    if member != "word/document.xml" and not re.match(
+                            r"word/(?:header|footer)\d*\.xml$", member):
+                        continue
+                    xml = z.read(member).decode("utf-8", "replace")
+                    text = " ".join(re.findall(r"<w:t[^>]*>([^<]*)</w:t>", xml))
+                elif member.lower().endswith((".xhtml", ".html", ".opf", ".ncx")):
+                    xml = z.read(member).decode("utf-8", "replace")
+                    text = re.sub(r"<[^>]+>", " ", xml)
+                else:
+                    continue
+                for ch in _EM_DASH_SET:
+                    i = text.find(ch)
+                    if i >= 0:
+                        ctx = text[max(0, i - 24):i + 24].strip()
+                        hits.append(f"{member}: U+{ord(ch):04X} ...{ctx}...")
+                        break
+                if _EM_DASH_ENTITY.search(xml):
+                    hits.append(f"{member}: numeric/named dash entity")
+    except (zipfile.BadZipFile, OSError, KeyError) as exc:
+        return (name, False, f"could not scan artifact: {exc}")
+    ok = not hits
+    return (name, ok, "rendered text clean (zero em/en dashes)" if ok
+            else "; ".join(hits[:4]))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1059,6 +1127,7 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
         checks.append(check_gutter_side(docx, cfg))
         checks.append(check_empty_headers(docx, cfg))
         checks.append(check_front_matter_valign(docx, cfg))
+        checks.append(check_no_artifact_emdash(docx, cfg))
         checks.append(check_recto_parity(docx, config_path))
         checks.append(check_page_multiple(pdf, fmt))
         note = check_min_pages_note(pdf, fmt)   # INFORMATIONAL, never fails
@@ -1075,13 +1144,16 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
         checks.append(check_digital_pdf(cfg, root))
 
     if fmt == "kindle":
-        checks.append(check_kindle_parity(root))
+        checks.append(check_kindle_parity(root, cfg, final=final))
         checks.append(check_no_residual_latex(root, cfg, "kindle"))
+        checks.append(check_no_artifact_emdash(
+            find_one(root / "outputs" / "kindle", ".docx", prefer_substr=["kindle"]), cfg))
 
     if fmt == "epub":
         checks.append(check_epub_structure(fmt_dir))
-        checks.append(check_epub_parity(root))
+        checks.append(check_epub_parity(root, cfg, final=final))
         checks.append(check_no_residual_latex(root, cfg, "epub"))
+        checks.append(check_no_artifact_emdash(find_one(fmt_dir, ".epub"), cfg))
 
     # lint runs for every format (voice + corruption gate).
     checks.append(check_lint(config_path))

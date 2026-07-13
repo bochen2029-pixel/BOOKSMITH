@@ -44,6 +44,29 @@ def hex_to_rgb(h: str):
     return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
 
 
+def parse_aspect(s: str) -> float:
+    a, _, b = s.replace("x", ":").partition(":")
+    w, h = float(a), float(b or 0)
+    if w <= 0 or h <= 0:
+        raise ValueError(f"bad aspect '{s}' (want W:H, e.g. 6:9)")
+    return w / h
+
+
+def crop_to_aspect(art: "Image.Image", aspect: float) -> "Image.Image":
+    """Center-crop to the target panel aspect — the SAME visible region
+    scale_to_cover keeps at composite time. Scoring on this crop makes the
+    emitted y_frac a fraction of the rendered FRONT PANEL, so the chosen band
+    and the placed title share one coordinate frame."""
+    W, H = art.size
+    if W / H > aspect:
+        vis_w = max(1, int(round(H * aspect)))
+        x0 = (W - vis_w) // 2
+        return art.crop((x0, 0, x0 + vis_w, H))
+    vis_h = max(1, int(round(W / aspect)))
+    y0 = (H - vis_h) // 2
+    return art.crop((0, y0, W, y0 + vis_h))
+
+
 def lum(rgb) -> float:
     r, g, b = rgb
     return 0.299 * r + 0.587 * g + 0.114 * b
@@ -199,6 +222,9 @@ def main(argv=None) -> int:
     ap.add_argument("--palette", help="comma-separated hex colours")
     ap.add_argument("--config", help="book_config.json (reads cover.palette)")
     ap.add_argument("--title-color", help="title hex colour (else best-contrast palette colour)")
+    ap.add_argument("--aspect", help="target front-panel aspect W:H (e.g. 6:9): score bands in the "
+                                     "scale_to_cover-cropped frame the compositor will render, so "
+                                     "y_frac means 'fraction of the finished panel height'")
     ap.add_argument("--title-text", default="Title", help="title text (for --vision rendering)")
     ap.add_argument("--n", type=int, default=6, help="number of candidate bands")
     ap.add_argument("--vision", action="store_true", help="re-rank top candidates with vision_verify")
@@ -212,6 +238,13 @@ def main(argv=None) -> int:
         ap.print_help()
         return 2
     art = Image.open(args.art).convert("RGB")
+    frame = "art"
+    if args.aspect:
+        try:
+            art = crop_to_aspect(art, parse_aspect(args.aspect))
+            frame = f"panel({args.aspect})"
+        except ValueError as e:
+            print(f"warning: {e}; scoring on the uncropped art", file=sys.stderr)
     hexes = []
     if args.palette:
         hexes = [h for h in args.palette.split(",") if h.strip()]
@@ -221,7 +254,7 @@ def main(argv=None) -> int:
     ranked = propose(art, title_rgb, n=args.n)
     if args.vision:
         ranked = vision_rescore(art, ranked, title_rgb, args.title_text)
-    result = {"art": args.art, "title_color": "#%02X%02X%02X" % title_rgb,
+    result = {"art": args.art, "frame": frame, "title_color": "#%02X%02X%02X" % title_rgb,
               "best": ranked[0], "candidates": ranked}
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))

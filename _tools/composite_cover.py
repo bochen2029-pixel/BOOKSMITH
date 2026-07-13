@@ -588,8 +588,16 @@ def render_front_text(canvas: Image.Image, cfg: CoverConfig,
         line1 = " ".join(words[:best])
         line2 = " ".join(words[best:])
 
-    _tyf = cfg.title_y_frac if getattr(cfg, "title_y_frac", None) is not None else 0.030
-    y = trim_top + int(panel_h * _tyf)
+    _tyf = getattr(cfg, "title_y_frac", None)
+    if _tyf is None:
+        y = trim_top + int(panel_h * 0.030)
+    else:
+        # cover_layout best.y_frac: the band TOP as a fraction of the FULL
+        # front-panel height from the PANEL top (layout scores on the same
+        # scale_to_cover crop via --aspect). Clamp into the typographic safe
+        # band so a low band can never collide with the author block.
+        y = max(trim_top, min(int(panel_h * float(_tyf)),
+                              trim_bottom - int(panel_h * 0.30)))
     for ln in ([line1, line2] if line2 else [line1]):
         w, h = measure_tracked(ln, title_font, title_tracking)
         # Shrink an individual over-wide line to fit.
@@ -1281,8 +1289,10 @@ def main(argv=None) -> int:
     p.add_argument("--out", default=None,
                    help="Override the output dir (default <workspace>/outputs/<format>).")
     p.add_argument("--title-y-frac", type=float, default=None,
-                   help="Optional: title top as a fraction of panel height below the trim top "
-                        "(default 0.030). Feed cover_layout.py's chosen band ('best.y_frac') here.")
+                   help="Optional: title band TOP as a fraction of the FULL front-panel height, "
+                        "measured from the panel top. Feed cover_layout.py's 'best.y_frac' here, "
+                        "scored with cover_layout --aspect so both sides share the scale_to_cover "
+                        "frame. Clamped into the safe band. Default: 0.030*panel below the trim top.")
     args = p.parse_args(argv)
 
     cfg_path = Path(args.config).expanduser().resolve()

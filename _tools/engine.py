@@ -87,13 +87,20 @@ def save_json_atomic(p: Path, obj) -> None:
 def run(cmd: list, cwd: Path | None = None, timeout: int = 900) -> tuple[int, str, str]:
     """Run a subprocess; return (rc, stdout, stderr). Never raises on nonzero."""
     try:
+        # encoding pinned: child tools reconfigure their stdout to UTF-8, so a
+        # locale-codepage (cp1252) decode here crashes on the first smart quote
+        # a gate echoes back from real prose. errors="replace" means capture
+        # can never raise mid-pipeline.
         r = subprocess.run(cmd, cwd=str(cwd or ROOT), capture_output=True,
-                           text=True, timeout=timeout)
+                           text=True, encoding="utf-8", errors="replace",
+                           timeout=timeout)
         return r.returncode, r.stdout, r.stderr
     except FileNotFoundError as e:
         return 127, "", f"executable not found: {e}"
     except subprocess.TimeoutExpired:
         return 124, "", f"timeout after {timeout}s"
+    except OSError as e:
+        return 126, "", f"subprocess failed to launch: {e}"
 
 
 # ---------------------------------------------------------------------------
@@ -155,6 +162,11 @@ class Engine:
         self.slug = self.cfg["slug"]
         self.domain = str(self.cfg.get("domain", "book"))
         self.domain_spec = self._load_domain_spec()
+        if self.domain != "book" and self.domain_spec is None:
+            # a typo'd domain must not silently fall through to the book pipeline
+            # with precheck's schema validation skipped
+            raise HardStop("init", f"domain '{self.domain}' declared but "
+                           f"domains/{self.domain}/domain.json is missing or unreadable")
         self.dry_run = dry_run
         self.no_cover = no_cover or dry_run
         if self.domain_spec and self.domain_spec.get("no_cover"):
@@ -387,19 +399,41 @@ class Engine:
         m = re.search(r"```(?:json)?\s*(.+?)```", s, re.S)
         if m:
             s = m.group(1).strip()
+        try:
+            v = json.loads(s)
+            if isinstance(v, dict):
+                return v
+        except Exception:
+            pass
         start = s.find("{")
         if start < 0:
             return None
-        depth = 0
+        # brace-depth scan must skip braces INSIDE string values, else a title
+        # like "The Set {of} All Things" truncates the object and the real plan
+        # is silently swapped for the generic fallback
+        depth, in_str, esc = 0, False, False
         for i in range(start, len(s)):
-            if s[i] == "{":
+            c = s[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif c == "\\":
+                    esc = True
+                elif c == '"':
+                    in_str = False
+                continue
+            if c == '"':
+                in_str = True
+            elif c == "{":
                 depth += 1
-            elif s[i] == "}":
+            elif c == "}":
                 depth -= 1
                 if depth == 0:
                     try:
                         return json.loads(s[start:i + 1])
                     except Exception:
+                        print("[engine] warning: JSON-like block found but failed to "
+                              "parse; using fallback plan", file=sys.stderr)
                         return None
         return None
 
@@ -480,10 +514,20 @@ class Engine:
         bridge = self.eng_dir / "bridge"
         bridge.mkdir(parents=True, exist_ok=True)
         resp = bridge / "seed.response.json"
+        system, prompt = self._seed_prompt(brief, digests)
+        nonce = sha_text("seed|" + system + "\x00" + prompt)
+        nonce_f = bridge / "seed.nonce"
+        if resp.exists() and (not nonce_f.exists()
+                              or nonce_f.read_text(encoding="utf-8").strip() != nonce):
+            # a response that answers no live request (leftover attempt, or the
+            # brief/digests changed underneath it) must never become the plan
+            resp.unlink()
+            self.log("seed.stale_response_discarded")
         if resp.exists():
             raw = resp.read_text(encoding="utf-8", errors="replace")
             resp.unlink()
             (bridge / "seed.request.json").unlink(missing_ok=True)
+            nonce_f.unlink(missing_ok=True)
             data = self._extract_json(raw)
             if isinstance(data, dict) and isinstance(data.get("units"), list) and data["units"]:
                 data["units"] = self._slugify_units(data["units"])
@@ -492,12 +536,13 @@ class Engine:
                     return data
             self.log("seed.harness_unparseable", chars=len(raw))
             return self._fallback_seed_plan(brief)
-        system, prompt = self._seed_prompt(brief, digests)
-        req = {"stage": "seed", "write_plan_json_to": str(resp), "system": system, "prompt": prompt,
+        req = {"stage": "seed", "nonce": nonce, "write_plan_json_to": str(resp),
+               "system": system, "prompt": prompt,
                "must_return": ("ONE JSON object: units[{id,title,class,target_words}], work_intent, "
                                "primary_theme, voice_one_line, division_scheme, refrain, blacklist[], "
                                "sacred_terms[], cover_prompt_seed (NO title/author text in it).")}
         (bridge / "seed.request.json").write_text(json.dumps(req, indent=2, ensure_ascii=False), encoding="utf-8")
+        nonce_f.write_text(nonce, encoding="utf-8")
         directive = (f"[BOOKSMITH harness turn] Architect the book SEED. Read "
                      f"{bridge / 'seed.request.json'} (brief + digests + the required JSON shape), "
                      f"write the plan JSON to {resp}, then re-run the engine (same command). The engine "
@@ -803,7 +848,21 @@ class Engine:
         bridge.mkdir(parents=True, exist_ok=True)
         resp = bridge / f"{uid}.response.md"
         att_f = bridge / f"{uid}.attempts"
-        attempts = int(att_f.read_text()) if att_f.exists() else 0
+        nonce_f = bridge / f"{uid}.nonce"
+        # everything correlates to the unit's CURRENT inputs: a response left
+        # over from an abandoned attempt (or written before a contract/seed
+        # edit) is never placed as canonical prose, and the 3-attempt budget
+        # resets when the inputs change instead of lingering after a hard-stop
+        nonce = self.draft_inputs_sha(unit)
+        attempts = 0
+        if att_f.exists():
+            a_sha, _, a_n = att_f.read_text(encoding="utf-8").strip().partition(":")
+            if a_sha == nonce and a_n.isdigit():
+                attempts = int(a_n)
+        if resp.exists() and (not nonce_f.exists()
+                              or nonce_f.read_text(encoding="utf-8").strip() != nonce):
+            resp.unlink()
+            self.log("harness.stale_response_discarded", unit=uid)
         if resp.exists():
             text = resp.read_text(encoding="utf-8").strip()
             ok, detail = self.gate_draft(unit, text)
@@ -811,10 +870,11 @@ class Engine:
             if ok:
                 out.write_text(text + "\n", encoding="utf-8")
                 att_f.unlink(missing_ok=True)
+                nonce_f.unlink(missing_ok=True)
                 (bridge / f"{uid}.request.json").unlink(missing_ok=True)
                 return f"drafted via harness ({len(text.split())} words, attempt {attempts + 1})"
             attempts += 1
-            att_f.write_text(str(attempts), encoding="utf-8")
+            att_f.write_text(f"{nonce}:{attempts}", encoding="utf-8")
             if attempts >= 3:
                 raise HardStop(f"draft:{uid}", f"harness prose failed the gate {attempts}x: {detail}")
             self._emit_harness_request(unit, system, prompt, resp, feedback=detail, attempt=attempts)
@@ -826,10 +886,12 @@ class Engine:
         uid = unit["id"]
         title = unit.get("title", uid)
         bridge = self.eng_dir / "bridge"
+        nonce = self.draft_inputs_sha(unit)
         req = {
             "unit": uid,
             "title": title,
             "attempt": attempt + 1,
+            "nonce": nonce,
             "write_finished_chapter_markdown_to": str(resp),
             "must_pass_gates": (f"first line exactly '# {title}'; word count within "
                                 f"0.6-1.6x of {int(unit.get('target_words', 1500))}; "
@@ -839,6 +901,7 @@ class Engine:
             "prompt": prompt + (f"\n\n# YOUR PRIOR DRAFT FAILED THESE GATES - fix exactly these:\n{feedback}" if feedback else ""),
         }
         (bridge / f"{uid}.request.json").write_text(json.dumps(req, indent=2, ensure_ascii=False), encoding="utf-8")
+        (bridge / f"{uid}.nonce").write_text(nonce, encoding="utf-8")
         directive = (f"[BOOKSMITH harness turn] Write unit '{uid}' ({title}). "
                      f"Read the request at {bridge / (uid + '.request.json')} (system + prompt + gates), "
                      f"write the finished chapter markdown to {resp}, then re-run the engine "
@@ -945,48 +1008,123 @@ class Engine:
             raise HardStop(f"produce:{fmt}", f"verify_build FAIL: {(o + e).strip()[-400:]}")
         return "produced + verify_build pass"
 
+    def _cover_source_art(self, art: Path) -> str:
+        """Resolve source art: author-supplied art in cover_art/ wins (never
+        overwritten), else bespoke SDXL, else cover_pick (hypergen/catalog,
+        renders anywhere). Nothing usable -> HARD-STOP: a book must never emit
+        coverless because both generators quietly failed."""
+        if art.exists():
+            return "pre-existing cover_art/"
+        rc, o, e = run([sys.executable, str(TOOLS / "cover_gen.py"),
+                        "--config", str(self.config_path), "--out", str(art)])
+        if rc == 0 and art.exists():
+            return "bespoke SDXL"
+        rc2, o2, e2 = run([sys.executable, str(TOOLS / "cover_pick.py"),
+                           "--config", str(self.config_path), "--auto", "--write", "--recolor"])
+        if rc2 == 0 and art.exists():
+            return "cover_pick (hypergen/catalog +recolor; no GPU)"
+        raise HardStop("cover", f"cover art UNRESOLVED (cover_gen rc={rc}, cover_pick rc={rc2}); "
+                       f"place art at {art} and re-run")
+
+    def _cover_layout_frac(self, art: Path):
+        """Best title band, scored in the same front-panel frame the compositor
+        renders (aspect = trim) so the fraction survives the scale_to_cover crop."""
+        if not art.exists():
+            return None
+        trim = self.cfg.get("trim", {}) or {}
+        aspect = f"{trim.get('w', 6)}:{trim.get('h', 9)}"
+        rcl, ol, el = run([sys.executable, str(TOOLS / "cover_layout.py"),
+                           "--art", str(art), "--config", str(self.config_path),
+                           "--aspect", aspect, "--json"])
+        if rcl != 0:
+            return None
+        try:
+            return json.loads(ol).get("best", {}).get("y_frac")
+        except Exception:
+            return None
+
+    def _composite_kindle_cmd(self, title_y) -> list:
+        cmd = [sys.executable, str(TOOLS / "composite_cover.py"), "--config", str(self.config_path),
+               "--profile", "kindle", "--pages", "1"]
+        if title_y is not None:
+            cmd += ["--title-y-frac", str(title_y)]
+        return cmd
+
+    def _vision_verdict(self, image: Path) -> tuple[str, str]:
+        """GATE-6 perceptual check on the composited ebook cover. Returns
+        (verdict, detail); verdict PASS | FAIL | PENDING | SKIP. PENDING means
+        no local vision backend answered and the harness session should
+        adjudicate; SKIP means the tool itself errored."""
+        rubric = (f"Composited ebook front cover for the book '{self.cfg.get('title', self.slug)}' "
+                  f"by {self.cfg.get('author', '')}. PASS only if the title and author are present, "
+                  "legible, and spelled exactly as given; the typography does not collide with busy "
+                  "art; and the art carries no OTHER baked-in text. Reply with a line "
+                  "'VERDICT: PASS' or 'VERDICT: FAIL', then list issues.")
+        rc, o, e = run([sys.executable, str(TOOLS / "vision_verify.py"), "--image", str(image),
+                        "--rubric", rubric, "--backend", "auto"], timeout=300)
+        if rc != 0:
+            return "SKIP", f"vision_verify exit {rc}: {(o + e).strip()[-160:]}"
+        try:
+            data = json.loads(o.strip())
+        except Exception:
+            data = self._extract_json(o)
+        if not isinstance(data, dict):
+            return "SKIP", "unparseable vision_verify output"
+        verdict = str(data.get("verdict", "FAIL")).upper()
+        return verdict, "; ".join(str(i) for i in data.get("issues", [])[:4])
+
     def stage_cover(self):
         if self.no_cover:
             return "skipped (dry-run / --no-cover)"
-        # --- 1. SOURCE ART: bespoke SDXL (GPU + ComfyUI), else cover_pick (hypergen /
-        #     catalog, renders anywhere; --recolor recolours a catalog pick to the book
-        #     palette). Never a hard-stop; art always lands. ---
-        art_src, rc2 = None, None
-        rc, o, e = run([sys.executable, str(TOOLS / "cover_gen.py"), "--config", str(self.config_path)])
-        if rc == 0:
-            art_src = "bespoke SDXL"
-        else:
-            rc2, o2, e2 = run([sys.executable, str(TOOLS / "cover_pick.py"),
-                               "--config", str(self.config_path), "--auto", "--write", "--recolor"])
-            if rc2 == 0:
-                art_src = "cover_pick (hypergen/catalog +recolor; no GPU)"
-        if art_src is None:
-            return "cover art UNRESOLVED (gen rc=%s, pick rc=%s) — place art in cover_art/" % (rc, rc2)
-        # --- 2. TYPOGRAPHY AUTO-LAYOUT: choose the calm title band on the art. ---
+        # --- 1. SOURCE ART (hard-stop if unresolvable) ---
         art = self.ws / "cover_art" / f"{self.slug}_src.png"
-        title_y = None
-        if art.exists():
-            rcl, ol, el = run([sys.executable, str(TOOLS / "cover_layout.py"),
-                               "--art", str(art), "--config", str(self.config_path), "--json"])
-            if rcl == 0:
-                try:
-                    title_y = json.loads(ol).get("best", {}).get("y_frac")
-                except Exception:
-                    title_y = None
-        # --- 3. COMPOSITE the ebook front cover (title auto-placed) if an ebook ships. Print
-        #     wraps (spine/pages) stay in the produce/interactive flow. Non-fatal. ---
+        art_src = self._cover_source_art(art)
+        # --- 2. TYPOGRAPHY AUTO-LAYOUT: calm title band, panel-frame fraction ---
+        title_y = self._cover_layout_frac(art)
+        # --- 3. COMPOSITE the ebook front cover; REQUIRED when an ebook ships
+        #     (epub embeds it; a missing cover must fail here, not downstream).
+        #     Print wraps (spine/pages) stay in the produce/interactive flow. ---
         composited = []
         fmts = self.cfg.get("formats", [])
+        cover_jpg = self.ws / "outputs" / "kindle" / f"{self.slug}_KINDLE_cover.jpg"
+        vinfo = "n/a"
         if "kindle" in fmts or "epub" in fmts:
-            cmd = [sys.executable, str(TOOLS / "composite_cover.py"), "--config", str(self.config_path),
-                   "--profile", "kindle", "--pages", "1"]
-            if title_y is not None:
-                cmd += ["--title-y-frac", str(title_y)]
-            rcc, oc, ec = run(cmd)
-            if rcc == 0:
-                composited.append("kindle")
-        self.log("cover", art=art_src, title_y_frac=title_y, composited=",".join(composited) or "none")
-        return f"cover art: {art_src}; title-band y_frac={title_y}; composited: {composited or 'none'}"
+            rcc, oc, ec = run(self._composite_kindle_cmd(title_y))
+            if rcc != 0 or not cover_jpg.exists():
+                raise HardStop("cover", f"ebook cover composite failed (rc={rcc}): "
+                               f"{(oc + ec).strip()[-300:]}")
+            composited.append("kindle")
+            # --- 4. GATE-6 PERCEPTUAL: FAIL -> bounded SDXL re-roll, then hard-stop.
+            #     PENDING/SKIP (no vision backend) is logged, never a silent pass-
+            #     as-success of a FAILING verdict. ---
+            verdict, vdetail = self._vision_verdict(cover_jpg)
+            budget = int(((self.cfg.get("cover", {}) or {}).get("art", {}) or {})
+                         .get("reroll_budget", 6))
+            rerolls = 0
+            while verdict == "FAIL" and art_src == "bespoke SDXL" and rerolls < budget:
+                rerolls += 1
+                self.log("cover.reroll", n=rerolls, detail=vdetail[:160])
+                seed = str(int.from_bytes(os.urandom(4), "big"))
+                rc, o, e = run([sys.executable, str(TOOLS / "cover_gen.py"),
+                                "--config", str(self.config_path), "--seed", seed,
+                                "--out", str(art)])
+                if rc != 0:
+                    break
+                title_y = self._cover_layout_frac(art)
+                rcc, oc, ec = run(self._composite_kindle_cmd(title_y))
+                if rcc != 0:
+                    break
+                verdict, vdetail = self._vision_verdict(cover_jpg)
+            if verdict == "FAIL":
+                raise HardStop("cover", f"perceptual cover gate FAIL after {rerolls} "
+                               f"re-roll(s): {vdetail}")
+            vinfo = verdict if verdict == "PASS" else f"{verdict} ({vdetail[:120]})"
+            if verdict != "PASS":
+                self.log("cover.vision_unadjudicated", verdict=verdict, detail=vdetail[:200])
+        self.log("cover", art=art_src, title_y_frac=title_y,
+                 composited=",".join(composited) or "none", vision=vinfo)
+        return (f"cover art: {art_src}; title-band y_frac={title_y}; "
+                f"composited: {composited or 'none'}; vision: {vinfo}")
 
     def stage_verify(self):
         if self.domain != "book" and self.domain_spec:
@@ -1003,8 +1141,11 @@ class Engine:
         fmts = list(self.cfg.get("formats", []))
         failed = []
         for fmt in fmts:
+            # --final: this stage runs after every produce + the cover, so the
+            # deferred-at-produce-time checks (word-count parity vs print, cover
+            # presence) must hold for real here — this is the pre-emit sweep
             rc, o, e = run([sys.executable, str(TOOLS / "verify_build.py"),
-                            "--config", str(self.config_path), "--format", fmt])
+                            "--config", str(self.config_path), "--format", fmt, "--final"])
             if rc != 0:
                 failed.append(f"{fmt}: {(o + e).strip()[-200:]}")
         if failed:
@@ -1012,18 +1153,28 @@ class Engine:
         return f"{len(fmts)} configured format(s) verified: {', '.join(fmts)}"
 
     def stage_emit(self):
+        # a manifest that claims a deliverable which is not on disk is a lie —
+        # the exact unverified-state-advanced failure the engine exists to stop
         if self.domain != "book" and self.domain_spec:
+            targets = list(self.domain_spec.get("produce_targets", []))
+            missing = [f"{t}: {p.name}" for t in targets
+                       for p in self.expected_outputs("produce", t) if not p.exists()]
             manifest = {
                 "slug": self.slug, "emitted": now(), "domain": self.domain,
-                "produce_targets": self.domain_spec.get("produce_targets", []),
+                "produce_targets": targets,
                 "outputs_root": str((self.ws / "outputs").resolve()),
             }
         else:
+            missing = [f"{fmt}: {p.name}" for fmt in self.cfg.get("formats", [])
+                       for p in self.expected_outputs("produce", fmt) if not p.exists()]
             manifest = {
                 "slug": self.slug, "emitted": now(),
                 "formats": self.cfg.get("formats", []),
                 "outputs_root": str((self.ws / "outputs").resolve()),
             }
+        if missing:
+            raise HardStop("emit", "declared deliverable(s) missing on disk: "
+                           + "; ".join(missing[:6]))
         save_json_atomic(self.ws / "outputs" / "MANIFEST.json", manifest)
         return "emitted manifest"
 
@@ -1110,15 +1261,47 @@ class Engine:
                      if intake.exists() else [])
             sig = "|".join(f"{p.relative_to(self.ws)}:{p.stat().st_size}" for p in files)
             return sha_text("ingest|" + sig)
-        # precheck/cover/verify/emit key off the config
+        if kind in ("verify", "emit"):
+            # artifact-aware: a produced deliverable changing (or vanishing)
+            # must re-trigger the sweep and the manifest, not skip as done
+            if self.domain != "book" and self.domain_spec:
+                outs = [p for t in self.domain_spec.get("produce_targets", [])
+                        for p in self.expected_outputs("produce", t)]
+            else:
+                outs = [p for f in self.cfg.get("formats", [])
+                        for p in self.expected_outputs("produce", f)]
+            return sha_text(f"{kind}|" + sha_file(self.config_path) + "|"
+                            + "|".join(f"{p.name}:{sha_file(p)}" for p in outs))
+        # precheck/cover key off the config
         return sha_text(f"{kind}|{sha_file(self.config_path)}")
 
     def expected_outputs(self, kind: str, arg: str) -> list[Path]:
         """The artifact(s) a stage must have left on disk. A stage is only
         'satisfied' on resume if these still exist — so deleting a finished
-        chapter (or a lost master) forces a re-run, no matter the input hash."""
+        chapter, a lost master, OR a produced format/cover deliverable forces
+        a re-run, no matter the input hash."""
         if kind == "draft":
             return [self.ws / "manuscript" / "current" / f"{arg}_current.md"]
+        if kind == "produce":
+            if self.domain != "book" and self.domain_spec:
+                outs = (self.domain_spec.get("outputs", {}) or {}).get(arg, [])
+                return [Path(self._resolve_token(x)) for x in outs]
+            if arg == "kindle":
+                return [self.ws / "outputs" / "kindle" / f"{self.slug}_KINDLE.docx"]
+            if arg == "epub":
+                return [self.ws / "outputs" / "epub" / f"{self.slug}.epub"]
+            if arg == "digital_pdf":
+                return [self.ws / "outputs" / "digital" / f"{self.slug}_DIGITAL.pdf"]
+            if arg in self.PRINT_FMTS:
+                docx = self._print_docx(arg)
+                return [docx, docx.with_suffix(".pdf")]
+            return []
+        if kind == "cover" and not self.no_cover:
+            fmts = self.cfg.get("formats", [])
+            outs = [self.ws / "cover_art" / f"{self.slug}_src.png"]
+            if "kindle" in fmts or "epub" in fmts:
+                outs.append(self.ws / "outputs" / "kindle" / f"{self.slug}_KINDLE_cover.jpg")
+            return outs
         if kind == "assemble":
             masters = sorted((self.ws / "outputs" / "markdown").glob(f"{self.slug}_v*.md"))
             return [masters[-1]] if masters else [self.ws / "outputs" / "markdown" / "__missing__.md"]
@@ -1227,7 +1410,11 @@ def main(argv=None) -> int:
         print(f"config not found: {cfg_path}", file=sys.stderr)
         return 1
 
-    eng = Engine(cfg_path, backend=args.backend, dry_run=args.dry_run, no_cover=args.no_cover)
+    try:
+        eng = Engine(cfg_path, backend=args.backend, dry_run=args.dry_run, no_cover=args.no_cover)
+    except HardStop as hs:
+        print(f"\n=== HARD-STOP at {hs.stage} ===\n{hs.detail}", file=sys.stderr)
+        return 2
     if args.fresh:
         (eng.eng_dir / "state.json").unlink(missing_ok=True)
         eng.state = State(eng.eng_dir / "state.json", eng.slug, sha_file(cfg_path))

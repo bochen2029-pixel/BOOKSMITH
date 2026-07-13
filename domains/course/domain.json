@@ -10,5 +10,9 @@
     "course_md": ["python", "domains/course/produce_course.py", "--config", "{config}", "--target", "course_md"],
     "course_json": ["python", "domains/course/produce_course.py", "--config", "{config}", "--target", "course_json"]
   },
+  "outputs": {
+    "course_md": ["{ws}/outputs/course/{slug}_COURSE.md"],
+    "course_json": ["{ws}/outputs/course/{slug}_course.json"]
+  },
   "verifier": ["python", "domains/course/verify_course.py", "--config", "{config}"]
 }

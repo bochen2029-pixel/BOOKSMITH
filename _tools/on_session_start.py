@@ -114,6 +114,14 @@ def main():
     flag_exists = flag.exists()
 
     inflight = list(_iter_inflight(cwd))
+    # A flag with no in-flight book is stale (every ledger COMPLETE): clear it so
+    # it cannot pin a future rehydration to an old session or nag every startup.
+    if flag_exists and not inflight and source not in ("compact", "resume"):
+        try:
+            flag.unlink()
+        except Exception:
+            pass
+        flag_exists = False
     # Only force recovery on compaction/resume, or when a precompact flag is set.
     trigger = (source in ("compact", "resume")) or flag_exists
 

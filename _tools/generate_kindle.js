@@ -130,7 +130,7 @@ function resolveTypography(config) {
 // Identical parser to the print generator (asymmetric parsers shipped literal
 // backticks to Kindle, §3.3).
 // ============================================================
-function makeInlineBuilder(T) {
+function makeInlineBuilder(T, mathEnabled) {
   return function buildInlineRuns(text, baseOpts) {
     text = fixProseSubscripts(text);
     const runs = [];
@@ -141,10 +141,17 @@ function makeInlineBuilder(T) {
         continue;
       }
       if (codePart.length === 0) continue;
-      const mathParts = codePart.split(/(\$[^$]+\$)/g);
+      // $..$ math parsing only for nonfiction (is_fiction:false) books, and a
+      // currency pair ("$14.99 ... $24.99": digit-first, no \ ^ _) must stay
+      // literal prose — otherwise the dollars are eaten and the span ships in
+      // Cambria Math italic. (Kept identical to generate_book.js, §3.3.)
+      const mathParts = mathEnabled ? codePart.split(/(\$[^$]+\$)/g) : [codePart];
       for (const mathPart of mathParts) {
-        if (mathPart.startsWith("$") && mathPart.endsWith("$") && mathPart.length > 2) {
-          const expr = latexToUnicode(mathPart.slice(1, -1));
+        const inner = (mathEnabled && mathPart.startsWith("$") && mathPart.endsWith("$") && mathPart.length > 2)
+          ? mathPart.slice(1, -1) : null;
+        const currencyLike = inner !== null && /^\d/.test(inner) && !/[\\^_]/.test(inner);
+        if (inner !== null && !currencyLike) {
+          const expr = latexToUnicode(inner);
           runs.push(new TextRun({ ...baseOpts, text: expr, font: T.MATH_FONT, italics: true }));
           continue;
         }
@@ -312,7 +319,7 @@ async function main() {
   }
   const config = loadConfig(args.config);
   const T = resolveTypography(config);
-  const buildInlineRuns = makeInlineBuilder(T);
+  const buildInlineRuns = makeInlineBuilder(T, config.is_fiction === false);
   const F = makeFactories(T, buildInlineRuns);
 
   const title = str(config.title, "");
@@ -391,9 +398,12 @@ async function main() {
         }));
       });
       if (epiAttr) {
+        // same rendered-character rule as the print generator: no em-dash
+        // prefix unless the voice contract explicitly allows em-dashes
+        const attrPrefix = (config.voice && config.voice.no_em_dashes === false) ? "— " : "";
         children.push(new Paragraph({
           spacing: { before: 120, after: 200 }, alignment: AlignmentType.CENTER,
-          children: [new TextRun({ text: `— ${epiAttr}`, font: T.FONT, size: 18, color: "888888" })],
+          children: [new TextRun({ text: `${attrPrefix}${epiAttr}`, font: T.FONT, size: 18, color: "888888", italics: true })],
         }));
       }
     }

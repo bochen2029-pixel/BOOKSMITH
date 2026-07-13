@@ -266,7 +266,7 @@ function resolveTypography(config) {
 // (ledger §3.3: code spans BEFORE italics; an asymmetric parser shipped literal
 // backticks to Kindle). Math via latexToUnicode tagged Cambria Math.
 // ============================================================
-function makeInlineBuilder(T) {
+function makeInlineBuilder(T, mathEnabled) {
   return function buildInlineRuns(text, baseOpts) {
     // Prose-mode subscript fix (safe before math split: math uses \Omega, not Ω).
     text = fixProseSubscripts(text);
@@ -278,10 +278,17 @@ function makeInlineBuilder(T) {
         continue;
       }
       if (codePart.length === 0) continue;
-      const mathParts = codePart.split(/(\$[^$]+\$)/g);
+      // $..$ math parsing only for nonfiction (is_fiction:false) books, and a
+      // currency pair ("$14.99 ... $24.99": digit-first, no \ ^ _) must stay
+      // literal prose — otherwise the dollars are eaten and the span ships in
+      // Cambria Math italic.
+      const mathParts = mathEnabled ? codePart.split(/(\$[^$]+\$)/g) : [codePart];
       for (const mathPart of mathParts) {
-        if (mathPart.startsWith("$") && mathPart.endsWith("$") && mathPart.length > 2) {
-          const expr = latexToUnicode(mathPart.slice(1, -1));
+        const inner = (mathEnabled && mathPart.startsWith("$") && mathPart.endsWith("$") && mathPart.length > 2)
+          ? mathPart.slice(1, -1) : null;
+        const currencyLike = inner !== null && /^\d/.test(inner) && !/[\\^_]/.test(inner);
+        if (inner !== null && !currencyLike) {
+          const expr = latexToUnicode(inner);
           runs.push(new TextRun({ ...baseOpts, text: expr, font: T.MATH_FONT, italics: true }));
           continue;
         }
@@ -602,9 +609,12 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
       children: [new TextRun({ text: l, font: T.FONT, size: 20, color: "666666", italics: true })],
     }));
     if (attribution) {
+      // the em-dash prefix is a rendered character the source lint can never
+      // see; under the (default-on) no-em-dashes voice rule it must not ship
+      const attrPrefix = (config.voice && config.voice.no_em_dashes === false) ? "— " : "";
       kids.push(new Paragraph({
         spacing: { before: 120, after: 200 }, alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: `— ${attribution}`, font: T.FONT, size: 18, color: "888888" })],
+        children: [new TextRun({ text: `${attrPrefix}${attribution}`, font: T.FONT, size: 18, color: "888888", italics: true })],
       }));
     }
     return kids;
@@ -682,7 +692,7 @@ async function main() {
   const config = loadConfig(args.config);
 
   const T = resolveTypography(config);
-  const buildInlineRuns = makeInlineBuilder(T);
+  const buildInlineRuns = makeInlineBuilder(T, config.is_fiction === false);
   const F = makeFactories(T, buildInlineRuns);
 
   // Page geometry from config.trim (default 6x9). Blurb page PDF = trim +
