@@ -913,9 +913,11 @@ def _book_is_math(cfg: dict) -> bool:
     (is_fiction false). Explicit book_config.math or book_config.is_math wins."""
     if not isinstance(cfg, dict):
         return False
-    for key in ("math", "is_math", "has_math"):
-        if isinstance(cfg.get(key), bool):
-            return cfg[key]
+    # `math` is the ONE declared override (schema-legal); the old is_math /
+    # has_math aliases were forbidden by additionalProperties:false and thus
+    # unreachable for any config that passes GATE-2.
+    if isinstance(cfg.get("math"), bool):
+        return cfg["math"]
     return cfg.get("is_fiction") is False
 
 
