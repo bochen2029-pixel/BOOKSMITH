@@ -906,18 +906,45 @@ class Engine:
     def stage_cover(self):
         if self.no_cover:
             return "skipped (dry-run / --no-cover)"
-        # Portable art source: try bespoke SDXL (needs a GPU + ComfyUI); on any
-        # failure fall back to cover_pick (hypergen abstract cover / catalog match),
-        # which renders anywhere. A cover is never a hard-stop; art always lands.
-        rc, o, e = run([sys.executable, str(TOOLS / "cover_gen.py"),
-                        "--config", str(self.config_path)])
+        # --- 1. SOURCE ART: bespoke SDXL (GPU + ComfyUI), else cover_pick (hypergen /
+        #     catalog, renders anywhere; --recolor recolours a catalog pick to the book
+        #     palette). Never a hard-stop; art always lands. ---
+        art_src, rc2 = None, None
+        rc, o, e = run([sys.executable, str(TOOLS / "cover_gen.py"), "--config", str(self.config_path)])
         if rc == 0:
-            return "cover art: bespoke SDXL"
-        rc2, o2, e2 = run([sys.executable, str(TOOLS / "cover_pick.py"),
-                           "--config", str(self.config_path), "--auto", "--write"])
-        if rc2 == 0:
-            return "cover art: cover_pick fallback (hypergen/catalog; no GPU art stack)"
-        return "cover art UNRESOLVED (gen rc=%d, pick rc=%d) — place art in cover_art/" % (rc, rc2)
+            art_src = "bespoke SDXL"
+        else:
+            rc2, o2, e2 = run([sys.executable, str(TOOLS / "cover_pick.py"),
+                               "--config", str(self.config_path), "--auto", "--write", "--recolor"])
+            if rc2 == 0:
+                art_src = "cover_pick (hypergen/catalog +recolor; no GPU)"
+        if art_src is None:
+            return "cover art UNRESOLVED (gen rc=%s, pick rc=%s) — place art in cover_art/" % (rc, rc2)
+        # --- 2. TYPOGRAPHY AUTO-LAYOUT: choose the calm title band on the art. ---
+        art = self.ws / "cover_art" / f"{self.slug}_src.png"
+        title_y = None
+        if art.exists():
+            rcl, ol, el = run([sys.executable, str(TOOLS / "cover_layout.py"),
+                               "--art", str(art), "--config", str(self.config_path), "--json"])
+            if rcl == 0:
+                try:
+                    title_y = json.loads(ol).get("best", {}).get("y_frac")
+                except Exception:
+                    title_y = None
+        # --- 3. COMPOSITE the ebook front cover (title auto-placed) if an ebook ships. Print
+        #     wraps (spine/pages) stay in the produce/interactive flow. Non-fatal. ---
+        composited = []
+        fmts = self.cfg.get("formats", [])
+        if "kindle" in fmts or "epub" in fmts:
+            cmd = [sys.executable, str(TOOLS / "composite_cover.py"), "--config", str(self.config_path),
+                   "--profile", "kindle", "--pages", "1"]
+            if title_y is not None:
+                cmd += ["--title-y-frac", str(title_y)]
+            rcc, oc, ec = run(cmd)
+            if rcc == 0:
+                composited.append("kindle")
+        self.log("cover", art=art_src, title_y_frac=title_y, composited=",".join(composited) or "none")
+        return f"cover art: {art_src}; title-band y_frac={title_y}; composited: {composited or 'none'}"
 
     def stage_verify(self):
         if self.domain != "book" and self.domain_spec:
