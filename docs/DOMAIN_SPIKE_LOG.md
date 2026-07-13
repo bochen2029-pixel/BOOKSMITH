@@ -71,5 +71,14 @@ on install; `cover_layout.py` picks the calm title band; `composite_cover.py --t
 places the title there. Each guarded so defaults are byte-identical; all proven end-to-end. The
 only piece left is auto-orchestrating these three from the engine's cover stage.
 
+## Phase 4 — engine cover auto-orchestration ✅ (branch `cover-orchestration-2026-07-13`)
+DONE: the engine's `stage_cover` now runs the full loop itself — source art (bespoke SDXL else
+`cover_pick --recolor` for catalog picks) → `cover_layout` picks the calm title band →
+`composite_cover --title-y-frac` composites the ebook cover. Guarded by `no_cover` (dry-run /
+smoketest skip it). **Proven:** a real `proof_oneshot` run `--from cover` → `cover art: cover_pick
++recolor; title-band y_frac=0.02; composited kindle` → `produce:epub` (embeds the composited cover)
+→ verify → emit, rc 0. Smoketest A–J + selfcheck green. **#6 fully complete** (all four pieces + the
+engine auto-orchestration).
+
 ---
 *(entries appended above as each phase landed)*
