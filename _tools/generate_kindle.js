@@ -474,6 +474,26 @@ async function main() {
     }
   }
 
+  // ---- Reader's note (config.readers_note) — front-matter prose. Rendered here
+  // so the ebook carries the same front matter as print/EPUB (else the Kindle
+  // ships short of print and the word-count parity gate fails). §3.6 parity.
+  const readersNote = str(config.readers_note, "");
+  if (readersNote) {
+    children.push(new Paragraph({ children: [new PageBreak()] }));
+    children.push(new Paragraph({
+      spacing: { before: 2000, after: 500 }, alignment: AlignmentType.CENTER,
+      children: [new TextRun({ text: "A NOTE TO THE READER", font: T.FONT, size: 22, color: T.BODY_COLOR, characterSpacing: 60 })],
+    }));
+    for (const para of readersNote.split(/\n\s*\n/)) {
+      const p = para.trim();
+      if (!p) continue;
+      children.push(new Paragraph({
+        spacing: { after: 160 }, alignment: AlignmentType.LEFT,
+        children: [new TextRun({ text: p.replace(/\s*\n\s*/g, " "), font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR })],
+      }));
+    }
+  }
+
   // ---- Table of Contents (auto from Heading 1) — OMITTED by default (§16.4).
   // For Kindle / reflowable uploads Amazon builds navigation from the Heading-1
   // structure itself; a manual CONTENTS page + TableOfContents field is

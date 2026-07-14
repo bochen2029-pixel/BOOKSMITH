@@ -299,6 +299,16 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 - I/O: `python make_giftable.py [--allow-personal-data] [--include-node-modules] [--keep-service-templates] [--full-example-outputs]` → writes the dist zip (or exits 1 with `file:line + pattern` if the personal-data gate finds the author name/email or a machine path). Excludes `.git/`, `__pycache__/`, `kit_env.json`, all `book_workspace/*` except a trimmed `testvoyage/`, rehydration scratch, and session logs by default.
 - SOURCE: new — the portability-audit packager for the giftable-kit initiative.
 
+**`illustrations_gen.py`** — *Chapter-opener illustration batch driver (SDXL via ComfyUI).*
+- PURPOSE: drive the vendored `comfy_client` over a per-book `cover_art/illustrations/briefs.json` (locked style prefix + negative + one subject line per unit) to produce N candidates per chapter, entirely on disk and crash/rewind-safe: the manifest is rewritten after EVERY image, so a fresh session resumes by reading it, never by regenerating. Feeds the `interior.chapter_art` injection in the interior generators.
+- I/O: `python illustrations_gen.py --config book_config.json [--generate] [--contact-sheets] [--pick] [--candidates N] [--only ids]` → writes `cover_art/illustrations/candidates/<id>_c<k>_s<seed>.png`, `contact_sheets/`, ink-heuristic auto-picks post-processed (grayscale/autocontrast/white-point) into `live/<id>.png`, and `illustrations_manifest.json`. Idempotent per step.
+- SOURCE: new (2026-07-14) — the illustrated-interior initiative.
+
+**`cover_compose_ahss.py`** — *Bespoke type-led cover compositor (per-book design reference).*
+- PURPOSE: render an operator-approved type-led cover design (navy field, Georgia serif, pen-stroke-on-a-signing-line motif) as front/back/spine panels and compose the per-service artifacts with EXACT-inch MediaBox PDFs (PyMuPDF). One renderer for all panels so the wrap is self-consistent; Mixam/KDP geometry pulled from the shared `preset_lookup` so the verifier and compositor agree. The alternative to the house `composite_cover.py` when a book ships a bespoke design instead of AI art. (Named for its first book; a template for future bespoke covers.)
+- I/O: `python cover_compose_ahss.py --config book_config.json --back back_copy.json --pages N --profile <digital|kindle|mixam|kdp> --out <dir>` → writes the profile's PDF(s)/JPG + `cover_meta_<profile>.json`.
+- SOURCE: new (2026-07-14) — *A Human Still Signs* production.
+
 ---
 
 ## (d) THE CLAUDE.md COMMAND GRAMMAR SPEC
