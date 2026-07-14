@@ -32,7 +32,7 @@ const fs = require("fs");
 const path = require("path");
 const {
   Document, Packer, Paragraph, TextRun, AlignmentType, PageBreak,
-  HeadingLevel, TableOfContents, StyleLevel,
+  HeadingLevel, TableOfContents, StyleLevel, ImageRun,
 } = require("docx");
 
 const { latexToUnicode, fixProseSubscripts } = require("./latex_to_unicode.js");
@@ -243,11 +243,53 @@ function makeFactories(T, buildInlineRuns) {
 }
 
 // ============================================================
+// Chapter-opener art (OPTIONAL; kept identical in behavior to
+// generate_book.js): interior.chapter_art {enabled, dir, width_in}; default
+// dir cover_art/illustrations/live under the workspace; one <unit_id>.png per
+// unit, injected after that unit's heading; missing dir/file = silent no-op.
+// ============================================================
+function pngDimensions(buf) {
+  if (!buf || buf.length < 24) return null;
+  if (buf[0] !== 0x89 || buf[1] !== 0x50 || buf[2] !== 0x4e || buf[3] !== 0x47) return null;
+  return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+}
+
+function resolveChapterArt(config, wsRoot) {
+  const ca = (config.interior && config.interior.chapter_art) || {};
+  if (ca.enabled === false) return null;
+  const dir = path.resolve(wsRoot, ca.dir || path.join("cover_art", "illustrations", "live"));
+  if (!fs.existsSync(dir)) return null;
+  const widthIn = typeof ca.width_in === "number" && ca.width_in > 0 ? ca.width_in : 4.0;
+  return { dir, widthIn };
+}
+
+function chapterArtParagraph(art, unitId, tag) {
+  if (!art || !unitId) return null;
+  const file = path.join(art.dir, `${unitId}.png`);
+  if (!fs.existsSync(file)) return null;
+  const data = fs.readFileSync(file);
+  const dims = pngDimensions(data);
+  if (!dims || !dims.w || !dims.h) {
+    console.warn(`[${tag}] chapter art skipped (not a readable PNG): ${file}`);
+    return null;
+  }
+  const wPx = Math.round(art.widthIn * 96);
+  const hPx = Math.round(wPx * (dims.h / dims.w));
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 120, after: 360 },
+    children: [new ImageRun({ type: "png", data, transformation: { width: wPx, height: hPx } })],
+  });
+}
+
+// ============================================================
 // Markdown -> paragraphs. Unit headings at the configured level become Heading 1.
 // [IMAGE ...] blocks are consumed and skipped. Front-matter markdown before the
 // first unit heading is ignored (front matter is rendered from config here).
+// chapterArt, when non-null, is {paras: (Paragraph|null)[], idx: 0}: unit ids
+// bound to headings BY POSITION; each unit heading consumes one slot.
 // ============================================================
-function parseMarkdown(text, unitLevel, F) {
+function parseMarkdown(text, unitLevel, F, chapterArt) {
   const lines = text.split("\n");
   const paragraphs = [];
   let inDisplayMath = false;
@@ -296,6 +338,10 @@ function parseMarkdown(text, unitLevel, F) {
 
     if ((isChapterLevel && isH1) || (!isChapterLevel && isH2)) {
       paragraphs.push(...F.createUnitHeading(line.replace(/^#{1,2}\s+/, "").trim()));
+      if (chapterArt) {
+        const artPara = chapterArt.paras[chapterArt.idx++];
+        if (artPara) paragraphs.push(artPara);
+      }
       continue;
     }
     if (isChapterLevel && isH2) continue;
@@ -456,7 +502,16 @@ async function main() {
   const srcPath = resolveSrc(config, args.src, wsRoot);
   const masterMd = fs.readFileSync(srcPath, "utf8");
   const body = bodyFromFirstUnit(masterMd, unitLevel);
-  children.push(...parseMarkdown(body, unitLevel, F));
+  // Chapter-opener art: ids bind to unit headings by position (same rule as
+  // generate_book.js and build_epub.py); missing files skip silently.
+  const chapterArt = resolveChapterArt(config, wsRoot);
+  const unitIdsForArt = (config.units || []).map((u) => (u && u.id) || "");
+  const artParas = unitIdsForArt.map((id) => chapterArtParagraph(chapterArt, id, "generate_kindle"));
+  const artCount = artParas.filter(Boolean).length;
+  if (chapterArt && artCount > 0) {
+    console.log(`[generate_kindle] chapter art: ${artCount} image(s) staged from ${chapterArt.dir}`);
+  }
+  children.push(...parseMarkdown(body, unitLevel, F, artCount > 0 ? { paras: artParas, idx: 0 } : null));
 
   // ---- About the Author (extended back matter, §7.3) ----
   // Sourced from config.about_the_author (free-text, paragraphs split on blank

@@ -254,11 +254,14 @@ blockquote p { text-indent: 0; }
 .epigraph .attribution { font-style: normal; font-size: 0.9em; margin-top: 1em; }
 img.cover { max-width: 100%; height: auto; }
 div.coverwrap { text-align: center; }
+figure.chapterart { text-align: center; margin: 0.8em 0 1.2em 0; }
+figure.chapterart img { max-width: 92%; height: auto; }
 """
 
 
-def unit_xhtml(lang, heading, body_html):
-    body = f'<section epub:type="chapter">\n<h1 class="unit">{inline(heading)}</h1>\n{body_html}\n</section>'
+def unit_xhtml(lang, heading, body_html, art_html=""):
+    body = (f'<section epub:type="chapter">\n<h1 class="unit">{inline(heading)}</h1>\n'
+            f'{art_html}{body_html}\n</section>')
     return XHTML_SHELL.format(lang=lang, title=esc(heading), body=body)
 
 
@@ -359,14 +362,31 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
             f"{'#' * unit_level} but config declares {len(unit_ids)} unit(s) — "
             f"positional id binding would mislabel every chapter. Fix the master or "
             f"config before building the EPUB.")
+    # Chapter-opener art (kept identical in behavior to the DOCX generators):
+    # interior.chapter_art {enabled, dir}; default dir cover_art/illustrations/
+    # live under the workspace; one <unit_id>.png per unit; missing = no-op.
+    _ca = ((cfg.get("interior") or {}).get("chapter_art") or {})
+    art_dir = None
+    if _ca.get("enabled") is not False:
+        _cand = ws / (_ca.get("dir") or "cover_art/illustrations/live")
+        art_dir = _cand if _cand.is_dir() else None
+    art_files: dict = {}  # sanitized uid -> Path
+
     body_words = 0
     for n, (heading, body_lines) in enumerate(units):
         uid = unit_ids[n] if n < len(unit_ids) and unit_ids[n] else f"unit_{n+1:02d}"
         uid = re.sub(r"[^a-zA-Z0-9_]", "_", uid)
         body_html = body_to_xhtml(body_lines, unit_level, ornament)
         body_words += len(re.sub(r"<[^>]+>", " ", body_html).split())
+        art_html = ""
+        if art_dir is not None:
+            af = art_dir / f"{uid}.png"
+            if af.is_file():
+                art_files[uid] = af
+                art_html = (f'<figure class="chapterart">'
+                            f'<img src="../images/art_{uid}.png" alt=""/></figure>\n')
         docs.append((uid, f"{uid}.xhtml", heading,
-                     unit_xhtml(lang, heading, body_html), True))
+                     unit_xhtml(lang, heading, body_html, art_html), True))
 
     if cfg.get("about_the_author"):
         paras = [p.strip() for p in re.split(r"\n\s*\n", cfg["about_the_author"]) if p.strip()]
@@ -392,6 +412,9 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
     manifest.append('<item id="ncx" href="toc.ncx" '
                     'media-type="application/x-dtbncx+xml"/>')
     manifest.append('<item id="css" href="css/style.css" media-type="text/css"/>')
+    for uid in art_files:
+        manifest.append(f'<item id="art-{uid}" href="images/art_{uid}.png" '
+                        f'media-type="image/png"/>')
     for did, fname, _t, _x, _toc in docs:
         manifest.append(f'<item id="{did}" href="text/{fname}" '
                         f'media-type="application/xhtml+xml"/>')
@@ -483,6 +506,9 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         if cover_name:
             z.write(str(cover_src), f"OEBPS/images/{cover_name}",
                     compress_type=zipfile.ZIP_DEFLATED)
+        for uid, af in art_files.items():
+            z.write(str(af), f"OEBPS/images/art_{uid}.png",
+                    compress_type=zipfile.ZIP_DEFLATED)
         for _d, fname, _t, xhtml, _toc in docs:
             w(f"OEBPS/text/{fname}", xhtml)
 
@@ -498,6 +524,7 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         "words": body_words,
         "cover": str(cover_src) if cover_src else None,
         "cover_is_raw_art": cover_is_raw_art,
+        "chapter_art_images": len(art_files),
     }
 
 

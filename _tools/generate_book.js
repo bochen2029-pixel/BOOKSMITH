@@ -54,7 +54,7 @@ const fs = require("fs");
 const path = require("path");
 const {
   Document, Packer, Paragraph, TextRun, AlignmentType, PageBreak, SectionType,
-  HeadingLevel, TableOfContents, StyleLevel, Header, Footer, PageNumber,
+  HeadingLevel, TableOfContents, StyleLevel, Header, Footer, PageNumber, ImageRun,
 } = require("docx");
 
 const { latexToUnicode, fixProseSubscripts } = require("./latex_to_unicode.js");
@@ -403,13 +403,59 @@ function makeFactories(T, buildInlineRuns) {
 }
 
 // ============================================================
+// Chapter-opener art (OPTIONAL; convention over configuration).
+// interior.chapter_art {enabled, dir, width_in}; default dir is
+// cover_art/illustrations/live under the workspace. One <unit_id>.png per
+// unit, injected directly after that unit's heading. A missing dir or file is
+// a silent no-op: the manuscript is never marked up, so books without art
+// build byte-identically to before this feature existed.
+// ============================================================
+function pngDimensions(buf) {
+  // PNG layout: 8-byte signature, 4-byte length, "IHDR", 4-byte w, 4-byte h.
+  if (!buf || buf.length < 24) return null;
+  if (buf[0] !== 0x89 || buf[1] !== 0x50 || buf[2] !== 0x4e || buf[3] !== 0x47) return null;
+  return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+}
+
+function resolveChapterArt(config, wsRoot) {
+  const ca = (config.interior && config.interior.chapter_art) || {};
+  if (ca.enabled === false) return null;
+  const dir = path.resolve(wsRoot, ca.dir || path.join("cover_art", "illustrations", "live"));
+  if (!fs.existsSync(dir)) return null;
+  const widthIn = typeof ca.width_in === "number" && ca.width_in > 0 ? ca.width_in : 4.0;
+  return { dir, widthIn };
+}
+
+function chapterArtParagraph(art, unitId, tag) {
+  if (!art || !unitId) return null;
+  const file = path.join(art.dir, `${unitId}.png`);
+  if (!fs.existsSync(file)) return null;
+  const data = fs.readFileSync(file);
+  const dims = pngDimensions(data);
+  if (!dims || !dims.w || !dims.h) {
+    console.warn(`[${tag}] chapter art skipped (not a readable PNG): ${file}`);
+    return null;
+  }
+  // transformation takes display pixels at 96dpi: width_in * 96 prints at width_in.
+  const wPx = Math.round(art.widthIn * 96);
+  const hPx = Math.round(wPx * (dims.h / dims.w));
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 120, after: 360 },
+    children: [new ImageRun({ type: "png", data, transformation: { width: wPx, height: hPx } })],
+  });
+}
+
+// ============================================================
 // Markdown -> docx Paragraphs for ONE unit's body.
 // unitLevel is "#" (chapter) or "##" (part) — the heading char sequence that
 // opens a unit. When sectionStartUnit is true, the unit's own heading is the
 // first item of its section, so its leading PageBreak is suppressed (§4.3).
 // [IMAGE ...] blocks are consumed and skipped (text-only interior).
+// chapterArtPara, when non-null, is injected once, directly after the unit's
+// own heading (chapter-opener illustration).
 // ============================================================
-function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit) {
+function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit, chapterArtPara) {
   const lines = text.split("\n");
   const paragraphs = [];
   let inDisplayMath = false;
@@ -474,8 +520,10 @@ function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit) {
     if ((isChapterLevel && isH1) || (!isChapterLevel && isH2)) {
       const title = line.replace(/^#{1,2}\s+/, "").trim();
       const leadingPageBreak = !(sectionStartUnit && !firstUnitHeadingSeen);
+      const isFirstUnitHeading = !firstUnitHeadingSeen;
       paragraphs.push(...F.createUnitHeading(title, leadingPageBreak));
       firstUnitHeadingSeen = true;
+      if (isFirstUnitHeading && chapterArtPara) paragraphs.push(chapterArtPara);
       continue;
     }
     // A heading at a HIGHER level than the unit (e.g. a stray book-title "# " in
@@ -782,7 +830,16 @@ async function main() {
   const srcPath = resolveSrc(config, args.src, wsRoot);
   const masterMd = fs.readFileSync(srcPath, "utf8");
   const unitBodies = splitUnits(masterMd, unitLevel);
-  const unitContents = unitBodies.map((md) => parseUnitMarkdown(md, unitLevel, F, /*sectionStartUnit=*/true));
+  // Chapter-opener art: unit ids bind to unit bodies BY POSITION (same rule
+  // the EPUB builder enforces); a missing image file skips silently.
+  const chapterArt = resolveChapterArt(config, wsRoot);
+  const unitIdsForArt = (config.units || []).map((u) => (u && u.id) || "");
+  const artParas = unitBodies.map((_, i) => chapterArtParagraph(chapterArt, unitIdsForArt[i], "generate_book"));
+  const artCount = artParas.filter(Boolean).length;
+  if (chapterArt && artCount > 0) {
+    console.log(`[generate_book] chapter art: ${artCount} image(s) staged from ${chapterArt.dir}`);
+  }
+  const unitContents = unitBodies.map((md, i) => parseUnitMarkdown(md, unitLevel, F, /*sectionStartUnit=*/true, artParas[i]));
 
   // ---- Front matter sections (one per front_matter[] entry) ----
   const frontSections = buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters);

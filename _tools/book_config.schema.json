@@ -116,7 +116,18 @@
         "code_font": { "type": "string", "default": "Consolas", "description": "Monospace font for inline `backtick` code runs in the generators. Consolas is the Windows default." },
         "math_font": { "type": "string", "default": "Cambria Math", "description": "Font tagged on LaTeX->Unicode math runs in the generators. Cambria Math is the Windows default; latex_to_unicode.js emits glyphs this font renders well." },
         "include_toc": { "type": "boolean", "default": true, "description": "PRINT interiors: build a CONTENTS/TOC page. Default true. TOC entries MUST be title-case at normal tracking with a right-tab dot leader — NEVER wide-tracked ALL-CAPS (they wrap and collide with the leaders, garbling the Contents page). See LESSONS_LEDGER §16.3." },
-        "page_number_align": { "type": "string", "enum": ["center", "outer"], "default": "center", "description": "Footer page-number placement. House style = center (bottom-center on every page). 'outer' = recto-right / verso-left (the old default). See LESSONS_LEDGER §16.2." }
+        "page_number_align": { "type": "string", "enum": ["center", "outer"], "default": "center", "description": "Footer page-number placement. House style = center (bottom-center on every page). 'outer' = recto-right / verso-left (the old default). See LESSONS_LEDGER §16.2." },
+        "chapter_art": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "OPTIONAL chapter-opener illustrations, convention over configuration: when the dir exists and holds <unit_id>.png files, the generators (print DOCX, Kindle DOCX, EPUB) inject each image directly after its unit heading. Absent dir or file = silent no-op; manuscript markdown is never marked up. Ids bind to unit headings by position (the EPUB count gate protects the binding).",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true, "description": "Master switch. Even when true, art is injected only for units whose <unit_id>.png exists." },
+            "dir": { "type": "string", "default": "cover_art/illustrations/live", "description": "Workspace-relative folder holding one <unit_id>.png per illustrated unit." },
+            "width_in": { "type": "number", "default": 4.0, "description": "Rendered width in inches in the print interior (height follows the image aspect). Kindle/EPUB reflow responsively." }
+          },
+          "default": {}
+        }
       },
       "default": {}
     },
