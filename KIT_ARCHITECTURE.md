@@ -309,6 +309,16 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 - I/O: `python cover_compose_ahss.py --config book_config.json --back back_copy.json --pages N --profile <digital|kindle|mixam|kdp> --out <dir>` → writes the profile's PDF(s)/JPG + `cover_meta_<profile>.json`.
 - SOURCE: new (2026-07-14) — *A Human Still Signs* production.
 
+**`scan_manuscript.py`** — *Deterministic packaging + placeholder gate.*
+- PURPOSE: the structural packaging invariants the executor used to check by hand, made one reproducible gate (complements `lint_manuscript.py`, which owns corruption + blacklist + the em-dash gate). Per unit: file exists, UTF-8 no-BOM, exactly one `# ` H1 that byte-matches the config title, zero `## ` (generators drop them), zero em/en dashes when `voice.no_em_dashes`, zero tables / list lines, zero placeholders (the `[⚠ … AT LINE-READ]` class that once shipped into a printed Acknowledgments; also `[BO-WRITES]`, `[TODO]`, angle-stubs, fill-blanks), and word count within ±20% of `target_words` (WARN).
+- I/O: `python scan_manuscript.py --config book_config.json [--json] [--strict]` → exit 0 clean / 1 FAIL / 2 usage. Auto-relaxes the dash check for translated editions (`no_em_dashes:false`).
+- SOURCE: new (2026-07-14) — codifies the executor's ad-hoc packaging scans + closes the placeholder gap.
+
+**`produce_book.py`** — *Deterministic production orchestrator.*
+- PURPOSE: turn the whole "assembled markdown → finished PDFs" chain into one reproducible command. Codifies CLAUDE.md §12 plus the production fixes learned in this book (always re-inject vAlign standalone; fold the digital + website PDF assembly in here rather than a temp script). It invents nothing and stops loudly on any pre-gate failure; it does not write prose, place units, brief/pick art, design a cover, or diagnose a red gate (those need a mind).
+- I/O: `python produce_book.py --config CFG [--formats kdp_hardcover,kindle,digital,website] [--back back_copy.json] [--interior-for-digital kdp_hardcover] [--skip-lint] [--dry-run] [--json]`. Runs scan + lint → assemble → per-format generate/inject×2/render/cover/verify → digital+website concat; prints a per-format verify summary; exits nonzero on any red. `--dry-run` prints the exact command chain without executing.
+- SOURCE: new (2026-07-14) — the scripted form of the session's by-hand production chain.
+
 ---
 
 ## (d) THE CLAUDE.md COMMAND GRAMMAR SPEC

@@ -31,6 +31,9 @@ import fitz  # PyMuPDF
 from PIL import Image, ImageDraw, ImageFont
 
 FONTS = r"C:\Windows\Fonts"
+LANG = "en"           # set to "zh" via --lang; switches serif text to the CJK face
+CJK_PATH = None       # resolved in main() from <workspace>/cover_art/fonts/NotoSerifCJK-Regular.ttc
+CJK_INDEX = 2         # Noto Serif CJK SC face (0=JP 1=KR 2=SC 3=TC 4=HK)
 
 # ---- approved palette (from the operator-ratified back-cover mock) ----
 BG = (10, 17, 32)
@@ -43,11 +46,42 @@ FAINT = (51, 69, 94)
 HAIR = (70, 92, 124)
 
 
+def _has_cjk(s):
+    return any("㐀" <= c <= "鿿" or "＀" <= c <= "￯" for c in s)
+
+
+# Vietnamese: Windows Georgia lacks 7 precomposed VN codepoints (o-horn, u-horn,
+# and stacked-tone vowels) and Pillow does NOT font-fallback the way Word does,
+# so Georgia text tofus on the cover. Times New Roman covers the full VN set, so
+# the vi serif runs use Times (same serif register). Consolas carries the VN
+# chars it needs (eyebrow/credits), so the sans runs are left untouched.
+VI_SERIF = {"georgia.ttf": "times.ttf", "georgiab.ttf": "timesbd.ttf",
+            "georgiai.ttf": "timesi.ttf"}
+
+
 def font(name, px):
+    # zh mode: every run uses Noto Serif CJK SC (it also carries clean Latin, so
+    # BO CHEN / ACCESS INTELLECT still render well).
+    if LANG == "zh" and CJK_PATH:
+        return ImageFont.truetype(CJK_PATH, index=CJK_INDEX, size=px)
+    if LANG == "vi":
+        name = VI_SERIF.get(name, name)
     return ImageFont.truetype(os.path.join(FONTS, name), px)
 
 
 def wrap_lines(draw, text, fnt, maxw):
+    if LANG == "zh" or _has_cjk(text):
+        lines, cur = [], ""
+        for ch in text:
+            if ch == "\n":
+                lines.append(cur); cur = ""; continue
+            if not cur or draw.textlength(cur + ch, font=fnt) <= maxw:
+                cur += ch
+            else:
+                lines.append(cur); cur = ch
+        if cur:
+            lines.append(cur)
+        return lines
     words, lines, cur = text.split(), [], ""
     for w in words:
         t = (cur + " " + w).strip()
@@ -93,25 +127,37 @@ def render_front(px_w, px_h, bleed, cfg):
     d.rectangle([barx, tt + safe, barx + int(0.055 * dpi), tb - safe], fill=BAR)
 
     lx = barx + int(0.34 * dpi)
+    if LANG == "zh":
+        eyebrow, title_lines = "得州企业主指南", [cfg.get("title", "仍由人签字")]
+        sub = "让人工智能为你所用，而不赌上整个生意"
+        eb_track, t_px, t_gap, s_px, s_gap = int(0.03 * dpi), 0.80, 1.02, 0.24, 0.36
+    elif LANG == "es":
+        eyebrow, title_lines = "GUÍA PARA EL DUEÑO TEJANO", ["Un humano", "todavía firma"]
+        sub = "Poner la IA a trabajar sin arriesgar el negocio"
+        eb_track, t_px, t_gap, s_px, s_gap = int(0.045 * dpi), 0.74, 0.80, 0.25, 0.34
+    elif LANG == "vi":
+        eyebrow, title_lines = "CẨM NANG CHO CHỦ DOANH NGHIỆP TEXAS", ["Con Người", "Vẫn Ký Tên"]
+        sub = "Đưa AI vào làm việc mà không đánh cược cả cơ nghiệp"
+        eb_track, t_px, t_gap, s_px, s_gap = int(0.024 * dpi), 0.74, 0.80, 0.24, 0.33
+    else:
+        eyebrow, title_lines = "A TEXAS OWNER'S GUIDE", ["A Human", "Still Signs"]
+        sub = "Putting AI to work without betting the business."
+        eb_track, t_px, t_gap, s_px, s_gap = int(0.045 * dpi), 0.86, 0.92, 0.27, 0.36
     # eyebrow
     eb = font("consolab.ttf", int(0.145 * dpi))
-    draw_tracked(d, (lx, tt + int(1.45 * dpi)), "A TEXAS OWNER'S GUIDE", eb, ACCENT,
-                 track=int(0.045 * dpi))
-    # title (two lines, big Georgia bold)
-    tf = font("georgiab.ttf", int(0.86 * dpi))
+    draw_tracked(d, (lx, tt + int(1.45 * dpi)), eyebrow, eb, ACCENT, track=eb_track)
+    # title
+    tf = font("georgiab.ttf", int(t_px * dpi))
     ty = tt + int(1.95 * dpi)
-    for line in ["A Human", "Still Signs"]:
+    for line in title_lines:
         d.text((lx - int(0.02 * dpi), ty), line, font=tf, fill=TEXT)
-        ty += int(0.92 * dpi)
-    # subtitle (italic)
-    sf = font("georgiai.ttf", int(0.27 * dpi))
+        ty += int(t_gap * dpi)
+    # subtitle
+    sf = font("georgiai.ttf", int(s_px * dpi))
     ty += int(0.15 * dpi)
-    # cover subtitle = the short approved line (eyebrow already carries "A Texas
-    # Owner's Guide"; the full config subtitle would echo it)
-    sub = "Putting AI to work without betting the business."
     for line in wrap_lines(d, sub, sf, trimw - (lx - tl) - safe):
         d.text((lx, ty), line, font=sf, fill=MUTED)
-        ty += int(0.36 * dpi)
+        ty += int(s_gap * dpi)
     # motif lower third
     penstroke(d, lx, tt + int(trimh * 0.72), int(trimw * 0.52))
     # credits row
@@ -122,6 +168,9 @@ def render_front(px_w, px_h, bleed, cfg):
     pw = tracked_width(d, pub, cf, int(0.05 * dpi))
     draw_tracked(d, (tr - safe - pw, tb - safe - int(0.2 * dpi)), pub, cf, (124, 141, 166),
                  track=int(0.05 * dpi))
+    # free-appendix call-out sticker (English cover only)
+    if LANG == "en":
+        draw_free_badge(d, tr - safe, tt + safe, dpi)
     return img
 
 
@@ -134,6 +183,40 @@ def draw_tracked(draw, xy, text, fnt, fill, track=0):
     for c in text:
         draw.text((x, y), c, font=fnt, fill=fill)
         x += draw.textlength(c, font=fnt) + track
+
+
+BADGE_FILL = (205, 68, 86)      # rosy red (S3, operator-picked 2026-07-19)
+BADGE_H_IN = 0.46               # banner height
+BADGE_TOP_IN = 0.45             # banner top, measured from trim top (== safe)
+
+
+def draw_free_badge(d, right_x, top_y, dpi):
+    """Free-appendix call-out: single-line rosy-red banner with an angled left
+    end, running off the right edge of the canvas (bleeds off on print
+    profiles). right_x arrives as (trim_right - safe); the band runs to the
+    canvas edge while the type keeps 0.30in clear of the trim edge."""
+    INK = (0, 0, 0)
+    safe = int(0.45 * dpi)
+    tr = right_x + safe                    # trim-right edge (any bleed)
+    px_w = d.im.size[0]                    # canvas right edge
+    h = int(BADGE_H_IN * dpi)
+    y0, y1 = top_y, top_y + h
+    eb_f = font("consolab.ttf", int(0.105 * dpi))
+    tw = int(0.03 * dpi)
+    ti_f = font("georgiab.ttf", int(0.175 * dpi))
+    eb, ti = "FREE INSIDE", "The HyperCell Blueprint"
+    ebw = int(tracked_width(d, eb, eb_f, tw))
+    tiw = int(d.textlength(ti, font=ti_f))
+    pad_l, gap = int(0.22 * dpi), int(0.20 * dpi)
+    pad_r = (px_w - tr) + int(0.30 * dpi)
+    slant = int(h * 0.55)
+    x0 = px_w - (pad_l + slant + ebw + gap + tiw + pad_r)
+    d.polygon([(x0 + slant, y0), (px_w, y0), (px_w, y1), (x0, y1)], fill=BADGE_FILL)
+    tx = x0 + pad_l + slant
+    draw_tracked(d, (tx, y0 + (h - eb_f.size) // 2 + int(0.01 * dpi)), eb, eb_f,
+                 INK, track=tw)
+    d.text((tx + ebw + gap, y0 + (h - ti_f.size) // 2 - int(ti_f.size * 0.16)),
+           ti, font=ti_f, fill=INK)
 
 
 def render_back(px_w, px_h, bleed, cfg, back, keepout=False):
@@ -207,12 +290,28 @@ def para(d, x, y, text, fnt, fill, maxw, dpi, leading):
 
 def para_around(d, x, y, text, fnt, fill, maxw, dpi, leading, kx, etop, ebot, egap):
     lh = int(fnt.size * leading)
+    def linew(yy):
+        if kx is not None and (yy + lh > etop) and (yy < ebot):
+            return (kx - egap) - x
+        return maxw
+    if LANG == "zh" or _has_cjk(text):
+        i, n = 0, len(text)
+        while i < n:
+            w = linew(y); cur = ""
+            while i < n and text[i] != "\n":
+                if not cur or d.textlength(cur + text[i], font=fnt) <= w:
+                    cur += text[i]; i += 1
+                else:
+                    break
+            if i < n and text[i] == "\n":
+                i += 1
+            d.text((x, y), cur, font=fnt, fill=fill)
+            y += lh
+        return y
     words = text.split()
     i = 0
     while i < len(words):
-        w = maxw
-        if kx is not None and (y + lh > etop) and (y < ebot):
-            w = (kx - egap) - x
+        w = linew(y)
         cur = words[i]; i += 1
         while i < len(words) and d.textlength(cur + " " + words[i], font=fnt) <= w:
             cur += " " + words[i]; i += 1
@@ -229,7 +328,7 @@ def render_spine(px_w, px_h, cfg, inset=0.09):
     d = ImageDraw.Draw(img)
     m = max(int(px_w * inset), int(px_w * 0.09))
     tf = font("georgiab.ttf", int(px_h * 0.30))
-    title = "A Human Still Signs"
+    title = (cfg.get("title") if (LANG in ("zh", "es", "vi") and cfg) else None) or "A Human Still Signs"
     d.text((m, (px_h - tf.size) / 2 - int(px_h * 0.02)), title, font=tf, fill=TEXT)
     af = font("consola.ttf", int(px_h * 0.15))
     au = "B O   C H E N"
@@ -263,7 +362,16 @@ def main():
                     choices=["digital", "kindle", "mixam", "kdp"])
     ap.add_argument("--dpi", type=int, default=300)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--lang", default="en", choices=["en", "zh", "es", "vi"])
     a = ap.parse_args()
+
+    global LANG, CJK_PATH
+    LANG = a.lang
+    if LANG == "zh":
+        cand = Path(a.config).resolve().parent / "cover_art" / "fonts" / "NotoSerifCJK-Regular.ttc"
+        if not cand.exists():
+            raise SystemExit(f"zh cover needs NotoSerifCJK-Regular.ttc at {cand}")
+        CJK_PATH = str(cand)
 
     cfg = json.load(open(a.config, encoding="utf-8"))
     back = json.load(open(a.back, encoding="utf-8"))
@@ -319,6 +427,14 @@ def main():
         canvas.paste(backi, (xb, vy))
         canvas.paste(spine, (xb + int(6 * dpi), vy))
         canvas.paste(front, (xb + int(6 * dpi) + int(round(sw * dpi)), vy))
+        if LANG == "en":
+            # continue the S3 banner across the right turn-in so it wraps the
+            # board edge instead of stopping at the panel seam
+            fx1 = xb + int(6 * dpi) + int(round(sw * dpi)) + int(6 * dpi)
+            by0 = vy + int(BADGE_TOP_IN * dpi)
+            ImageDraw.Draw(canvas).rectangle(
+                [fx1 - 2, by0, canvas.width, by0 + int(BADGE_H_IN * dpi)],
+                fill=BADGE_FILL)
         img_to_pdf(canvas, str(out / "cover_wrap_hardcover.pdf"), cover_w, cover_h, dpi)
         meta.update({"spine_in": sw, "wrap_w_in": cover_w, "wrap_h_in": cover_h,
                      "turn_in_in": turn, "files": ["cover_wrap_hardcover.pdf"]})

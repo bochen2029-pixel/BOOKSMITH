@@ -55,6 +55,7 @@ const path = require("path");
 const {
   Document, Packer, Paragraph, TextRun, AlignmentType, PageBreak, SectionType,
   HeadingLevel, TableOfContents, StyleLevel, Header, Footer, PageNumber, ImageRun,
+  Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType,
 } = require("docx");
 
 const { latexToUnicode, fixProseSubscripts } = require("./latex_to_unicode.js");
@@ -399,7 +400,84 @@ function makeFactories(T, buildInlineRuns) {
     });
   }
 
-  return { createBodyParagraph, createBlockquote, createUnitHeading, createSubsectionHeading, createSectionBreak, createDisplayMath };
+  // ---- Fenced code block (```): one Paragraph per source line, monospace,
+  // verbatim (NO inline parse, NO smart-quote substitution). A light gray
+  // shading + a small left indent set the block off; tight line spacing keeps
+  // it compact. An empty code line still emits a Paragraph so blank lines in
+  // the listing are preserved. Returns an array of Paragraphs.
+  function createCodeBlock(codeLines) {
+    const size = Math.max(14, T.BODY_SIZE - 4);   // ~2pt smaller than body
+    return codeLines.map((cl, i) => new Paragraph({
+      shading: { type: ShadingType.CLEAR, color: "auto", fill: "F2F2F2" },
+      spacing: { before: i === 0 ? 120 : 0, after: i === codeLines.length - 1 ? 120 : 0, line: 240, lineRule: "atLeast" },
+      indent: { left: 240 },
+      alignment: AlignmentType.LEFT,
+      // A leading/blank space run keeps the shaded band full-width on empty lines.
+      children: [new TextRun({ text: cl.length ? cl : " ", font: T.CODE_FONT, size, color: "1A1A1A" })],
+    }));
+  }
+
+  // ---- Table (GitHub pipe table). rows[0] is the header (bold); the rest are
+  // body rows. cells hold inline-parsed runs (bold/italic/code/math reused).
+  // Thin single-line borders, header shading, cell padding, the book body font.
+  function createTable(rows, aligns) {
+    const thin = { style: BorderStyle.SINGLE, size: 4, color: "999999" };
+    const borders = { top: thin, bottom: thin, left: thin, right: thin,
+                      insideHorizontal: thin, insideVertical: thin };
+    const ncol = rows.reduce((m, r) => Math.max(m, r.length), 0);
+    const alignFor = (c) => {
+      const a = aligns && aligns[c];
+      if (a === "center") return AlignmentType.CENTER;
+      if (a === "right") return AlignmentType.RIGHT;
+      return AlignmentType.LEFT;
+    };
+    const mkCell = (cellText, isHeader, colIdx) => {
+      const runs = buildInlineRuns(cellText, {
+        font: T.FONT, size: T.BODY_SIZE - 2, color: T.BODY_COLOR, bold: isHeader || undefined,
+      });
+      return new TableCell({
+        margins: { top: 40, bottom: 40, left: 100, right: 100 },
+        shading: isHeader ? { type: ShadingType.CLEAR, color: "auto", fill: "EDEDED" } : undefined,
+        children: [new Paragraph({
+          spacing: { after: 0, line: 240, lineRule: "atLeast" },
+          alignment: alignFor(colIdx),
+          children: runs.length ? runs : [new TextRun({ text: "", font: T.FONT, size: T.BODY_SIZE - 2 })],
+        })],
+      });
+    };
+    const tableRows = rows.map((cells, r) => {
+      const padded = cells.slice();
+      while (padded.length < ncol) padded.push("");   // ragged rows -> square grid
+      return new TableRow({
+        tableHeader: r === 0,
+        children: padded.map((c, ci) => mkCell(c, r === 0, ci)),
+      });
+    });
+    return new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders,
+      rows: tableRows,
+    });
+  }
+
+  // ---- List items. Each item -> one hanging-indent Paragraph with a manual
+  // marker ("•  " for bullets, "N.  " for ordered). depth (0-based) nests via a
+  // deeper left indent. Inline markup inside the item text is parsed. Returns a
+  // single Paragraph (the caller maps over the item set).
+  function createListItem(marker, itemText, depth) {
+    const step = 360;                       // 0.25" per nesting level
+    const left = 360 + depth * step;
+    const runs = [new TextRun({ text: marker, font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR })];
+    for (const r of buildInlineRuns(itemText, { font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR })) runs.push(r);
+    return new Paragraph({
+      spacing: { after: 40, line: T.BODY_LINE, lineRule: "atLeast" },
+      indent: { left, hanging: 240 },
+      alignment: AlignmentType.LEFT,
+      children: runs,
+    });
+  }
+
+  return { createBodyParagraph, createBlockquote, createUnitHeading, createSubsectionHeading, createSectionBreak, createDisplayMath, createCodeBlock, createTable, createListItem };
 }
 
 // ============================================================
@@ -447,6 +525,82 @@ function chapterArtParagraph(art, unitId, tag) {
 }
 
 // ============================================================
+// Block-construct detection helpers (shared by the parse loop). Pure + inert on
+// prose: a line matches ONLY the constructs the addendum uses. None of these
+// fire on the 33 existing units (verified by the regression fixture, which
+// carries none of these constructs).
+// ============================================================
+// A fenced-code delimiter: a line whose first non-space token is ``` (optionally
+// followed by an info string / language). Returns true for the open AND close.
+const FENCE_RE = /^\s*```/;
+
+// A GFM pipe-table separator row: only pipes, dashes, colons, spaces, with at
+// least one dash. "|---|:--:|" yes; "| a | b |" no; "---" (section break) no.
+function isTableSeparator(line) {
+  const t = line.trim();
+  if (!t.includes("-")) return false;
+  if (!/^\|?[\s:|-]+\|?$/.test(t)) return false;
+  // must contain a pipe OR be a run of dash-only cells — require a pipe so a
+  // bare "---" section break is never swallowed as a one-column table rule.
+  return t.includes("|") && /-/.test(t);
+}
+// A candidate table row: a non-separator line containing an unescaped pipe.
+function looksLikeTableRow(line) {
+  const t = line.trim();
+  if (!t.includes("|")) return false;
+  if (isTableSeparator(line)) return false;
+  return true;
+}
+// Split a pipe-table row into trimmed cell strings, dropping the optional
+// leading/trailing empty cells produced by border pipes. Escaped \| stays literal.
+function splitTableRow(line) {
+  let t = line.trim();
+  const cells = [];
+  let buf = "";
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (ch === "\\" && t[i + 1] === "|") { buf += "|"; i++; continue; }
+    if (ch === "|") { cells.push(buf); buf = ""; continue; }
+    buf += ch;
+  }
+  cells.push(buf);
+  // Drop a leading empty cell (from a leading "|") and a trailing empty cell
+  // (from a trailing "|"); interior empties are meaningful and kept.
+  if (cells.length && cells[0].trim() === "") cells.shift();
+  if (cells.length && cells[cells.length - 1].trim() === "") cells.pop();
+  return cells.map((c) => c.trim());
+}
+// Parse a separator row into per-column alignment tokens (left|center|right|null).
+function parseAligns(sepLine) {
+  return splitTableRow(sepLine).map((c) => {
+    const s = c.trim();
+    const l = s.startsWith(":"), r = s.endsWith(":");
+    if (l && r) return "center";
+    if (r) return "right";
+    if (l) return "left";
+    return null;
+  });
+}
+// A list item: leading-space indent + a bullet ("- " or "* ") or an ordered
+// marker ("N. " / "N) "). Returns {ordered, depth, marker, text} or null.
+// depth is one level per 2 leading spaces (tab counts as 2). "---"/"***" rules
+// and "**bold**" starts are NOT list items (guarded by requiring a space after
+// a SINGLE marker char).
+function parseListItem(rawLine) {
+  const m = rawLine.match(/^(\s*)([-*]|\d{1,9}[.)])\s+(.*)$/);
+  if (!m) return null;
+  const indent = m[1].replace(/\t/g, "  ");
+  const token = m[2];
+  const text = m[3];
+  // A "* *" or "- -" horizontal-rule-ish line is not a list item, and an
+  // unordered marker must be a SINGLE char (so "**bold" never matches — it
+  // won't anyway, since "**" is two chars and the class is [-*] single).
+  const ordered = /\d/.test(token);
+  const depth = Math.floor(indent.length / 2);
+  return { ordered, depth, marker: token, text };
+}
+
+// ============================================================
 // Markdown -> docx Paragraphs for ONE unit's body.
 // unitLevel is "#" (chapter) or "##" (part) — the heading char sequence that
 // opens a unit. When sectionStartUnit is true, the unit's own heading is the
@@ -454,6 +608,8 @@ function chapterArtParagraph(art, unitId, tag) {
 // [IMAGE ...] blocks are consumed and skipped (text-only interior).
 // chapterArtPara, when non-null, is injected once, directly after the unit's
 // own heading (chapter-opener illustration).
+// Three block constructs added (fenced code / pipe tables / lists); all inert on
+// prose that uses none of them.
 // ============================================================
 function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit, chapterArtPara) {
   const lines = text.split("\n");
@@ -470,6 +626,26 @@ function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit, chapterArtPara)
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
     const line = raw.replace(/\s+$/, "");
+
+    // Fenced code block (```): capture every inner line VERBATIM (no inline
+    // parse, no smart quotes, no markdown) until the closing fence. Checked
+    // FIRST so a "$$" or "# " or "| a |" INSIDE the listing is never
+    // interpreted. An unterminated fence (no closing ```) still renders what it
+    // captured to EOF rather than silently dropping the tail.
+    if (FENCE_RE.test(line)) {
+      const codeLines = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) {
+        if (FENCE_RE.test(lines[j].replace(/\s+$/, ""))) break;   // closing fence
+        codeLines.push(lines[j].replace(/\s+$/, ""));             // keep indentation, trim trailing ws
+      }
+      if (j >= lines.length) {
+        console.warn(`[generate_book] unterminated code fence opened at line ${i + 1}; rendered to EOF`);
+      }
+      for (const p of F.createCodeBlock(codeLines)) paragraphs.push(p);
+      i = j;   // skip past the closing fence (or to EOF)
+      continue;
+    }
 
     // [IMAGE ...] block — consume through its closing "]" and skip.
     if (/^\[IMAGE[:\s\]]/.test(line.trim())) {
@@ -537,6 +713,56 @@ function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit, chapterArtPara)
     if (line.trim() === "---") { paragraphs.push(F.createSectionBreak()); continue; }
     if (line.trim().startsWith("> ")) { paragraphs.push(F.createBlockquote(line.trim().slice(2))); continue; }
 
+    // GFM pipe table: a header row IMMEDIATELY followed by a separator row
+    // ("|---|:--:|"). Requiring the separator is what keeps a lone prose line
+    // containing a stray "|" from becoming a one-row table. Consume the header,
+    // the separator, and every consecutive body row.
+    if (looksLikeTableRow(line) && (i + 1) < lines.length && isTableSeparator(lines[i + 1])) {
+      const header = splitTableRow(line);
+      const aligns = parseAligns(lines[i + 1]);
+      const rows = [header];
+      let j = i + 2;
+      for (; j < lines.length; j++) {
+        const bl = lines[j].replace(/\s+$/, "");
+        if (bl.trim() === "" || !looksLikeTableRow(bl)) break;
+        rows.push(splitTableRow(bl));
+      }
+      paragraphs.push(F.createTable(rows, aligns));
+      i = j - 1;
+      continue;
+    }
+
+    // Lists: consume a run of consecutive bullet / ordered items. Ordered items
+    // are numbered by their position within a same-depth sibling group (the
+    // source number is ignored so "1. 1. 1." still renders 1. 2. 3.). Detect on
+    // the trailing-whitespace-stripped line so a CRLF master's "\r" never blocks
+    // the match (the "$" anchor won't span a bare "\r").
+    const li0 = parseListItem(line);
+    if (li0) {
+      let j = i;
+      const counters = {};   // depth -> next ordinal
+      let prevDepth = -1;
+      for (; j < lines.length; j++) {
+        const li = parseListItem(lines[j].replace(/\s+$/, ""));
+        if (!li) break;
+        // Reset deeper counters when the list dedents (a new sublist restarts).
+        if (li.depth > prevDepth) counters[li.depth] = 1;
+        for (const d of Object.keys(counters)) if (Number(d) > li.depth) delete counters[d];
+        let marker;
+        if (li.ordered) {
+          const n = counters[li.depth] || 1;
+          counters[li.depth] = n + 1;
+          marker = `${n}.  `;
+        } else {
+          marker = "•  ";   // "• " bullet + spaces (U+2022, not a dash)
+        }
+        paragraphs.push(F.createListItem(marker, li.text, li.depth));
+        prevDepth = li.depth;
+      }
+      i = j - 1;
+      continue;
+    }
+
     paragraphs.push(F.createBodyParagraph(line));
   }
   return paragraphs;
@@ -556,9 +782,15 @@ function splitUnits(masterMd, unitLevel) {
     ? /^#\s+(?!#)/    // "# " but not "## "
     : /^##\s+(?!#)/;  // "## " but not "### "
 
+  // Fence-aware: a "# comment" INSIDE a ```code``` block (a Python/YAML/shell
+  // comment) is NOT a unit boundary. Skipping fenced spans keeps a code listing
+  // from being split into spurious "units" whose comment line renders as a
+  // chapter heading on its own page (2026-07-15 fix).
   const unitStartIdxs = [];
+  let inCode = false;
   for (let i = 0; i < lines.length; i++) {
-    if (headingRe.test(lines[i])) unitStartIdxs.push(i);
+    if (FENCE_RE.test(lines[i])) { inCode = !inCode; continue; }
+    if (!inCode && headingRe.test(lines[i])) unitStartIdxs.push(i);
   }
   if (unitStartIdxs.length === 0) {
     // No unit headings found — treat the whole master (minus front matter) as
@@ -978,4 +1210,9 @@ if (require.main === module) {
   });
 }
 
-module.exports = { main, splitUnits, resolveMargins, resolveTypography, USAGE };
+module.exports = {
+  main, splitUnits, resolveMargins, resolveTypography, USAGE,
+  // block-construct helpers (exported for the regression/smoke harness)
+  isTableSeparator, looksLikeTableRow, splitTableRow, parseAligns, parseListItem,
+  parseUnitMarkdown,
+};

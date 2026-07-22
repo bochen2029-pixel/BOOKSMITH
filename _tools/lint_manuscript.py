@@ -59,6 +59,27 @@ TERMINAL_PUNCT = (".", "?", "!", "…", ")", "]", "}", ":")
 TRAILING_CLOSERS = ('"', "”", "'", "’", ")", "]", "}",
                     "—", "–", "*", "_")
 
+# Inline spans that are NOT prose and must be masked before the round-trip
+# corruption checks: inline `code`, single-line $$block math$$, and inline $math$
+# (the last only when it carries a LaTeX backslash or brace, so a prose dollar
+# range like "$0.14 ... $30" is left alone). A tech-manual line such as
+# 'set `sync_interval: always`' or 'play $\bar{x}_j$' is prose ABOUT code/math,
+# not an 'a_Thursday' PDF-round-trip artifact. Fenced ```code``` blocks are
+# already skipped wholesale elsewhere; this handles the INLINE case.
+_INLINE_SPAN = re.compile(
+    r"`[^`\n]*`"
+    r"|\$\$[^\n]*?\$\$"
+    r"|\$(?=[^$\n]*[\\{])[^$\n]{1,150}?\$"
+)
+
+
+def _mask_spans(s: str) -> str:
+    """Replace inline code / math spans with a neutral token so their
+    underscores, asterisks, and double-spaces do not trip the corruption checks.
+    The token carries no surrounding spaces, so it never manufactures a
+    MULTIPLE_SPACES hit out of the original spacing around the span."""
+    return _INLINE_SPAN.sub("code", s)
+
 
 def paragraph_ends_terminated(para: str) -> bool:
     """True if the paragraph ends with sentence-ending punctuation, allowing
@@ -77,6 +98,10 @@ def is_structural_line(line: str) -> bool:
     if not stripped:
         return True
     if stripped.startswith("#"):
+        return True
+    if stripped.startswith("$$"):
+        # A block-math line ($$...$$): LaTeX, not prose. Never demands terminal
+        # punctuation, and its braces/underscores are not emphasis or corruption.
         return True
     if re.match(r"^[-*_]{3,}$", stripped):
         return True
@@ -147,13 +172,17 @@ def lint_corruption(text: str) -> list:
         if line.lstrip().startswith("|"):
             continue
 
+        # Mask inline `code` / $math$ so their underscores and column padding are
+        # not read as 'a_Thursday' corruption; the detail still shows the raw line.
+        scrub = _mask_spans(line)
+
         # CHECK 5: multiple consecutive spaces mid-content.
-        if re.search(r"\S {2,}\S", line):
+        if re.search(r"\S {2,}\S", scrub):
             findings.append(("MULTIPLE_SPACES", idx,
                              f"Line has 2+ consecutive spaces mid-content: {line.strip()[:80]!r}"))
 
         # CHECK 1: embedded underscore inside a word (a_Thursday).
-        for m in re.finditer(r"\w_\w", line):
+        for m in re.finditer(r"\w_\w", scrub):
             findings.append(("EMBEDDED_UNDERSCORE", idx,
                              f"Embedded underscore in word: {m.group()!r} in line {line.strip()[:80]!r}"))
 
@@ -197,18 +226,21 @@ def lint_corruption(text: str) -> list:
             prev_para_lastline = None
             continue
 
-        # CHECK 3: unbalanced emphasis markers within a paragraph.
-        underscores = len(re.findall(r"(?<!\\)_", stripped_para))
+        # CHECK 3: unbalanced emphasis markers within a paragraph. Inline code /
+        # math is masked first, so `base_url` and $n_j$ do not read as stray
+        # italic markers.
+        masked_para = _mask_spans(stripped_para)
+        underscores = len(re.findall(r"(?<!\\)_", masked_para))
         if underscores % 2 != 0:
             findings.append(("UNBALANCED_EMPHASIS", start_line,
                              f"Odd number of '_' markers ({underscores}) in paragraph: {stripped_para[:80]!r}"))
-        asterisks = len(re.findall(r"(?<!\*)\*(?!\*)", stripped_para))
+        asterisks = len(re.findall(r"(?<!\*)\*(?!\*)", masked_para))
         if asterisks % 2 != 0:
             findings.append(("UNBALANCED_EMPHASIS", start_line,
                              f"Odd number of '*' markers ({asterisks}) in paragraph: {stripped_para[:80]!r}"))
 
         # CHECK 4: stray markdown link syntax inside prose.
-        if re.search(r"\[[^\]]+\]\([^)]+\)", stripped_para):
+        if re.search(r"\[[^\]]+\]\([^)]+\)", masked_para):
             findings.append(("STRAY_MARKDOWN", start_line,
                              f"Link syntax inside prose paragraph: {stripped_para[:80]!r}"))
 

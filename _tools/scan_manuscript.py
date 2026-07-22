@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""
+scan_manuscript.py - deterministic packaging + placeholder gate.
+
+The checks the executor used to run by hand as PowerShell one-liners, made a
+single reproducible gate. Complements lint_manuscript.py (which owns corruption
++ blacklist + the em-dash gate): this owns the STRUCTURAL packaging invariants
+that must hold before assembly, and the placeholder class that once shipped a
+'[WARN ... AT LINE-READ]' into a printed Acknowledgments.
+
+Per unit in book_config.units[], against manuscript/current/<id>_current.md:
+  - file exists (missing = FAIL: assembly hard-errors on it)
+  - UTF-8, no BOM
+  - exactly ONE '# ' H1 line, and it equals '# ' + the config title byte-for-byte
+  - zero '## ' headings (print + Kindle generators silently DROP them)
+  - zero em/en dashes when voice.no_em_dashes (default true; auto-relaxed for
+    translated editions that set it false)
+  - zero markdown tables ('|' rows) and zero bullet/numbered list lines (the
+    interior generators render neither; they fall through as literal text)
+  - zero placeholders: [WARN-glyph ...], [TODO]/[TK]/[TBD]/[XXX], [BO-WRITES],
+    'AT LINE-READ', 'NAME AND CREDENTIAL', angle-bracket <stubs>, ___ fill blanks
+  - word count within +/-20% of target_words (WARN only; band, not a wall)
+
+Usage: python scan_manuscript.py --config book_config.json [--json] [--strict]
+Exit: 0 clean - 1 any FAIL (or WARN with --strict) - 2 usage. Stdlib only.
+"""
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+WARN_GLYPHS = "⚠☠❗‼"          # WARN skull bang bangbang
+EM_EN = "—–"                             # em / en dash
+
+PLACEHOLDER_PATTERNS = [
+    ("warn_bracket", re.compile(r"\[[^\]]*[" + WARN_GLYPHS + r"][^\]]*\]")),
+    ("bo_writes", re.compile(r"\[BO-WRITES", re.I)),
+    ("todo_bracket", re.compile(r"\[(TODO|TK|TBD|XXX|FIXME|PLACEHOLDER|INSERT|TBA)\b", re.I)),
+    ("instr_caps", re.compile(r"AT LINE-READ|NAME AND CREDENTIAL|WITH CONSENT, AT")),
+    ("angle_stub", re.compile(r"<[A-Za-z][A-Za-z0-9 _-]{2,40}>")),
+    ("fill_blank", re.compile(r"_{3,}")),
+    ("warn_glyph_any", re.compile(r"[" + WARN_GLYPHS + r"]")),
+]
+
+
+def load_config(p):
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def unit_list(cfg):
+    out = []
+    for u in cfg.get("units", []):
+        if isinstance(u, dict) and u.get("id"):
+            out.append((u["id"], u.get("title", ""), u.get("target_words")))
+    return out
+
+
+# Inline `code` and $math$ spans legitimately hold '<stubs>', '_', '|' and the
+# like; they are blanked before the prose structural + placeholder checks (the
+# inline analogue of the fenced-block exclusion in _prose_only).
+_INLINE_SPAN = re.compile(r"`[^`\n]*`|\$\$[^\n]*?\$\$|\$(?=[^$\n]*[\\{])[^$\n]{1,150}?\$")
+
+
+def _prose_only(text: str):
+    """Lines OUTSIDE fenced code blocks (```), with inline `code`/$math$ spans
+    blanked. Fenced blocks and inline code/math legitimately contain '# comments',
+    '<stubs>', '|' rows, '_' and '-' items, so they are excluded from the prose
+    structural + placeholder checks. A unit with no code is returned unchanged."""
+    out, in_code = [], False
+    for l in text.split("\n"):
+        if l.lstrip().startswith("```"):
+            in_code = not in_code
+            continue
+        if not in_code:
+            out.append(_INLINE_SPAN.sub("code", l))
+    return out
+
+
+def scan_unit(path: Path, title: str, target, no_dash: bool):
+    """Return (findings, words). findings: list of (level, code, detail)."""
+    f = []
+    raw = path.read_bytes()
+    if raw[:3] == b"\xef\xbb\xbf":
+        f.append(("FAIL", "bom", "UTF-8 BOM present (tools expect no-BOM)"))
+        raw = raw[3:]
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as e:
+        return [("FAIL", "encoding", f"not valid UTF-8: {e}")], 0
+
+    # The interior generators now render fenced code blocks, GFM tables, and
+    # bullet/numbered lists (2026-07-15 extension), so tables and lists are no
+    # longer flagged. The structural checks (h1 / ## / placeholder) run on PROSE
+    # only: a '# comment' or an '<stub>' inside verbatim code is not a heading or
+    # a placeholder. The em/en dash gate stays whole-file (Bo's #1 rule).
+    prose_lines = _prose_only(text)
+    prose_text = "\n".join(prose_lines)
+
+    h1 = [l for l in prose_lines if l.startswith("# ") and not l.startswith("## ")]
+    if len(h1) != 1:
+        f.append(("FAIL", "h1_count", f"{len(h1)} H1 line(s) outside code (need exactly 1)"))
+    if h1 and title and h1[0].rstrip("\r") != f"# {title}":
+        f.append(("FAIL", "h1_title", f"H1 {h1[0].rstrip()!r} != config '# {title}'"))
+    if not h1:
+        f.append(("FAIL", "h1_missing", "no '# ' unit heading"))
+
+    n_h2 = sum(1 for l in prose_lines if l.startswith("## ") and not l.startswith("### "))
+    if n_h2:
+        f.append(("FAIL", "h2_present", f"{n_h2} '## ' heading(s) (generators drop these)"))
+
+    if no_dash:
+        n = sum(text.count(c) for c in EM_EN)
+        if n:
+            f.append(("FAIL", "emdash", f"{n} em/en dash(es) (voice.no_em_dashes on)"))
+
+    for code, pat in PLACEHOLDER_PATTERNS:
+        m = pat.search(prose_text)
+        if m:
+            ctx = prose_text[max(0, m.start() - 20):m.end() + 20].replace("\n", " ")
+            f.append(("FAIL", f"placeholder_{code}", f"{m.group(0)[:60]!r}  ...{ctx}..."))
+
+    words = len(re.findall(r"\S+", text))
+    if isinstance(target, (int, float)) and target > 0:
+        lo, hi = target * 0.8, target * 1.2
+        if not (lo <= words <= hi):
+            f.append(("WARN", "wordcount", f"{words} words vs target {target} (band {int(lo)}-{int(hi)})"))
+    return f, words
+
+
+def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", required=True)
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--strict", action="store_true", help="WARN counts as failure")
+    a = ap.parse_args()
+
+    cfgp = Path(a.config).resolve()
+    cfg = load_config(cfgp)
+    ws = cfgp.parent
+    cur = ws / "manuscript" / "current"
+    no_dash = (cfg.get("voice") or {}).get("no_em_dashes", True) is not False
+
+    report = {"config": str(cfgp), "units": [], "total_words": 0}
+    any_fail = any_warn = False
+    for uid, title, target in unit_list(cfg):
+        path = cur / f"{uid}_current.md"
+        if not path.exists():
+            report["units"].append({"id": uid, "verdict": "FAIL",
+                                     "findings": [["FAIL", "missing_file", str(path)]]})
+            any_fail = True
+            continue
+        findings, words = scan_unit(path, title, target, no_dash)
+        report["total_words"] += words
+        levels = {x[0] for x in findings}
+        verdict = "FAIL" if "FAIL" in levels else ("WARN" if "WARN" in levels else "PASS")
+        any_fail |= verdict == "FAIL"
+        any_warn |= "WARN" in levels
+        report["units"].append({"id": uid, "verdict": verdict, "words": words,
+                                "findings": [list(x) for x in findings]})
+    report["all_pass"] = not (any_fail or (a.strict and any_warn))
+
+    if a.json:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+    else:
+        for u in report["units"]:
+            mark = {"PASS": "  ok", "WARN": "WARN", "FAIL": "FAIL"}[u["verdict"]]
+            print(f"[{mark}] {u['id']}")
+            for lvl, code, detail in u.get("findings", []):
+                print(f"        {lvl} {code}: {detail}")
+        n_fail = sum(1 for u in report["units"] if u["verdict"] == "FAIL")
+        n_warn = sum(1 for u in report["units"] if u["verdict"] == "WARN")
+        print(f"\nSCAN: {'PASS' if report['all_pass'] else 'FAIL'}  "
+              f"({len(report['units'])} units, {n_fail} fail, {n_warn} warn, "
+              f"{report['total_words']} words)")
+    return 0 if report["all_pass"] else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

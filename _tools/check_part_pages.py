@@ -36,6 +36,7 @@ Exit code 0 if all_recto, 1 if any unit landed on a verso, 2 on usage/IO error.
 import sys
 import os
 import json
+import time
 
 try:
     import win32com.client
@@ -57,6 +58,27 @@ def _require_word():
             "import_error": str(_WIN32COM_IMPORT_ERROR),
         }))
         raise SystemExit(3)
+
+# COM busy-noise: Word rejects incoming automation calls while it is still
+# paginating a large document (RPC_E_CALL_REJECTED / RPC_E_SERVERCALL_RETRYLATER).
+# Retrying is the standard cure; without it a 300pp+ book crashes Repaginate()
+# or, worse, silently skips headings inside per-paragraph try/excepts.
+_COM_BUSY = (-2147418111, -2147417846)
+
+
+def _com_call(fn, tries=15, delay=2.0):
+    last = None
+    for _ in range(tries):
+        try:
+            return fn()
+        except Exception as exc:
+            code = exc.args[0] if getattr(exc, "args", None) else None
+            if code not in _COM_BUSY:
+                raise
+            last = exc
+            time.sleep(delay)
+    raise last
+
 
 # Word enum constants.
 WD_STORY = 6                 # wdStory (HomeKey unit)
@@ -136,8 +158,8 @@ def check_pages(docx_path, cfg, headings_override):
     doc = None
     try:
         doc = word_app.Documents.Open(os.path.abspath(docx_path), ReadOnly=True)
-        doc.Repaginate()
-        total_pages = int(doc.ComputeStatistics(WD_STAT_PAGES))
+        _com_call(doc.Repaginate)
+        total_pages = int(_com_call(lambda: doc.ComputeStatistics(WD_STAT_PAGES)))
 
         # Heading discovery (two tiers only, matching the live code):
         #   1. --headings "A|B|C" OR book_config.check_part_pages.headings[] —
@@ -157,19 +179,19 @@ def check_pages(docx_path, cfg, headings_override):
         else:
             for para in doc.Paragraphs:
                 try:
-                    lvl = int(para.OutlineLevel)
+                    lvl = int(_com_call(lambda: para.OutlineLevel))
                 except Exception:
                     lvl = None
                 try:
-                    style_name = str(para.Style.NameLocal).lower()
+                    style_name = str(_com_call(lambda: para.Style.NameLocal)).lower()
                 except Exception:
                     style_name = ""
                 if not (lvl == WD_OUTLINE_1 or style_name in ("heading 1", "heading1")):
                     continue
-                text = (para.Range.Text or "").replace("\r", "").replace("\x07", "").strip()
+                text = (_com_call(lambda: para.Range.Text) or "").replace("\r", "").replace("\x07", "").strip()
                 if not text:
                     continue
-                page = int(para.Range.Information(WD_ADJ_PAGE_NUMBER))
+                page = int(_com_call(lambda: para.Range.Information(WD_ADJ_PAGE_NUMBER)))
                 results.append({"heading": text[:60], "page": page, "recto": page % 2 == 1})
 
         doc.Close(SaveChanges=False)

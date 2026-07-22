@@ -33,6 +33,7 @@ const path = require("path");
 const {
   Document, Packer, Paragraph, TextRun, AlignmentType, PageBreak,
   HeadingLevel, TableOfContents, StyleLevel, ImageRun,
+  Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType,
 } = require("docx");
 
 const { latexToUnicode, fixProseSubscripts } = require("./latex_to_unicode.js");
@@ -239,7 +240,82 @@ function makeFactories(T, buildInlineRuns) {
       children: [new TextRun({ text: latexToUnicode(expr), font: T.MATH_FONT, size: 26, color: T.BODY_COLOR, italics: true })],
     });
   }
-  return { createBodyParagraph, createBlockquote, createUnitHeading, createSubsectionHeading, createSectionBreak, createDisplayMath };
+
+  // ---- Fenced code block (```): one Paragraph per source line, monospace,
+  // verbatim (NO inline parse, NO smart-quote substitution). Light gray shading
+  // + a small left indent set it off; tight line spacing keeps it compact.
+  // Blank code lines still emit a Paragraph so the listing spacing is preserved.
+  function createCodeBlock(codeLines) {
+    const size = Math.max(14, T.BODY_SIZE - 4);
+    return codeLines.map((cl, i) => new Paragraph({
+      shading: { type: ShadingType.CLEAR, color: "auto", fill: "F2F2F2" },
+      spacing: { before: i === 0 ? 120 : 0, after: i === codeLines.length - 1 ? 120 : 0, line: 240, lineRule: "atLeast" },
+      indent: { left: 240 },
+      alignment: AlignmentType.LEFT,
+      children: [new TextRun({ text: cl.length ? cl : " ", font: T.CODE_FONT, size, color: T.BODY_COLOR })],
+    }));
+  }
+
+  // ---- Table (GFM pipe table): real Table/TableRow/TableCell with a bold
+  // header row, thin borders, header shading, cell padding, the body font.
+  // Cells hold inline-parsed runs (bold/italic/code/math reused).
+  function createTable(rows, aligns) {
+    const thin = { style: BorderStyle.SINGLE, size: 4, color: "999999" };
+    const borders = { top: thin, bottom: thin, left: thin, right: thin,
+                      insideHorizontal: thin, insideVertical: thin };
+    const ncol = rows.reduce((m, r) => Math.max(m, r.length), 0);
+    const alignFor = (c) => {
+      const a = aligns && aligns[c];
+      if (a === "center") return AlignmentType.CENTER;
+      if (a === "right") return AlignmentType.RIGHT;
+      return AlignmentType.LEFT;
+    };
+    const mkCell = (cellText, isHeader, colIdx) => {
+      const runs = buildInlineRuns(cellText, {
+        font: T.FONT, size: T.BODY_SIZE - 2, color: T.BODY_COLOR, bold: isHeader || undefined,
+      });
+      return new TableCell({
+        margins: { top: 40, bottom: 40, left: 100, right: 100 },
+        shading: isHeader ? { type: ShadingType.CLEAR, color: "auto", fill: "EDEDED" } : undefined,
+        children: [new Paragraph({
+          spacing: { after: 0, line: 240, lineRule: "atLeast" },
+          alignment: alignFor(colIdx),
+          children: runs.length ? runs : [new TextRun({ text: "", font: T.FONT, size: T.BODY_SIZE - 2 })],
+        })],
+      });
+    };
+    const tableRows = rows.map((cells, r) => {
+      const padded = cells.slice();
+      while (padded.length < ncol) padded.push("");
+      return new TableRow({
+        tableHeader: r === 0,
+        children: padded.map((c, ci) => mkCell(c, r === 0, ci)),
+      });
+    });
+    return new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders,
+      rows: tableRows,
+    });
+  }
+
+  // ---- List item: a hanging-indent Paragraph with a manual marker ("•  " for
+  // bullets, "N.  " ordered). depth (0-based) nests via a deeper left indent.
+  // Inline markup inside the item text is parsed.
+  function createListItem(marker, itemText, depth) {
+    const step = 360;
+    const left = 360 + depth * step;
+    const runs = [new TextRun({ text: marker, font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR })];
+    for (const r of buildInlineRuns(itemText, { font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR })) runs.push(r);
+    return new Paragraph({
+      spacing: { after: 60, line: T.BODY_LINE, lineRule: "atLeast" },
+      indent: { left, hanging: 240 },
+      alignment: AlignmentType.LEFT,
+      children: runs,
+    });
+  }
+
+  return { createBodyParagraph, createBlockquote, createUnitHeading, createSubsectionHeading, createSectionBreak, createDisplayMath, createCodeBlock, createTable, createListItem };
 }
 
 // ============================================================
@@ -283,11 +359,68 @@ function chapterArtParagraph(art, unitId, tag) {
 }
 
 // ============================================================
+// Block-construct detection helpers (identical logic to generate_book.js;
+// duplicated to keep each generator self-contained, the pattern the existing
+// pngDimensions/resolveChapterArt helpers already follow). Pure + inert on
+// prose: none fires on the 33 existing units.
+// ============================================================
+const FENCE_RE = /^\s*```/;
+function isTableSeparator(line) {
+  const t = line.trim();
+  if (!t.includes("-")) return false;
+  if (!/^\|?[\s:|-]+\|?$/.test(t)) return false;
+  return t.includes("|") && /-/.test(t);
+}
+function looksLikeTableRow(line) {
+  const t = line.trim();
+  if (!t.includes("|")) return false;
+  if (isTableSeparator(line)) return false;
+  return true;
+}
+function splitTableRow(line) {
+  let t = line.trim();
+  const cells = [];
+  let buf = "";
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (ch === "\\" && t[i + 1] === "|") { buf += "|"; i++; continue; }
+    if (ch === "|") { cells.push(buf); buf = ""; continue; }
+    buf += ch;
+  }
+  cells.push(buf);
+  if (cells.length && cells[0].trim() === "") cells.shift();
+  if (cells.length && cells[cells.length - 1].trim() === "") cells.pop();
+  return cells.map((c) => c.trim());
+}
+function parseAligns(sepLine) {
+  return splitTableRow(sepLine).map((c) => {
+    const s = c.trim();
+    const l = s.startsWith(":"), r = s.endsWith(":");
+    if (l && r) return "center";
+    if (r) return "right";
+    if (l) return "left";
+    return null;
+  });
+}
+function parseListItem(rawLine) {
+  const m = rawLine.match(/^(\s*)([-*]|\d{1,9}[.)])\s+(.*)$/);
+  if (!m) return null;
+  const indent = m[1].replace(/\t/g, "  ");
+  const token = m[2];
+  const text = m[3];
+  const ordered = /\d/.test(token);
+  const depth = Math.floor(indent.length / 2);
+  return { ordered, depth, marker: token, text };
+}
+
+// ============================================================
 // Markdown -> paragraphs. Unit headings at the configured level become Heading 1.
 // [IMAGE ...] blocks are consumed and skipped. Front-matter markdown before the
 // first unit heading is ignored (front matter is rendered from config here).
 // chapterArt, when non-null, is {paras: (Paragraph|null)[], idx: 0}: unit ids
 // bound to headings BY POSITION; each unit heading consumes one slot.
+// Three block constructs added (fenced code / pipe tables / lists); all inert on
+// prose that uses none of them.
 // ============================================================
 function parseMarkdown(text, unitLevel, F, chapterArt) {
   const lines = text.split("\n");
@@ -299,6 +432,24 @@ function parseMarkdown(text, unitLevel, F, chapterArt) {
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
     const line = raw.replace(/\s+$/, "");
+
+    // Fenced code block (```): capture inner lines VERBATIM until the closing
+    // fence (checked FIRST so "$$" / "# " / "| a |" inside a listing is never
+    // interpreted). An unterminated fence renders what it captured to EOF.
+    if (FENCE_RE.test(line)) {
+      const codeLines = [];
+      let j = i + 1;
+      for (; j < lines.length; j++) {
+        if (FENCE_RE.test(lines[j].replace(/\s+$/, ""))) break;
+        codeLines.push(lines[j].replace(/\s+$/, ""));
+      }
+      if (j >= lines.length) {
+        console.warn(`[generate_kindle] unterminated code fence opened at line ${i + 1}; rendered to EOF`);
+      }
+      for (const p of F.createCodeBlock(codeLines)) paragraphs.push(p);
+      i = j;
+      continue;
+    }
 
     if (/^\[IMAGE[:\s\]]/.test(line.trim())) {
       // Well-formed image blocks only (see generate_book.js): anchored token,
@@ -350,6 +501,52 @@ function parseMarkdown(text, unitLevel, F, chapterArt) {
 
     if (line.trim() === "---") { paragraphs.push(F.createSectionBreak()); continue; }
     if (line.trim().startsWith("> ")) { paragraphs.push(F.createBlockquote(line.trim().slice(2))); continue; }
+
+    // GFM pipe table: header row + a separator row ("|---|:--:|"). Requiring the
+    // separator keeps a lone prose line with a stray "|" from becoming a table.
+    if (looksLikeTableRow(line) && (i + 1) < lines.length && isTableSeparator(lines[i + 1])) {
+      const header = splitTableRow(line);
+      const aligns = parseAligns(lines[i + 1]);
+      const rows = [header];
+      let j = i + 2;
+      for (; j < lines.length; j++) {
+        const bl = lines[j].replace(/\s+$/, "");
+        if (bl.trim() === "" || !looksLikeTableRow(bl)) break;
+        rows.push(splitTableRow(bl));
+      }
+      paragraphs.push(F.createTable(rows, aligns));
+      i = j - 1;
+      continue;
+    }
+
+    // Lists: consume a run of consecutive bullet / ordered items. Ordered items
+    // are renumbered by sibling position (the source number is ignored). Detect
+    // on the trailing-whitespace-stripped line so a CRLF master's "\r" never
+    // blocks the match (the "$" anchor won't span a bare "\r").
+    const li0 = parseListItem(line);
+    if (li0) {
+      let j = i;
+      const counters = {};
+      let prevDepth = -1;
+      for (; j < lines.length; j++) {
+        const li = parseListItem(lines[j].replace(/\s+$/, ""));
+        if (!li) break;
+        if (li.depth > prevDepth) counters[li.depth] = 1;
+        for (const d of Object.keys(counters)) if (Number(d) > li.depth) delete counters[d];
+        let marker;
+        if (li.ordered) {
+          const n = counters[li.depth] || 1;
+          counters[li.depth] = n + 1;
+          marker = `${n}.  `;
+        } else {
+          marker = "•  ";
+        }
+        paragraphs.push(F.createListItem(marker, li.text, li.depth));
+        prevDepth = li.depth;
+      }
+      i = j - 1;
+      continue;
+    }
 
     paragraphs.push(F.createBodyParagraph(line));
   }
@@ -603,4 +800,7 @@ if (require.main === module) {
   });
 }
 
-module.exports = { main, parseMarkdown, bodyFromFirstUnit, USAGE };
+module.exports = {
+  main, parseMarkdown, bodyFromFirstUnit, USAGE,
+  isTableSeparator, looksLikeTableRow, splitTableRow, parseAligns, parseListItem,
+};

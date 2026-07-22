@@ -640,6 +640,12 @@ def render_front_text(canvas: Image.Image, cfg: CoverConfig,
         sub_tracking = 0.025
         sub_stroke = max(2, int(sub_font_px * 0.045))
         sw, sh = measure_tracked(cfg.subtitle, sub_font, sub_tracking)
+        # Shrink an over-wide subtitle to fit the safe width (mirrors the title).
+        while sw > max_title_w and sub_font_px > int(panel_h * 0.016):
+            sub_font_px -= 2
+            sub_font = load_font(sub_font_px, use_bold_ttf=True)
+            sub_stroke = max(2, int(sub_font_px * 0.045))
+            sw, sh = measure_tracked(cfg.subtitle, sub_font, sub_tracking)
         sy = ay - int(panel_h * 0.028) - sh
         draw_tracked(draw, (center_x - sw // 2, sy), cfg.subtitle, sub_font, sub_tracking,
                      cfg.col_cream, stroke_width=sub_stroke, stroke_fill=cfg.col_dark)

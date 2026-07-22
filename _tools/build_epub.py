@@ -140,9 +140,70 @@ def inline(t: str) -> str:
 
 SCENE_BREAK = re.compile(r"^\s*(✦|\*\s*\*\s*\*|\* \* \*|\*\*\*)\s*$")
 
+# ----------------------------------------------------------------------------
+# block-construct detection (fenced code / GFM pipe tables / lists). Pure +
+# inert on prose: none fires on the existing units (mirrors the JS generators).
+# ----------------------------------------------------------------------------
+FENCE_RE = re.compile(r"^\s*```")
+LIST_RE = re.compile(r"^(\s*)([-*]|\d{1,9}[.)])\s+(.*)$")
+
+
+def is_table_separator(line: str) -> bool:
+    t = line.strip()
+    if "-" not in t:
+        return False
+    if not re.fullmatch(r"\|?[\s:|-]+\|?", t):
+        return False
+    return "|" in t
+
+
+def looks_like_table_row(line: str) -> bool:
+    t = line.strip()
+    return ("|" in t) and not is_table_separator(line)
+
+
+def split_table_row(line: str):
+    t = line.strip()
+    cells, buf, i = [], "", 0
+    while i < len(t):
+        ch = t[i]
+        if ch == "\\" and i + 1 < len(t) and t[i + 1] == "|":
+            buf += "|"; i += 2; continue
+        if ch == "|":
+            cells.append(buf); buf = ""; i += 1; continue
+        buf += ch; i += 1
+    cells.append(buf)
+    if cells and cells[0].strip() == "":
+        cells.pop(0)
+    if cells and cells[-1].strip() == "":
+        cells.pop()
+    return [c.strip() for c in cells]
+
+
+def parse_aligns(sep_line: str):
+    out = []
+    for c in split_table_row(sep_line):
+        s = c.strip()
+        left, right = s.startswith(":"), s.endswith(":")
+        out.append("center" if left and right else "right" if right
+                   else "left" if left else None)
+    return out
+
+
+def parse_list_item(raw_line: str):
+    m = LIST_RE.match(raw_line)
+    if not m:
+        return None
+    indent = m.group(1).replace("\t", "  ")
+    token = m.group(2)
+    return {"ordered": any(ch.isdigit() for ch in token),
+            "depth": len(indent) // 2, "text": m.group(3)}
+
 
 def body_to_xhtml(lines, unit_level: int, ornament: str) -> str:
-    """Convert a unit body (markdown lines, heading excluded) to XHTML blocks."""
+    """Convert a unit body (markdown lines, heading excluded) to XHTML blocks.
+    Adds fenced code / pipe tables / lists on top of the original paragraph /
+    blockquote / scene-break / subheading handling (all preserved as-is)."""
     out = []
     para: list = []
     quote: list = []
@@ -165,47 +226,172 @@ def body_to_xhtml(lines, unit_level: int, ornament: str) -> str:
     sub_h = "#" * (unit_level + 1)      # e.g. "##" inside chapters
     subsub_h = "#" * (unit_level + 2)
 
-    for raw in lines:
+    n = len(lines)
+    i = 0
+    while i < n:
+        raw = lines[i]
         line = raw.rstrip()
+
+        # Fenced code block (```): capture inner lines VERBATIM (escaped, but NO
+        # inline markdown) until the closing fence. Checked FIRST so table/list/
+        # heading markers inside a listing are never interpreted. An unterminated
+        # fence renders what it captured to EOF.
+        if FENCE_RE.match(line):
+            code_lines = []
+            j = i + 1
+            while j < n and not FENCE_RE.match(lines[j].rstrip()):
+                code_lines.append(lines[j].rstrip())
+                j += 1
+            flush_para(); flush_quote()
+            body = "\n".join(esc(cl) for cl in code_lines)
+            out.append(f"<pre><code>{body}</code></pre>")
+            first_para = True
+            i = j + 1   # skip the closing fence (or land past EOF)
+            continue
+
         if not line.strip():
             flush_para(); flush_quote()
+            i += 1
             continue
         if SCENE_BREAK.match(line):
             flush_para(); flush_quote()
             out.append(f'<p class="scenebreak">{esc(ornament)}</p>')
             first_para = True
+            i += 1
             continue
         if line.startswith(subsub_h + " "):
             flush_para(); flush_quote()
             out.append(f"<h3>{inline(line[len(subsub_h)+1:].strip())}</h3>")
             first_para = True
+            i += 1
             continue
         if line.startswith(sub_h + " "):
             flush_para(); flush_quote()
             out.append(f"<h2>{inline(line[len(sub_h)+1:].strip())}</h2>")
             first_para = True
+            i += 1
             continue
         if line.startswith("> "):
             flush_para()
             quote.append(line[2:].strip())
+            i += 1
             continue
         if line.startswith(">"):
             flush_para()
             quote.append(line[1:].strip())
+            i += 1
             continue
+
+        # GFM pipe table: a header row + a separator row. Requiring the separator
+        # keeps a lone prose line with a stray "|" from becoming a table.
+        if (looks_like_table_row(line) and i + 1 < n
+                and is_table_separator(lines[i + 1])):
+            flush_para(); flush_quote()
+            header = split_table_row(line)
+            aligns = parse_aligns(lines[i + 1])
+            body_rows = []
+            j = i + 2
+            while j < n:
+                bl = lines[j].rstrip()
+                if not bl.strip() or not looks_like_table_row(bl):
+                    break
+                body_rows.append(split_table_row(bl))
+                j += 1
+            ncol = max([len(header)] + [len(r) for r in body_rows]) if body_rows else len(header)
+
+            def _style(ci):
+                a = aligns[ci] if ci < len(aligns) else None
+                return f' style="text-align:{a}"' if a else ""
+
+            def _cells(cells, tag):
+                padded = list(cells) + [""] * (ncol - len(cells))
+                return "".join(f"<{tag}{_style(ci)}>{inline(c)}</{tag}>"
+                               for ci, c in enumerate(padded))
+            thead = f"<thead><tr>{_cells(header, 'th')}</tr></thead>"
+            tbody = ("<tbody>"
+                     + "".join(f"<tr>{_cells(r, 'td')}</tr>" for r in body_rows)
+                     + "</tbody>") if body_rows else ""
+            out.append(f"<table>{thead}{tbody}</table>")
+            first_para = True
+            i = j
+            continue
+
+        # Lists: consume a run of consecutive bullet / ordered items, nesting by
+        # leading-space depth. Ordered vs unordered is decided per group by the
+        # first item's marker. Renders proper <ul>/<ol>/<li> with one level of
+        # nesting (deeper items are wrapped in a child list). Detect on the
+        # rstripped line so a stray trailing "\r" never blocks the "$" anchor.
+        if parse_list_item(line) is not None:
+            flush_para(); flush_quote()
+            items = []
+            j = i
+            while j < n:
+                li = parse_list_item(lines[j].rstrip())
+                if li is None:
+                    break
+                items.append(li)
+                j += 1
+            out.append(_render_list(items))
+            first_para = True
+            i = j
+            continue
+
         flush_quote()
         para.append(line.strip())
+        i += 1
     flush_para(); flush_quote()
     return "\n".join(out)
 
 
+def _render_list(items) -> str:
+    """Render a flat item list (each {ordered, depth, text}) to nested <ul>/<ol>.
+    Supports arbitrary depth via a stack; the tag of each level is chosen by the
+    first item that opens it (ordered -> <ol>, else <ul>)."""
+    html = []
+    stack = []   # list of open tags, one per depth level
+
+    def close_to(depth):
+        while len(stack) > depth:
+            html.append(f"</li></{stack.pop()}>")
+
+    for it in items:
+        d = it["depth"]
+        tag = "ol" if it["ordered"] else "ul"
+        if d < len(stack):
+            # same or shallower level: close down to it, then close the sibling <li>
+            close_to(d + 1)
+            html.append("</li>")
+        elif d > len(stack):
+            # open new nested level(s); clamp to exactly one deeper than current
+            d = len(stack)
+            html.append(f"<{tag}>")
+            stack.append(tag)
+        else:  # d == len(stack): opening the first list at this depth
+            html.append(f"<{tag}>")
+            stack.append(tag)
+        html.append(f"<li>{inline(it['text'])}")
+    close_to(0)
+    return "".join(html)
+
+
 def split_units(text: str, unit_level: int):
-    """Split the master into [(heading, body_lines)] at the unit heading level."""
+    """Split the master into [(heading, body_lines)] at the unit heading level.
+
+    Fence-aware: a "# comment" INSIDE a ```code``` block (a Python/YAML/shell
+    comment) is NOT a unit boundary, so a code listing is never split into
+    spurious "units" whose comment line renders as a chapter heading on its own
+    page (2026-07-15 fix; parity with generate_book.js splitUnits)."""
     hmark = "#" * unit_level
     head_re = re.compile(rf"^{re.escape(hmark)}(?!#)\s+(.+)$")
     lines = text.splitlines()
-    starts = [(i, m.group(1).strip()) for i, l in enumerate(lines)
-              if (m := head_re.match(l))]
+    starts = []
+    in_code = False
+    for i, l in enumerate(lines):
+        if FENCE_RE.match(l):
+            in_code = not in_code
+            continue
+        if not in_code and (m := head_re.match(l)):
+            starts.append((i, m.group(1).strip()))
     units = []
     for n, (i, heading) in enumerate(starts):
         end = starts[n + 1][0] if n + 1 < len(starts) else len(lines)
@@ -256,6 +442,19 @@ img.cover { max-width: 100%; height: auto; }
 div.coverwrap { text-align: center; }
 figure.chapterart { text-align: center; margin: 0.8em 0 1.2em 0; }
 figure.chapterart img { max-width: 92%; height: auto; }
+pre { background: #f2f2f2; border: 1px solid #ddd; border-radius: 3px;
+      padding: 0.6em 0.8em; margin: 1em 0; overflow-x: auto;
+      white-space: pre-wrap; word-wrap: break-word; }
+pre code { font-family: "Consolas", "Courier New", monospace; font-size: 0.85em;
+           color: #1a1a1a; background: transparent; }
+code { font-family: "Consolas", "Courier New", monospace; font-size: 0.9em; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.9em; }
+th, td { border: 1px solid #999; padding: 0.3em 0.5em; text-align: left;
+         vertical-align: top; }
+th { background: #ededed; font-weight: bold; }
+ul, ol { margin: 0.6em 0 0.6em 1.4em; padding: 0; }
+li { margin: 0.2em 0; text-indent: 0; text-align: left; }
+li p { text-indent: 0; }
 """
 
 

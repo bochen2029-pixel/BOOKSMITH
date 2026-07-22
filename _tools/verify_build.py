@@ -333,7 +333,9 @@ def check_recto_parity(docx: Path, config_path: Path):
     if config_path is not None:
         cmd += ["--config", str(config_path)]
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        # 300s starved Word COM on a 342pp DOCX (2026-07-16); 1200s gives the
+        # repaginate + 35-heading walk honest headroom on a 300-350pp book.
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1200)
     except (subprocess.SubprocessError, OSError) as exc:
         return (name, False, f"check_part_pages.py failed to run: {exc}")
     out = (proc.stdout or "").strip()
@@ -1143,9 +1145,16 @@ def check_kindle_parity(root: Path, cfg: dict, final: bool = False):
             return (name, True, f"kindle={kw} words; parity DEFERRED (print "
                                 f"{', '.join(declared)} not built yet — the final sweep enforces)")
         return (name, True, f"kindle={kw} words; no print format declared (ebook-only) — parity n/a")
-    ok = kw >= pw
+    # The print DOCX carries a printed, page-numbered table of contents that a
+    # reflowable Kindle correctly omits (device nav replaces it), plus minor
+    # render-tokenization drift on dense code/table/equation pages. Allow the same
+    # size-scaled ceremonial allowance the EPUB parity uses; a dropped chapter is
+    # thousands of words and still fails, so the never-ship-short guard holds.
+    allowance = max(150, int(pw * 0.02))
+    ok = kw >= pw - allowance
     return (name, ok, f"kindle={kw} words vs print={pw} words "
-                      f"({'>= print, ok' if ok else 'BELOW print — source drift!'})")
+                      f"(allowance {allowance}; "
+                      f"{'parity ok' if ok else 'BELOW print — source drift!'})")
 
 
 _EM_DASH_SET = "—–―‒−"  # mirrors lint_manuscript EM_DASHES (§17 HARD gate)
