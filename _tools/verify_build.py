@@ -335,7 +335,8 @@ def check_recto_parity(docx: Path, config_path: Path):
     try:
         # 300s starved Word COM on a 342pp DOCX (2026-07-16); 1200s gives the
         # repaginate + 35-heading walk honest headroom on a 300-350pp book.
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1200)
+        proc = subprocess.run(cmd, capture_output=True, text=True,
+                              encoding="utf-8", errors="replace", timeout=1200)
     except (subprocess.SubprocessError, OSError) as exc:
         return (name, False, f"check_part_pages.py failed to run: {exc}")
     out = (proc.stdout or "").strip()
@@ -975,7 +976,7 @@ def check_lint(config_path: Path):
     try:
         proc = subprocess.run(
             [sys.executable, str(LINT_SCRIPT), "--config", str(config_path)],
-            capture_output=True, text=True, timeout=180,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180,
         )
     except (subprocess.SubprocessError, OSError) as exc:
         return (name, False, f"lint failed to run: {exc}")
@@ -1366,7 +1367,7 @@ def _run_continuity_check(root: Path):
     try:
         proc = subprocess.run(
             [sys.executable, str(CHECK_CONTINUITY), "--workspace", str(root)],
-            capture_output=True, text=True, timeout=120)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
     except (subprocess.SubprocessError, OSError) as exc:
         return {"all_pass": False, "detail": f"continuity check failed to run: {exc}"}
     out = (proc.stdout or "").strip().splitlines()

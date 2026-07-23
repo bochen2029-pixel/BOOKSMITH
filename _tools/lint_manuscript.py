@@ -52,12 +52,17 @@ from pathlib import Path
 # (ported from C:\Claude-Titanic\lint_manuscript.py)
 # ─────────────────────────────────────────────────────────────────────────────
 
-TERMINAL_PUNCT = (".", "?", "!", "…", ")", "]", "}", ":")
+TERMINAL_PUNCT = (".", "?", "!", "…", ")", "]", "}", ":",
+                  # CJK terminators (zh/ja books; absent from Latin text so the
+                  # Latin rules are unaffected). Added 2026-07-23 after the DRDJ
+                  # replica lint false-failed every zh paragraph ending with 。
+                  "。", "！", "？", "；", "：")
 # Trailing closers that still count as terminated: emphasis markers, quote/paren
 # characters, em/en-dashes. `*` and `_` close an italic span — the sentence-ending
 # punctuation sits inside the italic and is still terminal.
 TRAILING_CLOSERS = ('"', "”", "'", "’", ")", "]", "}",
-                    "—", "–", "*", "_")
+                    "—", "–", "*", "_",
+                    "」", "』", "）", "】", "》", "〉", "〕")
 
 # Inline spans that are NOT prose and must be masked before the round-trip
 # corruption checks: inline `code`, single-line $$block math$$, and inline $math$
@@ -89,6 +94,22 @@ def paragraph_ends_terminated(para: str) -> bool:
         s = s[:-1].rstrip()
     if not s:
         return True  # entirely-empty or all-wrapper paragraph
+    # CJK style exemption (2026-07-23, DRDJ replica): letter-styled Chinese books
+    # legitimately carry SHORT unterminated lines — a salutation ending with a
+    # comma, a bare signature name, a dateline. Round-trip SHREDDING produces
+    # LONG mid-sentence fragments, so short CJK paragraphs are exempt while long
+    # unterminated ones still fire.
+    if len(s) <= 16 and any("一" <= ch <= "鿿" for ch in s):
+        return True
+    # A paragraph wholly wrapped in parentheses is a NOTE (attribution, aside),
+    # not a shredded sentence — CJK （…） or Latin (...).
+    t = para.strip()
+    if (t.startswith("（") and t.endswith("）")) or (t.startswith("(") and t.endswith(")")):
+        return True
+    # CJK enumeration/roster paragraphs (name lists joined with 、) legitimately
+    # end on a name; a dense 、 ratio marks a list, not a shredded sentence.
+    if t.count("、") >= 3 and t.count("、") / max(len(t), 1) > 0.06:
+        return True
     return s.endswith(TERMINAL_PUNCT)
 
 
