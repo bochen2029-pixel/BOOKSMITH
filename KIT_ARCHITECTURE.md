@@ -311,7 +311,7 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 
 **`scan_manuscript.py`** — *Deterministic packaging + placeholder gate.*
 - PURPOSE: the structural packaging invariants the executor used to check by hand, made one reproducible gate (complements `lint_manuscript.py`, which owns corruption + blacklist + the em-dash gate). Per unit: file exists, UTF-8 no-BOM, exactly one `# ` H1 that byte-matches the config title, zero `## ` (generators drop them), zero em/en dashes when `voice.no_em_dashes`, zero tables / list lines, zero placeholders (the `[⚠ … AT LINE-READ]` class that once shipped into a printed Acknowledgments; also `[BO-WRITES]`, `[TODO]`, angle-stubs, fill-blanks), and word count within ±20% of `target_words` (WARN).
-- I/O: `python scan_manuscript.py --config book_config.json [--json] [--strict]` → exit 0 clean / 1 FAIL / 2 usage. Auto-relaxes the dash check for translated editions (`no_em_dashes:false`).
+- I/O: `python scan_manuscript.py --config book_config.json [--json] [--strict] [--allow-midflow-print]` → exit 0 clean / 1 FAIL / 2 usage. Auto-relaxes the dash check for translated editions (`no_em_dashes:false`). **Cross-format divergence guard** (2026-07-23): FAILS when mid-flow `![alt](path)` image lines coexist with a declared print format (print interiors skip them; kindle/epub embed them) — print images ride the replica route or `interior.chapter_art`; `--allow-midflow-print` waives it as a deliberate operator call.
 - SOURCE: new (2026-07-14) — codifies the executor's ad-hoc packaging scans + closes the placeholder gap.
 
 **`pdf_replica_fit.py`** — *Page-REPLICA re-fit of a finished PDF onto a KDP trim (the OTHER reimport route).*

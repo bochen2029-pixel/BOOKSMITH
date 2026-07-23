@@ -138,6 +138,9 @@ def main():
     ap.add_argument("--config", required=True)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--strict", action="store_true", help="WARN counts as failure")
+    ap.add_argument("--allow-midflow-print", action="store_true",
+                    help="waive the midflow-images-vs-print-format guard "
+                         "(a deliberate operator call)")
     a = ap.parse_args()
 
     cfgp = Path(a.config).resolve()
@@ -163,6 +166,39 @@ def main():
         any_warn |= "WARN" in levels
         report["units"].append({"id": uid, "verdict": verdict, "words": words,
                                 "findings": [list(x) for x in findings]})
+    # Cross-format divergence guard (2026-07-23): print interiors SKIP mid-flow
+    # "![alt](path)" image lines (kindle/epub embed them). A manuscript that
+    # carries them while a print format is declared would silently ship
+    # image-less print next to image-bearing ebooks — fail loudly instead.
+    # Print image routes: the page-replica pipeline or interior.chapter_art.
+    PRINT_FORMATS = {"kdp_paperback", "kdp_hardcover", "mixam_hardcover",
+                     "mixam_paperback", "blurb_paperback", "blurb_hardcover"}
+    declared_print = sorted(PRINT_FORMATS & set(cfg.get("formats") or []))
+    if declared_print and not a.allow_midflow_print:
+        mf_re = re.compile(r"^!\[[^\]]*\]\([^)\s]+\)\s*$")
+        mf_units = []
+        for uid, _t, _tw in unit_list(cfg):
+            p = cur / f"{uid}_current.md"
+            if not p.exists():
+                continue
+            try:
+                n = sum(1 for l in p.read_text(encoding="utf-8").splitlines()
+                        if mf_re.match(l))
+            except Exception:
+                continue
+            if n:
+                mf_units.append(f"{uid}({n})")
+        if mf_units:
+            any_fail = True
+            report["units"].append({
+                "id": "_midflow_vs_print", "verdict": "FAIL",
+                "findings": [["FAIL", "midflow_images_print_divergence",
+                              f"{len(mf_units)} unit(s) carry mid-flow image lines "
+                              f"({', '.join(mf_units[:8])}{'…' if len(mf_units) > 8 else ''}) "
+                              f"but print format(s) {', '.join(declared_print)} are declared; "
+                              f"print interiors skip these lines. Use the replica route or "
+                              f"interior.chapter_art for print images, or waive with "
+                              f"--allow-midflow-print."]]})
     report["all_pass"] = not (any_fail or (a.strict and any_warn))
 
     if a.json:
