@@ -82,8 +82,10 @@ class Runner:
     def step(self, label, cmd, parse=False):
         self.log.append(label)
         printable = " ".join(str(c) for c in cmd)
-        if label == os.environ.get("PRODUCE_BOOK_FAIL_STEP"):
-            # selftest hook: simulate this one step failing without running anything
+        if self.dry and label == os.environ.get("PRODUCE_BOOK_FAIL_STEP"):
+            # selftest hook: simulate this one step failing without running anything.
+            # Gated to --dry-run so a stale exported var can NEVER sabotage a real
+            # production run (the selftest only ever drives --dry-run children).
             print(f"  FAIL {label} (rc=1) [injected via PRODUCE_BOOK_FAIL_STEP]")
             return 1, "", ""
         if self.dry:
