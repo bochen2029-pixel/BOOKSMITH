@@ -45,13 +45,23 @@ def load_font(path: Path, px: int):
 
 
 def sample_palette(art: Image.Image):
-    """Dominant dark field color + a light text color from the cover art."""
+    """Field + text colors sampled from the cover art, polarity-aware:
+    dark covers (the CJK trilogy) keep the original dark-field/cream-text
+    behavior; LIGHT covers (the English edition's cream) get a light field
+    with the cover's own ink color as text."""
     small = art.convert("RGB").resize((64, 64))
     px = list(small.getdata())
+    mean_lum = sum(sum(c) for c in px) / (len(px) * 3)
     dark = min(px, key=lambda c: sum(c))
     darks = [c for c in px if sum(c) <= sum(dark) + 120]
-    field = tuple(sum(ch) // len(darks) for ch in zip(*darks))
-    text = (244, 238, 224)
+    if mean_lum >= 128:
+        light = max(px, key=lambda c: sum(c))
+        lights = [c for c in px if sum(c) >= sum(light) - 90]
+        field = tuple(sum(ch) // len(lights) for ch in zip(*lights))
+        text = tuple(sum(ch) // len(darks) for ch in zip(*darks))
+    else:
+        field = tuple(sum(ch) // len(darks) for ch in zip(*darks))
+        text = (244, 238, 224)
     return field, text
 
 
@@ -89,6 +99,22 @@ def stack_vertical(d, cx, y0, y1, text, font, fill, gap=0.15):
         y += hh + g
 
 
+def latin_spine(d, img, x0, x1, y0, y1, text, font, fill):
+    """Western spine: one horizontal line rotated -90 (reads top-to-bottom
+    with the book upright), centered in the spine box."""
+    if not text.strip():
+        return
+    probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
+    bb = probe.textbbox((0, 0), text, font=font)
+    tw, th = bb[2] - bb[0], bb[3] - bb[1]
+    tile = Image.new("RGBA", (tw + 8, th + 8), (0, 0, 0, 0))
+    ImageDraw.Draw(tile).text((4 - bb[0], 4 - bb[1]), text, font=font, fill=fill)
+    tile = tile.rotate(-90, expand=True)
+    cx = (x0 + x1 - tile.width) // 2
+    cy = y0 + max(0, ((y1 - y0) - tile.height) // 2)
+    img.paste(tile, (cx, cy), tile)
+
+
 def img_to_pdf(img, out_pdf, w_in, h_in):
     import fitz
     tmp = str(Path(out_pdf).with_suffix(".embed.png"))
@@ -101,7 +127,7 @@ def img_to_pdf(img, out_pdf, w_in, h_in):
     Path(tmp).unlink()
 
 
-def draw_back(d, x0, x1, y0, y1, safe, series, volume, author, motto, font_path, text_col, keepout=None):
+def draw_back(d, x0, x1, y0, y1, safe, series, volume, author, motto, font_path, text_col, keepout=None, lang="zh", foot="人生悟道 · 渡人渡己 系列"):
     W = x1 - x0
     f_big = load_font(font_path, int(0.42 * DPI))
     f_mid = load_font(font_path, int(0.26 * DPI))
@@ -112,7 +138,10 @@ def draw_back(d, x0, x1, y0, y1, safe, series, volume, author, motto, font_path,
         d.text((x0 + (W - w) // 2, y), line, font=f_big, fill=text_col)
         y += int(0.58 * DPI)
     y += int(0.12 * DPI)
-    vol_line = f"{volume} · {author} 著"
+    if lang == "en":
+        vol_line = f"{volume} · {author}" if volume else author
+    else:
+        vol_line = f"{volume} · {author} 著"
     w = d.textlength(vol_line, font=f_mid)
     d.text((x0 + (W - w) // 2, y), vol_line, font=f_mid, fill=text_col)
     y += int(0.85 * DPI)
@@ -120,7 +149,6 @@ def draw_back(d, x0, x1, y0, y1, safe, series, volume, author, motto, font_path,
         w = d.textlength(line, font=f_mid)
         d.text((x0 + (W - w) // 2, y), line, font=f_mid, fill=text_col)
         y += int(0.42 * DPI)
-    foot = "人生悟道 · 渡人渡己 系列"
     w = d.textlength(foot, font=f_small)
     fy = y1 - safe - int(0.30 * DPI)
     if keepout:
@@ -130,12 +158,16 @@ def draw_back(d, x0, x1, y0, y1, safe, series, volume, author, motto, font_path,
         d.text((x0 + (W - w) // 2, fy), foot, font=f_small, fill=text_col)
 
 
-def compose(profile, art_path, pages, out_dir, series, volume, author, motto, font_path, as_json):
+def compose(profile, art_path, pages, out_dir, series, volume, author, motto, font_path, as_json,
+            lang="zh", foot="人生悟道 · 渡人渡己 系列"):
     art = Image.open(art_path).convert("RGB")
     field, text_col = sample_palette(art)
     out_dir.mkdir(parents=True, exist_ok=True)
     meta = {"profile": profile, "pages": pages, "dpi": DPI, "field_rgb": field}
-    spine_title = "".join(series) + volume
+    if lang == "en":
+        spine_title = " ".join([*series, volume]).strip()
+    else:
+        spine_title = "".join(series) + volume
 
     if profile == "kindle":
         W, H = 1600, 2560
@@ -159,14 +191,19 @@ def compose(profile, art_path, pages, out_dir, series, volume, author, motto, fo
         # FRONT panel (right): the source cover, full-bleed into panel incl. edge
         front = scale_cover(art, W - sp_x1, H)
         img.paste(front, (sp_x1, 0))
-        # SPINE: stacked CJK, safe from head/tail turn-in
-        f_spine = load_font(font_path, int(min(spine * 0.52, 0.34) * DPI))
+        # SPINE: stacked CJK (zh) or one rotated line (en Western spine)
         v_safe = int((edge + 0.25) * DPI)
-        stack_vertical(d, (sp_x0 + sp_x1) // 2, v_safe, H - v_safe - int(1.2 * DPI),
-                       spine_title, f_spine, text_col)
-        f_auth = load_font(font_path, int(min(spine * 0.40, 0.24) * DPI))
-        stack_vertical(d, (sp_x0 + sp_x1) // 2, H - v_safe - int(1.1 * DPI),
-                       H - v_safe, author, f_auth, text_col)
+        if lang == "en":
+            f_spine = load_font(font_path, int(min(spine * 0.42, 0.30) * DPI))
+            latin_spine(d, img, sp_x0, sp_x1, v_safe, H - v_safe,
+                        f"{spine_title}  ·  {author}", f_spine, text_col)
+        else:
+            f_spine = load_font(font_path, int(min(spine * 0.52, 0.34) * DPI))
+            stack_vertical(d, (sp_x0 + sp_x1) // 2, v_safe, H - v_safe - int(1.2 * DPI),
+                           spine_title, f_spine, text_col)
+            f_auth = load_font(font_path, int(min(spine * 0.40, 0.24) * DPI))
+            stack_vertical(d, (sp_x0 + sp_x1) // 2, H - v_safe - int(1.1 * DPI),
+                           H - v_safe, author, f_auth, text_col)
         # BACK panel (left)
         safe = int((edge + 0.25) * DPI)
         keep = None
@@ -175,7 +212,7 @@ def compose(profile, art_path, pages, out_dir, series, volume, author, motto, fo
             ky1 = H - int((edge + 0.25) * DPI)
             keep = (kx1 - int(2.0 * DPI), ky1 - int(1.2 * DPI), kx1, ky1)
         draw_back(d, 0, sp_x0, 0, H, safe, series, volume, author, motto,
-                  font_path, text_col, keepout=keep)
+                  font_path, text_col, keepout=keep, lang=lang, foot=foot)
         name = "cover_wrap_hardcover" if hc else "cover_wrap"
         img_to_pdf(img, out_dir / f"{name}.pdf", W_in, H_in)
         img.save(out_dir / f"{name}.jpg", "JPEG", quality=90)
@@ -199,13 +236,21 @@ def main(argv=None):
     ap.add_argument("--series", default="人生悟道,渡人渡己")
     ap.add_argument("--volume", default="投资篇")
     ap.add_argument("--author", default="金冰")
-    ap.add_argument("--motto", default="便宜硬道理,选股如选妻,人性即黄金,时间便是神")
+    ap.add_argument("--motto", default="便宜硬道理,选股如选妻,人性即黄金,时间便是神",
+                    help="back-panel lines; split on '|' when present, else ','")
     ap.add_argument("--cjk-font", default=str(DEFAULT_FONT))
+    ap.add_argument("--lang", default="zh", choices=["zh", "en"],
+                    help="en = rotated Latin spine + no CJK byline suffix")
+    ap.add_argument("--foot", default="人生悟道 · 渡人渡己 系列",
+                    help="back-panel footer line")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
+    msep = "|" if "|" in a.motto else ","
+    ssep = "|" if "|" in a.series else ","
     compose(a.profile, Path(a.art), a.pages, Path(a.out),
-            [s for s in a.series.split(",") if s], a.volume, a.author,
-            [s for s in a.motto.split(",") if s], Path(a.cjk_font), a.json)
+            [s for s in a.series.split(ssep) if s], a.volume, a.author,
+            [s for s in a.motto.split(msep) if s], Path(a.cjk_font), a.json,
+            lang=a.lang, foot=a.foot)
     return 0
 
 
