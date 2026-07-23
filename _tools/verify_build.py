@@ -1202,6 +1202,47 @@ def check_no_artifact_emdash(path, cfg: dict):
             else "; ".join(hits[:4]))
 
 
+_MONO_FONTS = {"consolas", "courier new", "courier", "cascadia code", "cascadia mono",
+               "jetbrains mono", "fira code", "menlo", "monaco", "roboto mono",
+               "source code pro", "ibm plex mono"}
+
+
+def check_no_unrendered_bold_markers(path, cfg: dict):
+    """Literal ** in a NON-monospace run of the rendered DOCX = a markdown bold
+    span that failed to pair (2026-07-23 QC: a bold span CONTAINING inline code
+    was orphaned by the backticks-first split and shipped literal asterisks in
+    print). Monospace/code runs are exempt — code legitimately contains **
+    (e.g. **kwargs) and must never false-fail this gate."""
+    name = "no_unrendered_bold_markers"
+    if path is None or not Path(path).exists():
+        return (name, True, "no DOCX artifact to scan (informational)")
+    path = Path(path)
+    if path.suffix.lower() != ".docx":
+        return (name, True, f"{path.suffix} artifact — bold-marker scan is docx-only (n/a)")
+    hits = []
+    try:
+        with zipfile.ZipFile(path) as z:
+            xml = z.read("word/document.xml").decode("utf-8", "replace")
+        for rm in re.finditer(r"<w:r\b[^>]*>(.*?)</w:r>", xml, re.S):
+            body = rm.group(1)
+            texts = re.findall(r"<w:t[^>]*>([^<]*)</w:t>", body)
+            if not texts:
+                continue
+            t = "".join(texts)
+            if "**" not in t:
+                continue
+            fm = re.search(r"<w:rFonts\b[^>]*w:ascii=\"([^\"]+)\"", body)
+            font = (fm.group(1) if fm else "").strip().lower()
+            if font in _MONO_FONTS:
+                continue
+            hits.append(f"run font={font or 'default'}: ...{t[:48].strip()}...")
+    except (zipfile.BadZipFile, OSError, KeyError) as exc:
+        return (name, False, f"could not scan artifact: {exc}")
+    ok = not hits
+    return (name, ok, "no unrendered ** bold markers outside code runs" if ok
+            else "; ".join(hits[:4]))
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # driver
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1222,6 +1263,7 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
         checks.append(check_empty_headers(docx, cfg))
         checks.append(check_front_matter_valign(docx, cfg))
         checks.append(check_no_artifact_emdash(docx, cfg))
+        checks.append(check_no_unrendered_bold_markers(docx, cfg))
         checks.append(check_recto_parity(docx, config_path))
         checks.append(check_page_multiple(pdf, fmt))
         checks.append(check_renderer_page_faithful(fmt_dir))
@@ -1242,6 +1284,8 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
         checks.append(check_kindle_parity(root, cfg, final=final))
         checks.append(check_no_residual_latex(root, cfg, "kindle"))
         checks.append(check_no_artifact_emdash(
+            find_one(root / "outputs" / "kindle", ".docx", prefer_substr=["kindle"]), cfg))
+        checks.append(check_no_unrendered_bold_markers(
             find_one(root / "outputs" / "kindle", ".docx", prefer_substr=["kindle"]), cfg))
 
     if fmt == "epub":

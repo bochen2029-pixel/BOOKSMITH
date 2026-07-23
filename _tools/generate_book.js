@@ -271,16 +271,40 @@ function makeInlineBuilder(T, mathEnabled) {
   return function buildInlineRuns(text, baseOpts) {
     // Prose-mode subscript fix (safe before math split: math uses \Omega, not Ω).
     text = fixProseSubscripts(text);
-    // Nested-emphasis degradations the split pipeline cannot express — without
-    // these the outer ** survive as literal orphaned asterisks in the output:
-    // bold-italic renders bold; bold-wrapped code renders as code (bold dropped).
+    // Nested-emphasis degradation the split pipeline cannot express:
+    // bold-italic renders bold.
     text = text.replace(/\*\*\*([^*]+)\*\*\*/g, "**$1**");
-    text = text.replace(/\*\*(`[^`]+`)\*\*/g, "$1");
     const runs = [];
     const codeParts = text.split(/(`[^`]+`)/g);
+    const isCodeSpan = (p) => p.startsWith("`") && p.endsWith("`") && p.length > 2;
+    // Bold pairing ACROSS code/math spans (QC fix 2026-07-23): the backticks-first
+    // split used to orphan any ** pair whose span CONTAINED inline code, shipping
+    // literal asterisks ("**The brain (`d3`), honestly labeled.**"). Count **
+    // markers OUTSIDE code spans; an even count > 0 drives a toggle: every **
+    // flips bold state, and code/math runs inside the span inherit bold. An odd
+    // count falls back to the legacy per-segment pairing verbatim, so a stray
+    // literal ** is never silently eaten. ** inside a code span is never a marker
+    // (`**kwargs` stays literal).
+    let starMarkers = 0;
+    for (const p of codeParts) {
+      if (!isCodeSpan(p)) starMarkers += (p.match(/\*\*/g) || []).length;
+    }
+    const pairable = starMarkers > 0 && starMarkers % 2 === 0;
+    let boldOn = false;
+    const boldOpt = () => (boldOn ? { bold: true } : {});
+    const emitItalicAware = (seg, extra) => {
+      const italicParts = seg.split(/(\*[^*]+\*)/g);
+      for (const part of italicParts) {
+        if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
+          runs.push(new TextRun({ ...baseOpts, ...extra, text: part.slice(1, -1), italics: true }));
+        } else if (part.length > 0) {
+          runs.push(new TextRun({ ...baseOpts, ...extra, text: part }));
+        }
+      }
+    };
     for (const codePart of codeParts) {
-      if (codePart.startsWith("`") && codePart.endsWith("`") && codePart.length > 2) {
-        runs.push(new TextRun({ ...baseOpts, text: codePart.slice(1, -1), font: T.CODE_FONT }));
+      if (isCodeSpan(codePart)) {
+        runs.push(new TextRun({ ...baseOpts, ...boldOpt(), text: codePart.slice(1, -1), font: T.CODE_FONT }));
         continue;
       }
       if (codePart.length === 0) continue;
@@ -295,10 +319,19 @@ function makeInlineBuilder(T, mathEnabled) {
         const currencyLike = inner !== null && /^\d/.test(inner) && !/[\\^_]/.test(inner);
         if (inner !== null && !currencyLike) {
           const expr = latexToUnicode(inner);
-          runs.push(new TextRun({ ...baseOpts, text: expr, font: T.MATH_FONT, italics: true }));
+          runs.push(new TextRun({ ...baseOpts, ...boldOpt(), text: expr, font: T.MATH_FONT, italics: true }));
           continue;
         }
         if (mathPart.length === 0) continue;
+        if (pairable) {
+          const toggleParts = mathPart.split("**");
+          for (let i = 0; i < toggleParts.length; i++) {
+            if (i > 0) boldOn = !boldOn;
+            if (toggleParts[i].length > 0) emitItalicAware(toggleParts[i], boldOpt());
+          }
+          continue;
+        }
+        // Legacy pairing (unchanged behavior for zero/odd ** lines).
         const boldParts = mathPart.split(/(\*\*[^*]+\*\*)/g);
         for (const boldPart of boldParts) {
           if (boldPart.startsWith("**") && boldPart.endsWith("**") && boldPart.length > 4) {
@@ -306,14 +339,7 @@ function makeInlineBuilder(T, mathEnabled) {
             continue;
           }
           if (boldPart.length === 0) continue;
-          const italicParts = boldPart.split(/(\*[^*]+\*)/g);
-          for (const part of italicParts) {
-            if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
-              runs.push(new TextRun({ ...baseOpts, text: part.slice(1, -1), italics: true }));
-            } else if (part.length > 0) {
-              runs.push(new TextRun({ ...baseOpts, text: part }));
-            }
-          }
+          emitItalicAware(boldPart, {});
         }
       }
     }

@@ -5,8 +5,9 @@
 // PDF). Strips every print concept (ledger §7.1): single section, uniform 1"
 // margins (header:0 footer:0 gutter:0), NO page numbers / running headers /
 // mirror margins / blank versos / forced rectos. Unit titles are styled
-// HeadingLevel.HEADING_1 so Amazon builds its auto-TOC; a navigable hyperlinked
-// TableOfContents is added and populated via Word COM on open (updateFields).
+// HeadingLevel.HEADING_1 so Amazon builds its auto-TOC; the in-book CONTENTS
+// page + TableOfContents field is OMITTED by default (§16.4) — set
+// kindle_include_toc: true to embed one (which also arms updateFields).
 //
 // EVERYTHING per-book is read from book_config.json (title/subtitle/author,
 // interior.body_font, voice.unit_noun, is_fiction, kdp_metadata for the About
@@ -134,15 +135,36 @@ function resolveTypography(config) {
 function makeInlineBuilder(T, mathEnabled) {
   return function buildInlineRuns(text, baseOpts) {
     text = fixProseSubscripts(text);
-    // Nested-emphasis degradations (identical to generate_book.js): bold-italic
-    // renders bold; bold-wrapped code renders as code — never orphaned asterisks.
+    // Nested-emphasis degradation (identical to generate_book.js): bold-italic
+    // renders bold.
     text = text.replace(/\*\*\*([^*]+)\*\*\*/g, "**$1**");
-    text = text.replace(/\*\*(`[^`]+`)\*\*/g, "$1");
     const runs = [];
     const codeParts = text.split(/(`[^`]+`)/g);
+    const isCodeSpan = (p) => p.startsWith("`") && p.endsWith("`") && p.length > 2;
+    // Bold pairing ACROSS code/math spans (QC fix 2026-07-23, identical to
+    // generate_book.js): even # of ** markers outside code -> toggle bold state
+    // across the whole line so a bold span CONTAINING inline code renders
+    // bold+code+bold instead of literal asterisks; odd count -> legacy pairing.
+    let starMarkers = 0;
+    for (const p of codeParts) {
+      if (!isCodeSpan(p)) starMarkers += (p.match(/\*\*/g) || []).length;
+    }
+    const pairable = starMarkers > 0 && starMarkers % 2 === 0;
+    let boldOn = false;
+    const boldOpt = () => (boldOn ? { bold: true } : {});
+    const emitItalicAware = (seg, extra) => {
+      const italicParts = seg.split(/(\*[^*]+\*)/g);
+      for (const part of italicParts) {
+        if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
+          runs.push(new TextRun({ ...baseOpts, ...extra, text: part.slice(1, -1), italics: true }));
+        } else if (part.length > 0) {
+          runs.push(new TextRun({ ...baseOpts, ...extra, text: part }));
+        }
+      }
+    };
     for (const codePart of codeParts) {
-      if (codePart.startsWith("`") && codePart.endsWith("`") && codePart.length > 2) {
-        runs.push(new TextRun({ ...baseOpts, text: codePart.slice(1, -1), font: T.CODE_FONT }));
+      if (isCodeSpan(codePart)) {
+        runs.push(new TextRun({ ...baseOpts, ...boldOpt(), text: codePart.slice(1, -1), font: T.CODE_FONT }));
         continue;
       }
       if (codePart.length === 0) continue;
@@ -157,10 +179,19 @@ function makeInlineBuilder(T, mathEnabled) {
         const currencyLike = inner !== null && /^\d/.test(inner) && !/[\\^_]/.test(inner);
         if (inner !== null && !currencyLike) {
           const expr = latexToUnicode(inner);
-          runs.push(new TextRun({ ...baseOpts, text: expr, font: T.MATH_FONT, italics: true }));
+          runs.push(new TextRun({ ...baseOpts, ...boldOpt(), text: expr, font: T.MATH_FONT, italics: true }));
           continue;
         }
         if (mathPart.length === 0) continue;
+        if (pairable) {
+          const toggleParts = mathPart.split("**");
+          for (let i = 0; i < toggleParts.length; i++) {
+            if (i > 0) boldOn = !boldOn;
+            if (toggleParts[i].length > 0) emitItalicAware(toggleParts[i], boldOpt());
+          }
+          continue;
+        }
+        // Legacy pairing (unchanged behavior for zero/odd ** lines).
         const boldParts = mathPart.split(/(\*\*[^*]+\*\*)/g);
         for (const boldPart of boldParts) {
           if (boldPart.startsWith("**") && boldPart.endsWith("**") && boldPart.length > 4) {
@@ -168,14 +199,7 @@ function makeInlineBuilder(T, mathEnabled) {
             continue;
           }
           if (boldPart.length === 0) continue;
-          const italicParts = boldPart.split(/(\*[^*]+\*)/g);
-          for (const part of italicParts) {
-            if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
-              runs.push(new TextRun({ ...baseOpts, text: part.slice(1, -1), italics: true }));
-            } else if (part.length > 0) {
-              runs.push(new TextRun({ ...baseOpts, text: part }));
-            }
-          }
+          emitItalicAware(boldPart, {});
         }
       }
     }

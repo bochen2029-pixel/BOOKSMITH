@@ -66,7 +66,7 @@ def _require_word():
 _COM_BUSY = (-2147418111, -2147417846)
 
 
-def _com_call(fn, tries=15, delay=2.0):
+def _com_call(fn, tries=40, delay=3.0):
     last = None
     for _ in range(tries):
         try:
@@ -117,15 +117,15 @@ def find_page_of(word_app, heading):
 def _make_word():
     """Robust Word.Application factory (early binding first).
 
-    Late-bound Dispatch() can attach to a leftover/stuck Word instance whose
-    dynamic dispatch fails to resolve standard members (AttributeError on
-    Repaginate / ComputeStatistics). EnsureDispatch loads the Word type library
-    so every member resolves; DispatchEx forces a fresh instance; plain Dispatch
-    is the last resort."""
+    DispatchEx FIRST (QC 2026-07-23): Dispatch/EnsureDispatch ATTACH to any
+    already-running Word — including a zombie leaked by a crashed prior run —
+    whose busy RPC then rejects every call until the retry budget dies. A fresh
+    out-of-process instance is immune to zombies. EnsureDispatch (early binding,
+    typelib loaded) second; plain Dispatch last resort."""
     w = win32com.client
     for factory in (
-        lambda: w.gencache.EnsureDispatch("Word.Application"),
         lambda: w.DispatchEx("Word.Application"),
+        lambda: w.gencache.EnsureDispatch("Word.Application"),
         lambda: w.Dispatch("Word.Application"),
     ):
         try:
@@ -203,7 +203,13 @@ def check_pages(docx_path, cfg, headings_override):
                 doc.Close(SaveChanges=False)
             except Exception:
                 pass
-        word_app.Quit()
+        # Quit must never mask the real error AND must not leak a zombie Word:
+        # a busy instance rejects Quit too, so retry it briefly (QC 2026-07-23).
+        try:
+            _com_call(word_app.Quit, tries=5, delay=1.0)
+        except Exception:
+            print("WARN: Word.Quit failed; a WINWORD.EXE instance may linger",
+                  file=sys.stderr)
 
 
 def main() -> int:

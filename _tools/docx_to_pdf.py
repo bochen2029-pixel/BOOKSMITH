@@ -33,6 +33,7 @@ import sys
 import os
 import json
 import shutil
+import time
 
 try:
     import win32com.client
@@ -65,16 +66,16 @@ WD_ALERTS_NONE = 0       # wdAlertsNone
 def _make_word():
     """Robust Word.Application factory.
 
-    Late-bound Dispatch() can attach to a leftover/stuck Word instance whose
-    dynamic dispatch then fails to resolve standard members (observed:
-    AttributeError on TablesOfContents / Repaginate). Prefer EARLY binding
-    (gencache.EnsureDispatch loads the Word type library so every member
-    resolves); then a fresh out-of-process instance (DispatchEx); then plain
-    late binding as a last resort."""
+    DispatchEx FIRST (QC 2026-07-23): Dispatch/EnsureDispatch ATTACH to any
+    already-running Word — including a zombie leaked by a crashed prior run —
+    whose busy RPC then rejects every call until the retry budget dies
+    (observed live: RPC_E_CALL_REJECTED at Repaginate on the 344pp book). A
+    fresh out-of-process instance is immune to zombies. EnsureDispatch (early
+    binding, typelib loaded) second; plain Dispatch last resort."""
     w = win32com.client
     for factory in (
-        lambda: w.gencache.EnsureDispatch("Word.Application"),
         lambda: w.DispatchEx("Word.Application"),
+        lambda: w.gencache.EnsureDispatch("Word.Application"),
         lambda: w.Dispatch("Word.Application"),
     ):
         try:
@@ -200,6 +201,28 @@ def docx_to_pdf(docx_path: str, pdf_path: str, allow_lo_after_word_error: bool =
     _require_word()  # emits the structured error + SystemExit(3)
 
 
+# COM busy-noise armor (ported from check_part_pages.py, QC 2026-07-23): Word
+# rejects incoming automation calls while paginating a large document
+# (RPC_E_CALL_REJECTED / RPC_E_SERVERCALL_RETRYLATER) — and an orphaned or busy
+# Word instance produces the same codes. Retrying is the standard cure; without
+# it a 300pp+ render crashes at Repaginate() (observed live on the 344pp book).
+_COM_BUSY = (-2147418111, -2147417846)
+
+
+def _com_call(fn, tries=40, delay=3.0):
+    last = None
+    for _ in range(tries):
+        try:
+            return fn()
+        except Exception as exc:
+            code = exc.args[0] if getattr(exc, "args", None) else None
+            if code not in _COM_BUSY:
+                raise
+            last = exc
+            time.sleep(delay)
+    raise last
+
+
 def _docx_to_pdf_word(docx_path: str, pdf_path: str):
     """The page-faithful Word COM path. Returns (pages, words). Paths are already
     absolute and the output dir exists (the docx_to_pdf dispatcher guarantees that)."""
@@ -212,24 +235,24 @@ def _docx_to_pdf_word(docx_path: str, pdf_path: str):
 
     doc = None
     try:
-        doc = word.Documents.Open(docx_path)
+        doc = _com_call(lambda: word.Documents.Open(docx_path))
 
         # --- The load-bearing order (LESSONS_LEDGER §3.7) ---
         # 1. update TOC(s)
-        update_all_tocs(doc)
+        _com_call(lambda: update_all_tocs(doc))
         # 2. Repaginate (settle page numbers before touching fields)
-        doc.Repaginate()
+        _com_call(doc.Repaginate)
         # 3. fields-by-index (guarded) — TOC update just invalidated handles
-        update_fields_by_index(doc)
+        _com_call(lambda: update_fields_by_index(doc))
         # 4. update TOC(s) again — field updates may have shifted page numbers
-        update_all_tocs(doc)
+        _com_call(lambda: update_all_tocs(doc))
         # 5. Repaginate again — final settle for TOC-bearing docs
-        doc.Repaginate()
+        _com_call(doc.Repaginate)
 
-        pages = int(doc.ComputeStatistics(WD_STAT_PAGES))
-        words = int(doc.ComputeStatistics(WD_STAT_WORDS))
+        pages = int(_com_call(lambda: doc.ComputeStatistics(WD_STAT_PAGES)))
+        words = int(_com_call(lambda: doc.ComputeStatistics(WD_STAT_WORDS)))
 
-        doc.SaveAs(pdf_path, FileFormat=WD_FORMAT_PDF)
+        _com_call(lambda: doc.SaveAs(pdf_path, FileFormat=WD_FORMAT_PDF))
         doc.Close(SaveChanges=False)
         doc = None
         return pages, words
@@ -239,7 +262,12 @@ def _docx_to_pdf_word(docx_path: str, pdf_path: str):
                 doc.Close(SaveChanges=False)
             except Exception:
                 pass
-        word.Quit()
+        # Retried Quit so a busy Word cannot leak a zombie (QC 2026-07-23).
+        try:
+            _com_call(word.Quit, tries=5, delay=1.0)
+        except Exception:
+            print("WARN: Word.Quit failed; a WINWORD.EXE instance may linger",
+                  file=sys.stderr)
 
 
 def pad_pdf_to_multiple(pdf_path, multiple):

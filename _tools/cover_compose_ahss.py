@@ -387,7 +387,9 @@ def main():
         meta["files"] = ["front_digital.pdf", "back_digital.pdf"]
 
     elif a.profile == "kindle":
-        fw, fh = int(1.6 * 1000), int(1.6 * 1500)  # 1600x2400 ebook cover
+        # KDP ebook IDEAL dims: 2560 h x 1600 w, 1.6:1 (QC 2026-07-23; was
+        # 1600x2400 @1.5:1 — accepted by KDP but below the published ideal).
+        fw, fh = 1600, 2560
         render_front(fw, fh, 0, cfg).save(str(out / "cover_kindle.jpg"), quality=92)
         meta["files"] = ["cover_kindle.jpg"]
 

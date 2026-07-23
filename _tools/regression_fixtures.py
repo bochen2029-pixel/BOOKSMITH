@@ -47,6 +47,8 @@ As $x \\rightarrow \\infty$ the series $a_1, \\cdots, a_n$ collects into $\\bigc
 
 Run **`--config`** before anything else. *Steady now.*
 
+- **The brain (`d3`), honestly labeled.** A cell can become one.
+
 #### A Deep Subsection
 
 [IMAGES were everywhere] and the crowd still would not look away.
@@ -135,6 +137,11 @@ def main(argv=None) -> int:
             chk("h4_text_present", "A Deep Subsection" in text, "H4 content missing")
             chk("no_orphan_bold_markers", not any(t.strip() == "**" for t in runs),
                 "orphaned ** run from bold-wrapped code")
+            chk("no_literal_doublestar", "**" not in text,
+                "literal ** reached the rendered artifact (bold span failed to pair)")
+            chk("bold_across_code_intact",
+                "The brain (" in text and "), honestly labeled." in text and "d3" in text,
+                "bold-span-containing-code content missing or mangled")
             chk("no_dashes_rendered", not any(ch in text for ch in DASHES),
                 "em/en dash reached the rendered artifact")
             chk("epigraph_attribution", "The Ledger" in text, "epigraph attribution missing")
