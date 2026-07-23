@@ -200,10 +200,51 @@ def parse_list_item(raw_line: str):
             "depth": len(indent) // 2, "text": m.group(3)}
 
 
-def body_to_xhtml(lines, unit_level: int, ornament: str) -> str:
+MD_IMAGE_RE = re.compile(r"^!\[[^\]]*\]\(([^)\s]+)\)$")
+
+
+class MidflowImages:
+    """Collect standalone ![alt](relpath) image references from unit bodies.
+
+    Verifies each file exists under the workspace, assigns a flat OEBPS zip
+    name (deduped by resolved source path), and records (path, zip_name,
+    media_type) for the manifest + archive writes. A missing or unsupported
+    file is dropped with a stderr warning — literal markdown must never reach
+    the rendered XHTML."""
+
+    MEDIA = {"jpg": "image/jpeg", "png": "image/png", "gif": "image/gif"}
+
+    def __init__(self, ws: Path):
+        self.ws = ws
+        self.by_src: dict = {}
+        self.order: list = []
+
+    def add(self, rel: str):
+        f = (self.ws / rel).resolve()
+        if not f.is_file():
+            print(f"[build_epub] mid-flow image missing, dropped: {rel}", file=sys.stderr)
+            return None
+        if f in self.by_src:
+            return self.by_src[f]
+        ext = f.suffix.lower().lstrip(".")
+        ext = "jpg" if ext == "jpeg" else ext
+        if ext not in self.MEDIA:
+            print(f"[build_epub] mid-flow image type .{ext} unsupported, dropped: {rel}",
+                  file=sys.stderr)
+            return None
+        base = re.sub(r"[^a-zA-Z0-9_]", "_", f.stem)[:48] or "img"
+        zn = f"mf_{len(self.order) + 1:03d}_{base}.{ext}"
+        self.by_src[f] = zn
+        self.order.append((f, zn, self.MEDIA[ext]))
+        return zn
+
+
+def body_to_xhtml(lines, unit_level: int, ornament: str, midflow=None) -> str:
     """Convert a unit body (markdown lines, heading excluded) to XHTML blocks.
     Adds fenced code / pipe tables / lists on top of the original paragraph /
-    blockquote / scene-break / subheading handling (all preserved as-is)."""
+    blockquote / scene-break / subheading handling (all preserved as-is).
+    A standalone markdown image line becomes <figure class="midflow"> when a
+    MidflowImages collector is supplied (dropped with a warning otherwise)."""
     out = []
     para: list = []
     quote: list = []
@@ -279,6 +320,22 @@ def body_to_xhtml(lines, unit_level: int, ornament: str) -> str:
         if line.startswith(">"):
             flush_para()
             quote.append(line[1:].strip())
+            i += 1
+            continue
+
+        # Mid-flow markdown image line: embed via the collector (or drop with a
+        # warning; literal "![...](...)"" never reaches the rendered XHTML).
+        m_img = MD_IMAGE_RE.match(line.strip())
+        if m_img is not None:
+            flush_para(); flush_quote()
+            zn = midflow.add(m_img.group(1)) if midflow is not None else None
+            if zn is None and midflow is None:
+                print(f"[build_epub] mid-flow image with no collector, dropped: "
+                      f"{m_img.group(1)}", file=sys.stderr)
+            if zn:
+                out.append(f'<figure class="midflow">'
+                           f'<img src="../images/{zn}" alt=""/></figure>')
+            first_para = True
             i += 1
             continue
 
@@ -442,6 +499,8 @@ img.cover { max-width: 100%; height: auto; }
 div.coverwrap { text-align: center; }
 figure.chapterart { text-align: center; margin: 0.8em 0 1.2em 0; }
 figure.chapterart img { max-width: 92%; height: auto; }
+figure.midflow { text-align: center; margin: 1em 0; }
+figure.midflow img { max-width: 100%; height: auto; }
 pre { background: #f2f2f2; border: 1px solid #ddd; border-radius: 3px;
       padding: 0.6em 0.8em; margin: 1em 0; overflow-x: auto;
       white-space: pre-wrap; word-wrap: break-word; }
@@ -570,12 +629,13 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         _cand = ws / (_ca.get("dir") or "cover_art/illustrations/live")
         art_dir = _cand if _cand.is_dir() else None
     art_files: dict = {}  # sanitized uid -> Path
+    midflow = MidflowImages(ws)
 
     body_words = 0
     for n, (heading, body_lines) in enumerate(units):
         uid = unit_ids[n] if n < len(unit_ids) and unit_ids[n] else f"unit_{n+1:02d}"
         uid = re.sub(r"[^a-zA-Z0-9_]", "_", uid)
-        body_html = body_to_xhtml(body_lines, unit_level, ornament)
+        body_html = body_to_xhtml(body_lines, unit_level, ornament, midflow)
         body_words += len(re.sub(r"<[^>]+>", " ", body_html).split())
         art_html = ""
         if art_dir is not None:
@@ -614,6 +674,8 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
     for uid in art_files:
         manifest.append(f'<item id="art-{uid}" href="images/art_{uid}.png" '
                         f'media-type="image/png"/>')
+    for k, (_f, zn, mt) in enumerate(midflow.order, 1):
+        manifest.append(f'<item id="mf-{k}" href="images/{zn}" media-type="{mt}"/>')
     for did, fname, _t, _x, _toc in docs:
         manifest.append(f'<item id="{did}" href="text/{fname}" '
                         f'media-type="application/xhtml+xml"/>')
@@ -708,6 +770,9 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         for uid, af in art_files.items():
             z.write(str(af), f"OEBPS/images/art_{uid}.png",
                     compress_type=zipfile.ZIP_DEFLATED)
+        for _f, zn, _mt in midflow.order:
+            z.write(str(_f), f"OEBPS/images/{zn}",
+                    compress_type=zipfile.ZIP_DEFLATED)
         for _d, fname, _t, xhtml, _toc in docs:
             w(f"OEBPS/text/{fname}", xhtml)
 
@@ -724,6 +789,7 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         "cover": str(cover_src) if cover_src else None,
         "cover_is_raw_art": cover_is_raw_art,
         "chapter_art_images": len(art_files),
+        "midflow_images": len(midflow.order),
     }
 
 

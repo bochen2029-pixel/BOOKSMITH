@@ -19,9 +19,14 @@ defects that were invisible under default configs and shipped silently:
   6. even/odd  — with interior.page_number_align="outer", settings.xml carries
                  an ENABLED <w:evenAndOddHeaders/> (not w:val="false").
   7. [IMAGE    — a prose line starting "[IMAGES were everywhere]" is NOT eaten.
+  8. midflow   — a standalone "![alt](images/x.png)" line: kindle EMBEDS it
+                 (word/media present), print SKIPS it, build_epub embeds it as
+                 <figure class="midflow"> — and the literal markdown never
+                 reaches any rendered artifact.
 
 Workspace is a fresh temp dir (config-parent rooted — nothing in the repo is
-touched). Needs node + the vendored _tools/node_modules; exits 2 SKIP without.
+touched). Needs node + the vendored _tools/node_modules; exits 2 SKIP without
+(the epub leg is pure Python and runs regardless).
 
 Usage:  python _tools/regression_fixtures.py [--json]
 Exit:   0 all assertions hold · 1 regression · 2 environment missing
@@ -53,6 +58,10 @@ Run **`--config`** before anything else. *Steady now.*
 
 [IMAGES were everywhere] and the crowd still would not look away.
 
+![test photo](images/mf_test.png)
+
+A caption line under the photo.
+
 Body continues, plain and unhurried, with enough words to look like prose.
 """
 
@@ -82,10 +91,29 @@ def docx_text_and_settings(docx: Path):
             settings = z.read("word/settings.xml").decode("utf-8", "replace")
         except KeyError:
             settings = ""
+        media = [n for n in z.namelist() if n.startswith("word/media/")]
     runs = re.findall(r"<w:t[^>]*>([^<]*)</w:t>", doc)
     # content assertions join with NO separator: adjacent runs in one paragraph
     # render adjacent ("$" + "24.99" is "$24.99" on the page)
-    return runs, "".join(runs), settings
+    return runs, "".join(runs), settings, media
+
+
+def tiny_png(path: Path, w=8, h=6, rgb=(180, 40, 40)):
+    """Write a minimal valid RGB PNG (stdlib only) for image-embed fixtures."""
+    import struct
+    import zlib
+
+    def chunk(tag, data):
+        return (struct.pack(">I", len(data)) + tag + data
+                + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF))
+
+    raw = b"".join(b"\x00" + bytes(rgb) * w for _ in range(h))
+    png = (b"\x89PNG\r\n\x1a\n"
+           + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+           + chunk(b"IDAT", zlib.compress(raw))
+           + chunk(b"IEND", b""))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(png)
 
 
 def main(argv=None) -> int:
@@ -107,6 +135,8 @@ def main(argv=None) -> int:
         (ws / "outputs" / "markdown").mkdir(parents=True)
         (ws / "book_config.json").write_text(json.dumps(CONFIG, indent=2), encoding="utf-8")
         (ws / "outputs" / "markdown" / "_regfix_v1.md").write_text(MASTER, encoding="utf-8")
+        tiny_png(ws / "images" / "mf_test.png")
+        tiny_png(ws / "cover_art" / "_regfix_src.png")  # epub leg needs a cover
 
         for gen, outname in (("generate_book.js", None), ("generate_kindle.js", None)):
             cmd = ["node", str(TOOLS / gen), "--config", str(ws / "book_config.json")]
@@ -123,7 +153,7 @@ def main(argv=None) -> int:
             if not docx.exists():
                 fails.append(f"{label}: DOCX not produced at {docx}")
                 continue
-            runs, text, settings = docx_text_and_settings(docx)
+            runs, text, settings, media = docx_text_and_settings(docx)
             def chk(name, ok, detail=""):
                 checks.append({"target": label, "check": name, "pass": bool(ok), "detail": detail})
                 if not ok:
@@ -147,10 +177,49 @@ def main(argv=None) -> int:
             chk("epigraph_attribution", "The Ledger" in text, "epigraph attribution missing")
             chk("image_prose_kept", "the crowd still would not look away" in text,
                 "[IMAGES prose line was eaten by the image-block skip")
+            chk("no_literal_md_image", "![test photo]" not in text,
+                "literal markdown image line reached the rendered artifact")
+            chk("midflow_caption_kept", "A caption line under the photo." in text,
+                "caption paragraph after the mid-flow image was lost")
+            if label == "kindle":
+                chk("midflow_embedded", len(media) >= 1,
+                    f"expected >=1 word/media entry (mid-flow image), got {len(media)}")
             if label == "print":
                 enabled = re.search(r"<w:evenAndOddHeaders\b(?![^>]*w:val=\"(?:false|0)\")", settings)
                 chk("evenAndOddHeaders_enabled", bool(enabled),
                     "outer page numbers need the ENABLED flag in settings.xml")
+
+        # ---- EPUB leg (pure Python): mid-flow image embeds as figure.midflow ----
+        r = subprocess.run([sys.executable, str(TOOLS / "build_epub.py"),
+                            "--config", str(ws / "book_config.json")],
+                           capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=180)
+        epub = ws / "outputs" / "epub" / "_regfix.epub"
+        if r.returncode != 0:
+            fails.append(f"build_epub rc={r.returncode}: {(r.stderr or r.stdout).strip()[-300:]}")
+        if epub.exists():
+            def echk(name, ok, detail=""):
+                checks.append({"target": "epub", "check": name, "pass": bool(ok), "detail": detail})
+                if not ok:
+                    fails.append(f"epub/{name}: {detail}")
+            with zipfile.ZipFile(epub) as z:
+                nm = z.namelist()
+                mf = [n for n in nm if n.startswith("OEBPS/images/mf_")]
+                ch1 = ""
+                for n in nm:
+                    if n.endswith("ch_01.xhtml"):
+                        ch1 = z.read(n).decode("utf-8", "replace")
+            echk("midflow_file_embedded", len(mf) == 1,
+                 f"OEBPS/images mf_* count={len(mf)} (want 1)")
+            echk("midflow_figure_referenced",
+                 'class="midflow"' in ch1 and "mf_001_mf_test.png" in ch1,
+                 "figure.midflow with the image ref missing from ch_01.xhtml")
+            echk("no_literal_md_image", "![test photo]" not in ch1,
+                 "literal markdown image line leaked into the XHTML")
+            echk("midflow_caption_kept", "A caption line under the photo." in ch1,
+                 "caption paragraph after the mid-flow image was lost")
+        else:
+            fails.append(f"epub: not produced at {epub}")
 
         status = "pass" if not fails else "fail"
         out = {"status": status, "workspace": str(ws), "checks": checks, "fails": fails}

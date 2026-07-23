@@ -689,6 +689,15 @@ function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit, chapterArtPara)
       console.warn(`[generate_book] unclosed [IMAGE block at line ${i + 1} treated as prose`);
     }
 
+    // Mid-flow markdown image line "![alt](path)" — SKIPPED in print interiors
+    // (replica-route or chapter_art carries print images; generate_kindle.js and
+    // build_epub.py embed these). Skip-with-warning so the literal markdown never
+    // renders as body text.
+    if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(line.trim())) {
+      console.warn(`[generate_book] mid-flow image skipped in print interior: ${line.trim().slice(0, 80)}`);
+      continue;
+    }
+
     // Display math block $$...$$
     if (line.trim().startsWith("$$")) {
       if (!inDisplayMath) {

@@ -383,6 +383,58 @@ function chapterArtParagraph(art, unitId, tag) {
 }
 
 // ============================================================
+// Mid-flow images: a standalone markdown image line "![alt](relpath)" embeds
+// the workspace-relative PNG/JPEG at that point in the flow (replica/photo
+// books). Width = natural size at 150dpi, capped 5.0in; centered. A missing
+// file or unreadable header is warned and SKIPPED — literal markdown must
+// never reach the rendered artifact. generate_book.js skips these lines
+// (print interiors use the replica route or chapter_art); build_epub.py
+// embeds them as <figure class="midflow">.
+// ============================================================
+const MD_IMAGE_RE = /^!\[[^\]]*\]\(([^)\s]+)\)$/;
+
+function jpgDimensions(buf) {
+  if (!buf || buf.length < 4 || buf[0] !== 0xff || buf[1] !== 0xd8) return null;
+  let i = 2;
+  while (i + 9 < buf.length) {
+    if (buf[i] !== 0xff) { i++; continue; }
+    const marker = buf[i + 1];
+    if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) { i += 2; continue; }
+    const len = buf.readUInt16BE(i + 2);
+    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+      return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
+    }
+    i += 2 + len;
+  }
+  return null;
+}
+
+function midflowImageParagraph(wsRoot, relPath, tag) {
+  const file = path.resolve(wsRoot, relPath);
+  if (!fs.existsSync(file)) {
+    console.warn(`[${tag}] mid-flow image missing, skipped: ${relPath}`);
+    return null;
+  }
+  const data = fs.readFileSync(file);
+  const ext = path.extname(file).toLowerCase();
+  const isJpg = ext === ".jpg" || ext === ".jpeg";
+  const dims = isJpg ? jpgDimensions(data) : pngDimensions(data);
+  if (!dims || !dims.w || !dims.h) {
+    console.warn(`[${tag}] mid-flow image unreadable (${ext}), skipped: ${relPath}`);
+    return null;
+  }
+  const wIn = Math.min(5.0, dims.w / 150);
+  const wPx = Math.round(wIn * 96);
+  const hPx = Math.round(wPx * (dims.h / dims.w));
+  console.log(`[${tag}] mid-flow image embedded: ${relPath} (${dims.w}x${dims.h})`);
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    spacing: { before: 240, after: 240 },
+    children: [new ImageRun({ type: isJpg ? "jpg" : "png", data, transformation: { width: wPx, height: hPx } })],
+  });
+}
+
+// ============================================================
 // Block-construct detection helpers (identical logic to generate_book.js;
 // duplicated to keep each generator self-contained, the pattern the existing
 // pngDimensions/resolveChapterArt helpers already follow). Pure + inert on
@@ -446,7 +498,7 @@ function parseListItem(rawLine) {
 // Three block constructs added (fenced code / pipe tables / lists); all inert on
 // prose that uses none of them.
 // ============================================================
-function parseMarkdown(text, unitLevel, F, chapterArt) {
+function parseMarkdown(text, unitLevel, F, chapterArt, wsRoot) {
   const lines = text.split("\n");
   const paragraphs = [];
   let inDisplayMath = false;
@@ -486,6 +538,14 @@ function parseMarkdown(text, unitLevel, F, chapterArt) {
       }
       if (closed) { i = j; continue; }
       console.warn(`[generate_kindle] unclosed [IMAGE block at line ${i + 1} treated as prose`);
+    }
+
+    // Mid-flow markdown image line: embed (or skip with a warning; never literal).
+    const mdImg = line.trim().match(MD_IMAGE_RE);
+    if (mdImg) {
+      const p = wsRoot ? midflowImageParagraph(wsRoot, mdImg[1], "generate_kindle") : null;
+      if (p) paragraphs.push(p);
+      continue;
     }
 
     if (line.trim().startsWith("$$")) {
@@ -752,7 +812,7 @@ async function main() {
   if (chapterArt && artCount > 0) {
     console.log(`[generate_kindle] chapter art: ${artCount} image(s) staged from ${chapterArt.dir}`);
   }
-  children.push(...parseMarkdown(body, unitLevel, F, artCount > 0 ? { paras: artParas, idx: 0 } : null));
+  children.push(...parseMarkdown(body, unitLevel, F, artCount > 0 ? { paras: artParas, idx: 0 } : null, wsRoot));
 
   // ---- About the Author (extended back matter, §7.3) ----
   // Sourced from config.about_the_author (free-text, paragraphs split on blank
