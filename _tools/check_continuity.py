@@ -155,6 +155,14 @@ def analyze(ledger_path: Path, ws: Path):
     if disk_units:
         ledger_ids = _done_units_in_ledger(text)
         disk_ids = {_norm(u) for u in disk_units}
+        # Digitless unit ids (prologue, epilogue, colophon, practice,
+        # about_author, foreword, back_matter, ...) can never match the
+        # digit-anchored _UNIT_ID_RE, which false-failed every COMPLETE book
+        # carrying them (found 2026-07-23 on the_crossing). Complement the
+        # regex scan with a substring check of each ACTUAL disk id against the
+        # underscore-normalized ledger text — same safe-superset spirit.
+        norm_text = text.lower().replace("_", "")
+        ledger_ids |= {u for u in disk_ids if u in norm_text}
         missing = sorted(disk_ids - ledger_ids)
         if complete and missing:
             defects.append(

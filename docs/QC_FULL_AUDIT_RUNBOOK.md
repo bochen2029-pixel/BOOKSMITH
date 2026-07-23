@@ -72,10 +72,20 @@ python _tools/verify_build.py --config <cfg> --format <print_fmt> --final   # ba
 4. **Probe gotchas (they bite every time):**
    - Display headings are letter-spaced ("C O N T E N T S") — substring search MISSES them;
      search rendered text loosely or view the page.
+   - **Whitespace-normalize before phrase-searching extracted PDF text** — a line-wrapped phrase
+     ("ferry others, ferry\nyourself") is invisible to a raw substring search; `" ".join(t.split())`
+     first. (2026-07-23: a refrain placement looked missing purely because of this.)
    - `find_page("Chapter N …")` hits the TOC entry first, not the opener — search a body-only phrase.
    - rg/Grep SKIP gitignored `book_workspace/` — use Python or PowerShell Select-String there.
    - Never Read an image >2000px (imguard or render small).
    - Word-COM verify and any other Word user must not run concurrently.
+5. **Heading-survival check (cheap, catastrophic when skipped):** extract every `## `/`### `
+   heading text from canon and assert each appears in the rendered PDF/DOCX/epub text.
+   (2026-07-23, the_crossing: an "all green" build had silently dropped ALL 67 in-chapter
+   section headings from print + Kindle — the H2-drop trap — because the build chain skipped
+   `scan_manuscript`. verify_build cannot see it; only this cross-check or the pre-build scan can.
+   Corollary: **scan_manuscript is a MANDATORY pre-build gate** — any hand-rolled build chain that
+   skips it forfeits the packaging guarantees.)
 
 ## Phase 5 — Verify against AMAZON'S OWN published specs (not third-party aggregators)
 
