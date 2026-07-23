@@ -11,3 +11,4 @@ pywin32>=306; sys_platform == "win32"   # Word COM: print-faithful PDFs + recto 
 requests>=2.31          # local KEEL vision backend only (--backend keel); Claude vision needs nothing
 tiktoken>=0.5           # exact token counts in rehydrate.py (falls back to chars/4)
 jsonschema>=4.0         # book_config.json validation at GATE-2
+opencc-python-reimplemented>=0.1.7   # s2t_fork.py: Simplified→Traditional ebook editions (KDP zh-Hant is eBook-only)

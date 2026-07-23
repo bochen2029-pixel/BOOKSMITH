@@ -153,6 +153,7 @@ IMPORT_TO_DIST = {
     "jsonschema": "jsonschema", "tiktoken": "tiktoken", "requests": "requests",
     "pypdf": "pypdf", "PyPDF2": "pypdf2", "docx": "python-docx", "yaml": "pyyaml",
     "numpy": "numpy", "pypdfium2": "pypdfium2",
+    "opencc": "opencc-python-reimplemented",
 }
 
 
