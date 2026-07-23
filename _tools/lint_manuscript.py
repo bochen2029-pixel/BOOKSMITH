@@ -110,6 +110,12 @@ def paragraph_ends_terminated(para: str) -> bool:
     # end on a name; a dense 、 ratio marks a list, not a shredded sentence.
     if t.count("、") >= 3 and t.count("、") / max(len(t), 1) > 0.06:
         return True
+    # Label/directory rows ("官方网站：人生悟道 渡人渡己", "YouTube：…-摘录"):
+    # a short field name, a colon, a short value — contact/social roster lines,
+    # not shredded sentences (2026-07-23, DRDJ replica FAQ pages).
+    if ("\n" not in t and len(t) <= 30
+            and re.match(r"^[0-9A-Za-z一-鿿]{2,12}[：:]", t)):
+        return True
     return s.endswith(TERMINAL_PUNCT)
 
 
@@ -132,6 +138,11 @@ def is_structural_line(line: str) -> bool:
         return True
     if re.match(r"^\|", stripped):
         # A markdown table row: never prose, never demands terminal punctuation.
+        return True
+    if re.match(r"^!\[[^\]]*\]\([^)\s]+\)$", stripped):
+        # A standalone mid-flow markdown image line (the kit's image-anchor
+        # convention, 2026-07-23): syntax, not prose — its underscores /
+        # brackets / missing punctuation are not corruption.
         return True
     return False
 
@@ -191,6 +202,10 @@ def lint_corruption(text: str) -> list:
         # formatting, not PDF-round-trip corruption, so the line-level MULTIPLE_
         # SPACES / EMBEDDED_UNDERSCORE / hyphen checks skip table rows.
         if line.lstrip().startswith("|"):
+            continue
+        # Standalone mid-flow image lines are syntax, not prose (see
+        # is_structural_line): skip the line-level corruption checks too.
+        if re.match(r"^!\[[^\]]*\]\([^)\s]+\)$", line.strip()):
             continue
 
         # Mask inline `code` / $math$ so their underscores and column padding are
@@ -255,7 +270,11 @@ def lint_corruption(text: str) -> list:
         if underscores % 2 != 0:
             findings.append(("UNBALANCED_EMPHASIS", start_line,
                              f"Odd number of '_' markers ({underscores}) in paragraph: {stripped_para[:80]!r}"))
-        asterisks = len(re.findall(r"(?<!\*)\*(?!\*)", masked_para))
+        # A lone asterisk directly after a CJK character or CJK closer is a
+        # printed FOOTNOTE MARKER (…《他的肺里装满了尘埃》* — 2026-07-23, DRDJ
+        # replica), not an emphasis delimiter: exclude it from the balance.
+        emph_probe = re.sub(r"(?<=[一-鿿》」』）])\*(?!\*)", "", masked_para)
+        asterisks = len(re.findall(r"(?<!\*)\*(?!\*)", emph_probe))
         if asterisks % 2 != 0:
             findings.append(("UNBALANCED_EMPHASIS", start_line,
                              f"Odd number of '*' markers ({asterisks}) in paragraph: {stripped_para[:80]!r}"))
