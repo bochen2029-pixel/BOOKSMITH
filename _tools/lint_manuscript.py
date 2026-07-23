@@ -723,6 +723,14 @@ def main() -> int:
           f"{len(cs)} cs + {len(ci)} ci + {len(rx)} regex | "
           f"locked sacred terms: {len(locked_terms)}")
 
+    # voice.lint_waivers (2026-07-23, replica books): exact strings adjudicated
+    # as SOURCE-FAITHFUL blemishes (the printed page was rendered and eyeballed;
+    # the artifact is the source's own, e.g. a typo printed in the original
+    # book). A finding whose detail carries a waived string is suppressed, with
+    # a WAIVED notice so the suppression is always visible in the output.
+    lint_waivers = [w for w in (voice.get("lint_waivers", []) or [])
+                    if isinstance(w, str) and w.strip()] if isinstance(voice, dict) else []
+
     exit_code = 0
     total = 0
     for f in files:
@@ -730,6 +738,19 @@ def main() -> int:
         findings = lint_corruption(text)
         if no_em_dashes and (not is_documentation_file(f) or args.include_docs or args.paths):
             findings += lint_em_dashes(text)
+        waived = []
+        if lint_waivers:
+            def _is_waived(x):
+                detail = x[2]
+                if any(w in detail for w in lint_waivers):
+                    return True
+                # finding details truncate the offending text (e.g. a 30-char
+                # paragraph tail): also waive when a quoted fragment from the
+                # detail sits INSIDE a waiver string
+                frags = re.findall(r"'([^']{8,})'", detail)
+                return any(fr in w for fr in frags for w in lint_waivers)
+            waived = [x for x in findings if _is_waived(x)]
+            findings = [x for x in findings if x not in waived]
         if not args.include_docs or args.paths:
             # Voice scrub runs on manuscript files (already filtered above),
             # or on any explicit target the caller named.
@@ -737,6 +758,9 @@ def main() -> int:
                 findings += scan_voice(text, cs, ci, rx, locked_terms, greenlist)
 
         print(f"\n=== {f} ===")
+        for code, line, detail in waived:
+            print(f"  WAIVED [{code}] line {line}: source-faithful blemish "
+                  f"(voice.lint_waivers): {detail[:90]}")
         if not findings:
             print("  CLEAN — no corruption or voice-drift artifacts.")
             continue

@@ -237,7 +237,7 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 
 **`lint_manuscript.py`** — *Manuscript corruption + voice-drift lint (hard exit-1 gate).*
 - PURPOSE: block release on PDF-round-trip corruption (`a_Thursday` underscores, unbalanced emphasis, mid-word hyphen breaks, sentence ripped across a paragraph) AND on SEED-blacklist / anachronism drift. Excludes scaffolding + cached source dirs by default (they legitimately quote banned words / period vocabulary).
-- I/O: `python lint_manuscript.py --config book_config.json [--include-docs]` → scans `manuscript/current/` + `drafts/`; exit `0` clean / `1` drift (blocking) / `2` usage. Blacklist/greenlist/sacred-terms come from `book_config.voice`.
+- I/O: `python lint_manuscript.py --config book_config.json [--include-docs]` → scans `manuscript/current/` + `drafts/`; exit `0` clean / `1` drift (blocking) / `2` usage. Blacklist/greenlist/sacred-terms come from `book_config.voice`. **`voice.lint_waivers`** (2026-07-23, replica books): exact strings adjudicated as SOURCE-FAITHFUL blemishes (the printed page was rendered and eyeballed — e.g. a typo printed in the original book, kept by replica doctrine); matching findings are suppressed with a visible `WAIVED` notice, never silently.
 - SOURCE: `PRODUCTION_LESSONS_LEARNED.md` lint rules + `C:\BOOK3\_tools\check_acp_vocabulary.py` (97-pattern scrubber; case-sensitive/insensitive/regex tiers; dir-exclusion).
 
 **`check_continuity.py`** — *`_CONTINUITY.md` self-consistency gate (invoked by `verify_build --final`).*
