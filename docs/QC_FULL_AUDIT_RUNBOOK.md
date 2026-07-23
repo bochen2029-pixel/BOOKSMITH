@@ -44,7 +44,15 @@ python _tools/lint_manuscript.py  --config <cfg>            # exit 0
 python _tools/scan_manuscript.py  --config <cfg>            # PASS (WARNs = operator-known only)
 python _tools/verify_build.py --config <cfg> --format kindle
 python _tools/verify_build.py --config <cfg> --format <print_fmt> --final   # background; Word COM
+python _tools/kdp_precheck.py --config <cfg> --format <kdp_fmt>   # local KDP acceptance simulator
 ```
+- **`kdp_precheck.py` is the local KDP acceptance simulator** (2026-07-23): the deterministic
+  layer of Amazon's validator encoded offline — page ranges per binding/paper, every page at
+  trim, embedded fonts, live-area floors, cover canvas vs the KDP formulas (calculator-verified),
+  barcode keep-out, paperback spine-text minimum, ebook cover spec. `verify_build --final` runs
+  it automatically for kdp_paperback / kdp_hardcover / kindle; `--selftest` is its tampered-file
+  negative battery (registered in selfcheck). Passing means "cannot bounce for any published
+  mechanical reason"; the KDP Previewer at upload remains the final authority.
 - Spine math by hand: `pages x per_page + board_add` must equal the compositor meta.
 - Word-COM hygiene: before + after, `Get-Process WINWORD` — kill zombies (a leaked instance
   poisons the next run: LESSONS_LEDGER §3.7b). The tools are DispatchEx-first + retry-armored,

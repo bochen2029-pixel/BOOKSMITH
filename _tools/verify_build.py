@@ -1347,6 +1347,28 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
     # lint runs for every format (voice + corruption gate).
     checks.append(check_lint(config_path))
 
+    # --final: the local KDP acceptance simulator (kdp_precheck.py) — the
+    # deterministic layer of Amazon's own validator (page ranges, trim
+    # consistency, embedded fonts, live-area floor, cover canvas vs the KDP
+    # formulas, barcode keep-out, ebook cover spec), so a file can never be
+    # presented as Amazon-ready having only passed the kit's internal checks.
+    if final and fmt in ("kdp_paperback", "kdp_hardcover", "kindle"):
+        name = "kdp_acceptance_simulator"
+        try:
+            proc = subprocess.run(
+                [sys.executable, str(SCRIPT_DIR / "kdp_precheck.py"),
+                 "--config", str(config_path), "--format", fmt, "--json"],
+                capture_output=True, text=True, timeout=600)
+            r = json.loads(proc.stdout)
+            fails = [c["name"] for c in r["checks"] if not c["pass"]]
+            warns = [c["name"] for c in r["checks"] if c.get("warn")]
+            detail = (f"{len(r['checks'])} checks; " +
+                      ("ALL PASS" if r["all_pass"] else f"FAIL: {fails[:4]}") +
+                      (f"; warns: {warns[:3]}" if warns else ""))
+            checks.append((name, bool(r["all_pass"]), detail))
+        except Exception as exc:
+            checks.append((name, False, f"could not run kdp_precheck: {exc}"))
+
     return checks
 
 

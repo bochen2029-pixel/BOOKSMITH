@@ -414,6 +414,21 @@ def check_produce_book_selftest():
         (tail[-1].strip() if tail else f"rc={r.returncode}")[:120])
 
 
+# ---- 14. KDP acceptance simulator negative battery ---------------------------
+def check_kdp_precheck_selftest():
+    """kdp_precheck.py must FAIL tampered artifacts (off-trim page, wrong cover
+    canvas, out-of-range page count) — a gate that cannot fail is not a gate."""
+    try:
+        r = subprocess.run([sys.executable, str(TOOLS / "kdp_precheck.py"), "--selftest"],
+                           capture_output=True, text=True, timeout=120)
+    except Exception as e:
+        add("kdp_precheck_selftest", FAIL, f"could not run --selftest: {e}")
+        return
+    head = [l for l in (r.stdout or "").splitlines() if l.strip()]
+    add("kdp_precheck_selftest", PASS if r.returncode == 0 else FAIL,
+        (head[0].strip() if head else f"rc={r.returncode}")[:120])
+
+
 def main():
     ap = argparse.ArgumentParser(description="BOOKSMITH kit self-consistency meta-gate")
     ap.add_argument("--json", action="store_true")
@@ -422,7 +437,8 @@ def main():
     for fn in (check_py_compile, check_js_parse, check_json_valid, check_schema,
                check_kit_env_parity, check_requirements, check_dead_script_refs, check_fonts,
                check_config_key_drift, check_doc_coverage, check_js_dash_literals,
-               check_spine_constant_parity, check_produce_book_selftest):
+               check_spine_constant_parity, check_produce_book_selftest,
+               check_kdp_precheck_selftest):
         try:
             fn()
         except Exception as e:
