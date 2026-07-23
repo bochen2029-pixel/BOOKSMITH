@@ -1243,6 +1243,54 @@ def check_no_unrendered_bold_markers(path, cfg: dict):
             else "; ".join(hits[:4]))
 
 
+def check_kindle_cover_dims(root: Path, cfg: dict):
+    """KDP ebook-cover spec gate (kdp.amazon.com eBook cover requirements,
+    verified 2026-07-23). HARD requirements: >=625 w x >=1000 h px, <=10000
+    each side, RGB, JPEG/TIFF, <50MB. The published IDEAL (1600x2560, ratio
+    >=1.6:1) is reported in the detail when missed but does not fail the gate —
+    KDP accepts above-minimum covers, it just quality-flags them."""
+    name = "kindle_cover_within_kdp_spec"
+    kdir = root / "outputs" / "kindle"
+    cover = None
+    for pat in ("cover_kindle.jpg", "*_KINDLE_cover.jpg", "cover_kindle.tif",
+                "cover_kindle.tiff", "*.jpg"):
+        hits = sorted(kdir.glob(pat)) if kdir.is_dir() else []
+        hits = [h for h in hits if "_r2k" not in h.name]
+        if hits:
+            cover = hits[0]
+            break
+    if cover is None:
+        return (name, True, "no kindle cover image found (informational)")
+    try:
+        from PIL import Image
+    except ImportError:
+        return (name, True, f"{cover.name}: Pillow absent — dims not checked (informational)")
+    try:
+        with Image.open(cover) as im:
+            w, h = im.size
+            mode, fmt = im.mode, (im.format or "").upper()
+    except OSError as exc:
+        return (name, False, f"{cover.name}: unreadable image: {exc}")
+    mb = cover.stat().st_size / (1024 * 1024)
+    fails = []
+    if w < 625 or h < 1000:
+        fails.append(f"below KDP minimum 625x1000 (got {w}x{h})")
+    if w > 10000 or h > 10000:
+        fails.append(f"exceeds KDP maximum 10000px per side (got {w}x{h})")
+    if mode not in ("RGB", "L"):
+        fails.append(f"mode {mode} (KDP wants RGB)")
+    if fmt not in ("JPEG", "TIFF", "MPO"):
+        fails.append(f"format {fmt} (KDP wants JPEG/TIFF)")
+    if mb >= 50:
+        fails.append(f"{mb:.1f}MB (KDP limit <50MB)")
+    if fails:
+        return (name, False, f"{cover.name}: " + "; ".join(fails))
+    ideal = (h >= 2560 and w >= 1600 and h / w >= 1.6)
+    note = "meets KDP ideal 1600x2560 @>=1.6:1" if ideal else \
+        f"above minimums but BELOW KDP ideal 1600x2560 @1.6:1 (got {w}x{h}, ratio {h/w:.2f})"
+    return (name, True, f"{cover.name}: {w}x{h} {mode} {fmt} {mb:.1f}MB — {note}")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # driver
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1287,6 +1335,7 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
             find_one(root / "outputs" / "kindle", ".docx", prefer_substr=["kindle"]), cfg))
         checks.append(check_no_unrendered_bold_markers(
             find_one(root / "outputs" / "kindle", ".docx", prefer_substr=["kindle"]), cfg))
+        checks.append(check_kindle_cover_dims(root, cfg))
 
     if fmt == "epub":
         checks.append(check_epub_structure(fmt_dir))

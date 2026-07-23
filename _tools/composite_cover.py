@@ -1279,11 +1279,16 @@ def resolve_art_path(cfg: CoverConfig, workspace: Path, override: str | None) ->
 
 def build_kindle_front(cfg: CoverConfig, art_path: Path, out_dir: Path):
     """Front-only cover image for Kindle upload AND the digital PDF front page.
-    High-res at the BOOK'S trim ratio (6:9 -> 1600x2400). No bleed — ebook
-    covers are full-image."""
+    Rendered at KDP's PUBLISHED IDEAL for ebook covers: 1600 w x 2560 h, 1.6:1
+    (kdp.amazon.com eBook cover requirements, verified 2026-07-23 — min 625x1000,
+    max 10000x10000, RGB JPEG/TIFF <50MB; ideal ratio "at least 1.6:1"). The
+    canvas is at least the trim ratio and never below the ideal: for a 6x9 book
+    that means 2560 tall, not the trim-matched 2400 that shipped pre-2026-07-23
+    (accepted by KDP but quality-flagged as below ideal). scale_to_cover fills
+    the taller field from any art. No bleed — ebook covers are full-image."""
     out_dir.mkdir(parents=True, exist_ok=True)
     W = 1600
-    H = int(round(W * (cfg.trim_h / cfg.trim_w)))   # trim-matched; 6:9 -> 2400
+    H = max(2560, int(round(W * (cfg.trim_h / cfg.trim_w))))
     art = Image.open(str(art_path)).convert("RGB")
     canvas = scale_to_cover(art, W, H)
     render_front_text(canvas, cfg, center_x=W // 2,
@@ -1291,7 +1296,7 @@ def build_kindle_front(cfg: CoverConfig, art_path: Path, out_dir: Path):
     jpg_path = out_dir / f"{cfg.slug}_KINDLE_cover.jpg"
     canvas.save(str(jpg_path), "JPEG", quality=92)
     print("\n=== KINDLE FRONT COVER ===")
-    print(f"  {W}x{H}px  (trim ratio {cfg.trim_w:g}:{cfg.trim_h:g}, full-image, no bleed)")
+    print(f"  {W}x{H}px  (KDP ideal 1.6:1 floor; trim ratio {cfg.trim_w:g}:{cfg.trim_h:g}, full-image, no bleed)")
     print(f"  -> {jpg_path}")
     return {"profile": "kindle", "size_px": [W, H], "files": [str(jpg_path)]}
 
