@@ -13,7 +13,10 @@ website PDF assembly is folded in here instead of living in a temp script.
 What it does NOT do (these need a mind, not this script): write prose, place a
 new unit, brief or pick illustrations, design a cover, or diagnose a gate
 failure. It stops loudly on any pre-gate failure and reports per-format verify
-verdicts; it does not paper over red.
+verdicts; it does not paper over red. Any failed step (nonzero rc, or a verify
+that does not report all_pass true) aborts the rest of that format's chain,
+flips green:false, and the run exits nonzero; digital/website refuse to build
+from the interior of a format that went red this run (no stale-PDF builds).
 
 Chain per format:
   pre-gates: scan_manuscript.py  +  lint_manuscript.py (skippable for zh)
@@ -35,10 +38,12 @@ Usage:
   python produce_book.py --config CFG [--formats kdp_hardcover,kindle,digital,website]
       [--back back_copy.json] [--interior-for-digital kdp_hardcover]
       [--skip-lint] [--dry-run] [--json]
+  python produce_book.py --selftest   # error-propagation regression (runs no real tools)
 Exit: 0 all green - 1 any gate/verify FAIL - 2 usage / setup error.
 """
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -77,6 +82,10 @@ class Runner:
     def step(self, label, cmd, parse=False):
         self.log.append(label)
         printable = " ".join(str(c) for c in cmd)
+        if label == os.environ.get("PRODUCE_BOOK_FAIL_STEP"):
+            # selftest hook: simulate this one step failing without running anything
+            print(f"  FAIL {label} (rc=1) [injected via PRODUCE_BOOK_FAIL_STEP]")
+            return 1, "", ""
         if self.dry:
             print(f"  DRY  {label}\n       {printable}")
             return 0, "", ""
@@ -136,13 +145,65 @@ def build_digital(ws, slug, comp_dir, interior_pdf, out_dir, dry):
             "website_blanks_remaining": blanks}
 
 
+def selftest():
+    """Error-propagation regression (the 2026-07-23 a_human_still_signs QC bug:
+    'render pdf kdp_hardcover' failed rc=1, verify crashed JSON-less, yet the run
+    finished green:true / exit 0 with null verdicts and digital built from a stale
+    interior PDF). Re-invokes this script --dry-run with PRODUCE_BOOK_FAIL_STEP
+    injecting one failing step; asserts red + nonzero exit + the format's chain
+    aborted. Runs no real tools (no node, no Word)."""
+    import tempfile
+
+    def result_json(stdout):
+        i = stdout.rfind("\n{")
+        return json.loads(stdout[i + 1:] if i != -1 else stdout)
+
+    with tempfile.TemporaryDirectory() as td:
+        cfg = Path(td) / "book_config.json"
+        cfg.write_text(json.dumps({"slug": "selftest",
+                                   "formats": ["kdp_hardcover", "kindle"]}), encoding="utf-8")
+        base = [PY, str(Path(__file__).resolve()), "--config", str(cfg),
+                "--formats", "kdp_hardcover,kindle,digital", "--dry-run", "--json"]
+        cases = [
+            ("clean dry-run stays green, exit 0", None,
+             lambda rc, r: rc == 0 and r["green"] is True),
+            ("failed render aborts that format: red, exit 1, no cover/verify, no stale digital",
+             "render pdf kdp_hardcover",
+             lambda rc, r: rc == 1 and r["green"] is False
+                 and "render pdf kdp_hardcover" in r["steps"]["kdp_hardcover"]["failed_step"]
+                 and "cover kdp_hardcover" not in r["steps_run"]
+                 and "verify kdp_hardcover" not in r["steps_run"]
+                 and "cover digital" not in r["steps_run"]
+                 and "generate kindle" in r["steps_run"]),
+            ("failed verify goes red, exit 1", "verify kindle",
+             lambda rc, r: rc == 1 and r["green"] is False
+                 and "verify kindle" in r["steps"]["kindle"]["failed_step"]),
+        ]
+        ok = True
+        for name, inject, holds in cases:
+            env = {k: v for k, v in os.environ.items() if k != "PRODUCE_BOOK_FAIL_STEP"}
+            if inject:
+                env["PRODUCE_BOOK_FAIL_STEP"] = inject
+            p = subprocess.run(base, capture_output=True, text=True, env=env)
+            try:
+                good = holds(p.returncode, result_json(p.stdout))
+            except Exception:
+                good = False
+            print(f"  {'PASS' if good else 'FAIL'}  {name} (rc={p.returncode})")
+            if not good:
+                ok = False
+                print((p.stdout or p.stderr or "")[-800:])
+        print(f"SELFTEST: {'PASS 3/3' if ok else 'FAIL'}")
+        return 0 if ok else 1
+
+
 def main():
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
     ap = argparse.ArgumentParser()
-    ap.add_argument("--config", required=True)
+    ap.add_argument("--config")
     ap.add_argument("--formats", default=None,
                     help="comma list of kdp_hardcover,mixam_hardcover,kindle,digital,website")
     ap.add_argument("--back", default=None)
@@ -150,7 +211,13 @@ def main():
     ap.add_argument("--skip-lint", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--selftest", action="store_true",
+                    help="error-propagation regression: a failed step must abort, go red, exit 1")
     a = ap.parse_args()
+    if a.selftest:
+        return selftest()
+    if not a.config:
+        ap.error("--config is required")
 
     cfgp = Path(a.config).resolve()
     if not cfgp.exists():
@@ -172,6 +239,13 @@ def main():
 
     R = Runner(a.dry_run)
     result = {"config": str(cfgp), "formats": formats, "steps": {}, "green": True}
+
+    def fail_step(fmt, info, label, rc):
+        """Any failed step: record it, go red, abort the rest of that format's chain."""
+        info["failed_step"] = f"{label} (rc={rc})"
+        result["green"] = False
+        result["steps"][fmt] = info
+        print(f"HALT {fmt}: '{label}' failed (rc={rc}) - aborting remaining steps for this format.")
 
     # --- pre-gates -------------------------------------------------------------
     rc, out, _ = R.step("scan_manuscript", [PY, str(TOOLS / "scan_manuscript.py"),
@@ -198,81 +272,117 @@ def main():
     for fmt in print_fmts:
         info = {}
         outdir = ws / "outputs" / fmt
-        R.step(f"generate {fmt}", [NODE, str(TOOLS / "generate_book.js"),
-                                   "--config", str(cfgp), "--format", fmt])
+        rc, out, _ = R.step(f"generate {fmt}", [NODE, str(TOOLS / "generate_book.js"),
+                                                "--config", str(cfgp), "--format", fmt])
+        if rc != 0:
+            fail_step(fmt, info, f"generate {fmt}", rc)
+            continue
         docx = None if a.dry_run else find_one(outdir, ".docx")
         if not a.dry_run and not docx:
-            info["error"] = "no docx produced"
-            result["green"] = False
-            result["steps"][fmt] = info
+            fail_step(fmt, info, f"generate {fmt}: no docx produced", rc)
             continue
         docx = docx or (outdir / f"{slug}_{fmt.upper()}.docx")
-        R.step(f"inject mirror {fmt}", [NODE, str(TOOLS / "inject_mirror_margins.js"), str(docx)])
-        R.step(f"inject vAlign {fmt}", [NODE, str(TOOLS / "inject_front_matter_valign.js"), str(docx)])
+        rc, _, _ = R.step(f"inject mirror {fmt}", [NODE, str(TOOLS / "inject_mirror_margins.js"), str(docx)])
+        if rc != 0:
+            fail_step(fmt, info, f"inject mirror {fmt}", rc)
+            continue
+        rc, _, _ = R.step(f"inject vAlign {fmt}", [NODE, str(TOOLS / "inject_front_matter_valign.js"), str(docx)])
+        if rc != 0:
+            fail_step(fmt, info, f"inject vAlign {fmt}", rc)
+            continue
         pdf = docx.with_suffix(".pdf")
         cmd = [PY, str(TOOLS / "docx_to_pdf.py"), str(docx), str(pdf)]
         if fmt == "mixam_hardcover":
             cmd += ["--pad-multiple", "4"]
         rc, out, _ = R.step(f"render pdf {fmt}", cmd)
+        if rc != 0:
+            fail_step(fmt, info, f"render pdf {fmt}", rc)
+            continue
         pj = last_json(out) if out else None
         pages = pj.get("pages") if pj else None
         info["pages"] = pages
+        if not pages and not a.dry_run:
+            fail_step(fmt, info, f"render pdf {fmt}: no page count in output", rc)
+            continue
         if pages:
-            R.step(f"cover {fmt}", [PY, str(TOOLS / "cover_compose_ahss.py"),
-                                    "--config", str(cfgp), "--back", str(back),
-                                    "--pages", str(pages), "--profile", COVER_PROFILE[fmt],
-                                    "--out", str(outdir)])
+            rc, _, _ = R.step(f"cover {fmt}", [PY, str(TOOLS / "cover_compose_ahss.py"),
+                                               "--config", str(cfgp), "--back", str(back),
+                                               "--pages", str(pages), "--profile", COVER_PROFILE[fmt],
+                                               "--out", str(outdir)])
+            if rc != 0:
+                fail_step(fmt, info, f"cover {fmt}", rc)
+                continue
         rc, out, _ = R.step(f"verify {fmt}", [PY, str(TOOLS / "verify_build.py"),
                                               "--config", str(cfgp), "--format", fmt, "--final"])
         vj = last_json(out) if out else None
         info["verify_all_pass"] = (vj.get("all_pass") if vj else None)
-        if info.get("verify_all_pass") is False:
-            result["green"] = False
+        if rc != 0 or (not a.dry_run and info["verify_all_pass"] is not True):
+            fail_step(fmt, info, f"verify {fmt} [all_pass={info['verify_all_pass']}]", rc)
+            continue
         result["steps"][fmt] = info
 
     # --- kindle ----------------------------------------------------------------
     if do_kindle:
         info = {}
         outdir = ws / "outputs" / "kindle"
-        R.step("generate kindle", [NODE, str(TOOLS / "generate_kindle.js"), "--config", str(cfgp)])
-        pages_ref = next((result["steps"][f].get("pages") for f in print_fmts
-                          if result["steps"].get(f, {}).get("pages")), 100)
-        R.step("cover kindle", [PY, str(TOOLS / "cover_compose_ahss.py"),
-                                "--config", str(cfgp), "--back", str(back),
-                                "--pages", str(pages_ref or 100), "--profile", "kindle",
-                                "--out", str(outdir)])
-        rc, out, _ = R.step("verify kindle", [PY, str(TOOLS / "verify_build.py"),
-                                              "--config", str(cfgp), "--format", "kindle"])
-        vj = last_json(out) if out else None
-        info["verify_all_pass"] = (vj.get("all_pass") if vj else None)
-        if info.get("verify_all_pass") is False:
-            result["green"] = False
-        result["steps"]["kindle"] = info
+        rc, _, _ = R.step("generate kindle", [NODE, str(TOOLS / "generate_kindle.js"),
+                                              "--config", str(cfgp)])
+        if rc != 0:
+            fail_step("kindle", info, "generate kindle", rc)
+        else:
+            pages_ref = next((result["steps"][f].get("pages") for f in print_fmts
+                              if result["steps"].get(f, {}).get("pages")), 100)
+            rc, _, _ = R.step("cover kindle", [PY, str(TOOLS / "cover_compose_ahss.py"),
+                                               "--config", str(cfgp), "--back", str(back),
+                                               "--pages", str(pages_ref or 100), "--profile", "kindle",
+                                               "--out", str(outdir)])
+            if rc != 0:
+                fail_step("kindle", info, "cover kindle", rc)
+            else:
+                rc, out, _ = R.step("verify kindle", [PY, str(TOOLS / "verify_build.py"),
+                                                      "--config", str(cfgp), "--format", "kindle"])
+                vj = last_json(out) if out else None
+                info["verify_all_pass"] = (vj.get("all_pass") if vj else None)
+                if rc != 0 or (not a.dry_run and info["verify_all_pass"] is not True):
+                    fail_step("kindle", info, f"verify kindle [all_pass={info['verify_all_pass']}]", rc)
+                else:
+                    result["steps"]["kindle"] = info
 
     # --- digital + website -----------------------------------------------------
     if do_digital:
         if not interior_fmt:
             print("digital/website requested but no print interior available to build from.")
             result["green"] = False
+        elif result["steps"].get(interior_fmt, {}).get("failed_step"):
+            print(f"HALT digital/website: {interior_fmt} went red this run - "
+                  f"refusing to build from a stale interior PDF.")
+            result["green"] = False
+            result["steps"]["digital_website"] = {
+                "failed_step": f"interior source {interior_fmt} red this run; stale-PDF build refused"}
         else:
+            dinfo = {}
             comp = ws / "cover_art" / "composed"
             lang = (json.load(open(cfgp, encoding="utf-8")).get("language") or "en")
-            R.step("cover digital", [PY, str(TOOLS / "cover_compose_ahss.py"),
-                                     "--config", str(cfgp), "--back", str(back),
-                                     "--pages", "1", "--profile", "digital",
-                                     "--lang", lang, "--out", str(comp)])
-            interior_pdf = None if a.dry_run else find_one(ws / "outputs" / interior_fmt, ".pdf")
-            if not a.dry_run and not interior_pdf:
-                print(f"no interior PDF in outputs/{interior_fmt} to build digital from.")
-                result["green"] = False
+            rc, _, _ = R.step("cover digital", [PY, str(TOOLS / "cover_compose_ahss.py"),
+                                                "--config", str(cfgp), "--back", str(back),
+                                                "--pages", "1", "--profile", "digital",
+                                                "--lang", lang, "--out", str(comp)])
+            if rc != 0:
+                fail_step("digital_website", dinfo, "cover digital", rc)
             else:
-                d = build_digital(ws, slug, comp, interior_pdf or Path("x"),
-                                  ws / "outputs" / "digital", a.dry_run)
-                result["steps"]["digital_website"] = d
-                if d.get("website_blanks_remaining"):
-                    result["green"] = False
+                interior_pdf = None if a.dry_run else find_one(ws / "outputs" / interior_fmt, ".pdf")
+                if not a.dry_run and not interior_pdf:
+                    fail_step("digital_website", dinfo,
+                              f"no interior PDF in outputs/{interior_fmt} to build digital from", rc)
+                else:
+                    d = build_digital(ws, slug, comp, interior_pdf or Path("x"),
+                                      ws / "outputs" / "digital", a.dry_run)
+                    result["steps"]["digital_website"] = d
+                    if d.get("website_blanks_remaining"):
+                        result["green"] = False
 
     # --- report ----------------------------------------------------------------
+    result["steps_run"] = R.log
     if a.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:

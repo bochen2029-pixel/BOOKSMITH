@@ -398,6 +398,21 @@ def check_spine_constant_parity():
             f"compositor AND verifier/preset fallbacks")
 
 
+# ---- 13. produce_book error propagation --------------------------------------
+def check_produce_book_selftest():
+    """A failed step must abort that format's chain, flip green:false, exit 1
+    (dry-run + injected failure; runs no node/Word)."""
+    try:
+        r = subprocess.run([sys.executable, str(TOOLS / "produce_book.py"), "--selftest"],
+                           capture_output=True, text=True, timeout=120)
+    except Exception as e:
+        add("produce_book_selftest", FAIL, f"could not run --selftest: {e}")
+        return
+    tail = [l for l in (r.stdout or "").splitlines() if l.strip()]
+    add("produce_book_selftest", PASS if r.returncode == 0 else FAIL,
+        (tail[-1].strip() if tail else f"rc={r.returncode}")[:120])
+
+
 def main():
     ap = argparse.ArgumentParser(description="BOOKSMITH kit self-consistency meta-gate")
     ap.add_argument("--json", action="store_true")
@@ -406,7 +421,7 @@ def main():
     for fn in (check_py_compile, check_js_parse, check_json_valid, check_schema,
                check_kit_env_parity, check_requirements, check_dead_script_refs, check_fonts,
                check_config_key_drift, check_doc_coverage, check_js_dash_literals,
-               check_spine_constant_parity):
+               check_spine_constant_parity, check_produce_book_selftest):
         try:
             fn()
         except Exception as e:

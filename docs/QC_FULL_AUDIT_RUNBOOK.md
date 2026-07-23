@@ -118,8 +118,9 @@ python _tools/verify_build.py --config <cfg> --format <print_fmt> --final   # ba
   AND/OR a verify_build check — and the gate gets a NEGATIVE TEST (it must FAIL on the pre-fix
   artifact before it may count as a guard).
 - Rebuild via `produce_book.py` (or the §12 chain), then re-run Phase 2 + the defect-signature
-  sweep + re-VIEW the fixed pages and covers. Known produce_book issue (2026-07-23, open): it can
-  continue past a failed render and print green — read the step lines, not just the summary.
+  sweep + re-VIEW the fixed pages and covers. (The 2026-07-23 produce_book issue — continuing past
+  a failed render and printing green — is FIXED: any failed step now aborts that format's chain,
+  flips green:false, exits nonzero; guarded by `produce_book.py --selftest`, run by selfcheck.)
 - Close the loop: EXECUTION_LOG (timeline table: action → result), post-fix manifest, ledger
   entry, one kit commit, LESSONS_LEDGER rule(s) for anything new.
 
