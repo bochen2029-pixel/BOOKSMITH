@@ -13,6 +13,7 @@ Profiles:
   kindle  : front as RGB JPG (ebook)
   mixam   : front_cover.pdf / back_cover.pdf / spine.pdf (3-panel, bleed)
   kdp     : cover_wrap_hardcover.pdf (one-piece: back | spine | front, wrap bleed)
+  kdp-pb  : cover_wrap.pdf (one-piece PAPERBACK wrap: 0.125in bleed, no board add)
 
 Spine (hardcover, white paper): pages * per_page + board_add. Mixam board add is
 NOT constant across their calculator; the Mixam number is FLAGGED for operator
@@ -359,7 +360,7 @@ def main():
     ap.add_argument("--back", required=True, help="back-copy JSON")
     ap.add_argument("--pages", type=int, required=True)
     ap.add_argument("--profile", required=True,
-                    choices=["digital", "kindle", "mixam", "kdp"])
+                    choices=["digital", "kindle", "mixam", "kdp", "kdp-pb"])
     ap.add_argument("--dpi", type=int, default=300)
     ap.add_argument("--out", required=True)
     ap.add_argument("--lang", default="en", choices=["en", "zh", "es", "vi"])
@@ -440,6 +441,36 @@ def main():
         img_to_pdf(canvas, str(out / "cover_wrap_hardcover.pdf"), cover_w, cover_h, dpi)
         meta.update({"spine_in": sw, "wrap_w_in": cover_w, "wrap_h_in": cover_h,
                      "turn_in_in": turn, "files": ["cover_wrap_hardcover.pdf"]})
+
+    elif a.profile == "kdp-pb":
+        # One-piece PAPERBACK wrap (added 2026-07-23, Bo's order). Dims from the
+        # SHARED preset — the exact code path verify_build checks against:
+        # [bleed | back(6) | spine | front(6) | bleed] wide, trim + 2*bleed tall,
+        # 0.125in bleed, spine = pages * per_page with NO board add (paper case).
+        import preset_lookup
+        d = preset_lookup.kdp_paperback_wrap_dims(6, 9, a.pages, cfg.get("paper", "white"))
+        cover_w, cover_h, sw, pbleed = (d["cover_w"], d["cover_h"], d["spine"],
+                                        d["bleed_in"])
+        vy = int(round((cover_h - 9) / 2 * dpi))
+        fw, fh = int(6 * dpi), int(9 * dpi)
+        front = render_front(fw, fh, 0, cfg)
+        backi = render_back(fw, fh, 0, cfg, back, keepout=True)
+        spine = render_spine(int(9 * dpi), int(round(sw * dpi)), cfg)
+        canvas = Image.new("RGB", (int(round(cover_w * dpi)), int(round(cover_h * dpi))), BG)
+        xb = int(round(pbleed * dpi))
+        canvas.paste(backi, (xb, vy))
+        canvas.paste(spine, (xb + int(6 * dpi), vy))
+        canvas.paste(front, (xb + int(6 * dpi) + int(round(sw * dpi)), vy))
+        if LANG == "en":
+            # run the S3 banner across the right bleed so it prints to the trim edge
+            fx1 = xb + int(6 * dpi) + int(round(sw * dpi)) + int(6 * dpi)
+            by0 = vy + int(BADGE_TOP_IN * dpi)
+            ImageDraw.Draw(canvas).rectangle(
+                [fx1 - 2, by0, canvas.width, by0 + int(BADGE_H_IN * dpi)],
+                fill=BADGE_FILL)
+        img_to_pdf(canvas, str(out / "cover_wrap.pdf"), cover_w, cover_h, dpi)
+        meta.update({"spine_in": sw, "wrap_w_in": cover_w, "wrap_h_in": cover_h,
+                     "bleed_in": pbleed, "files": ["cover_wrap.pdf"]})
 
     json.dump(meta, open(out / f"cover_meta_{a.profile}.json", "w"), indent=2)
     print(json.dumps(meta))
