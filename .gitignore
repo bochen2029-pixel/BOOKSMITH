@@ -87,3 +87,4 @@ checkpoints/
 **/checkpoints/
 *.safetensors
 *.ckpt
+_handoff/
