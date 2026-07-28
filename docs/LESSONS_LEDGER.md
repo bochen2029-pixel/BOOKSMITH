@@ -507,6 +507,12 @@
 - Exact params/code: the invariant runners that already exist — `_tools/verify_build.py --config book_config.json --format <p>` (per-format mechanical gate; runs the mirror/empty-header/page-multiple/gutter/cover-dimension asserts), `_tools/check_part_pages.py` (recto parity), and `_tools/selfcheck.py` (the kit self-consistency meta-gate) — each reports green/red and exits nonzero on FAIL.
 - Verify: All asserts green (the FIRST-PASS DEFAULTS CHECKLIST, §14).
 
+### 10.6 Nested `additionalProperties:false` blocks can strand a shipped feature — the drift gate must bind nested reads
+- Rule: Every config key a tool READS must be DECLARED in `book_config.schema.json` — including keys nested inside `additionalProperties:false` blocks (voice/interior/spine/cover/art/…) — and `selfcheck.py check_config_key_drift` must resolve reads made through block-name locals (`voice.get(...)` / `spine[...]` / `setdefault`), same-line chains (`cfg.get("voice", {}).get(...)`), and JS `config.a.b.c` chains walked against the schema tree (alias-bound and destructured reads included; JS bare reads stay alias-gated — generate_kindle.js has a param `art` that is `interior.chapter_art`, not `cover.art`).
+- Why / symptom if violated: `voice.lint_waivers` shipped in cf61c7e as a reader in `lint_manuscript.py` with no matching schema declaration; the voice block pins `additionalProperties:false`, so GATE-2 rejected every config that used the feature — shipped but unreachable. The standing drift gate only matched reads off `cfg`/`config`/`book_config` receivers, so a read off a local named `voice` was invisible, and every nested `additionalProperties:false` block shared the hole.
+- Exact params/code: fix 4d63ddd — declare `voice.lint_waivers` in the schema (array of strings, default `[]`); extend `check_config_key_drift` to derive every `additionalProperties:false` block from the schema and bind the nested read forms above.
+- Verify: selfcheck `config_keys_declared` (root + 13 nested blocks), negative-tested per QC_FULL_AUDIT_RUNBOOK Phase 6 — with `lint_waivers` re-removed from the schema the check FAILs naming `voice.lint_waivers (read by ['lint_manuscript.py'])`; restored, it passes. (Provenance: 2026-07-28 round table, staged via `ledger_stage.py --add`, operator-endorsed; fix branch claude/sad-swanson-4de4c8 @ 4d63ddd.)
+
 ---
 
 ## 11. CROSS-PLATFORM / RUNTIME
