@@ -20,9 +20,11 @@ CONTRACT
       -> append a PROPOSED entry per NEW (stage, normalized-detail) failure; idempotent
          (an already-staged failure, keyed by a short hash, is skipped). Prints a summary.
   python ledger_stage.py --add "stage | symptom | cause | fix"
-      -> stage one entry by hand.
+      -> stage one entry by hand. cause/fix are optional: a supplied segment renders
+         verbatim in the staged block; an omitted one keeps its curator placeholder.
   python ledger_stage.py --selftest
-      -> synthesize a HARDSTOP, stage it, assert it appears once (idempotent). No deps.
+      -> synthesize HARDSTOPs + manual --adds, assert each staged once (idempotent)
+         and that a hand-supplied cause/fix survives into the block. No deps.
 """
 from __future__ import annotations
 
@@ -97,12 +99,16 @@ def render_entry(e: dict) -> str:
     # the engine stores the TAIL of a tool's output as detail; cut the JSON dump off so
     # the symptom line stays legible (the curator can open the run for the full context).
     symptom = (raw.split("{", 1)[0].strip() or raw)[:180] if raw else "(no detail)"
+    # a cause/fix supplied by hand (--add) renders verbatim; harvested entries carry no
+    # such keys and keep the curator placeholders (curation stays human, the §4 pause).
+    cause = re.sub(r"\s+", " ", (e.get("cause") or "").strip()) or "_[curator: root cause]_"
+    fix = re.sub(r"\s+", " ", (e.get("fix") or "").strip()) or "_[curator: the change that prevents it]_"
     return (
         f"\n### [PROPOSED] {e['stage']} — {symptom[:80]}\n"
         f"{STAGE_MARK}{e['key']} -->\n"
         f"- **Symptom:** {symptom}\n"
-        f"- **Cause:** _[curator: root cause]_\n"
-        f"- **Fix:** _[curator: the change that prevents it]_\n"
+        f"- **Cause:** {cause}\n"
+        f"- **Fix:** {fix}\n"
         f"- **Proposed gate:** _[curator: the mechanical/perceptual check that would catch this next time]_\n"
         f"- **Provenance:** {e['provenance']}\n"
         f"- **STATUS:** PROPOSED — endorse, then move into `docs/LESSONS_LEDGER.md` (with its gate) and delete this block.\n"
@@ -126,7 +132,7 @@ def stage_entries(entries: list[dict], out: Path) -> dict:
 
 
 def selftest() -> int:
-    import tempfile
+    import contextlib, io, tempfile
     fails = []
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
@@ -151,12 +157,34 @@ def selftest() -> int:
             fails.append(f"expected 2 PROPOSED blocks, got {txt.count('### [PROPOSED]')}")
         if "produce:epub" not in txt or "verify" not in txt:
             fails.append("staged entries missing expected stages")
+        # --add carrying cause/fix (drive the real CLI path — that is where the segments
+        # were being dropped). Idempotency must still key on stage+detail alone, so the
+        # re-add with a different cause/fix stages nothing new.
+        add4 = "gate-3 | blacklist term leak in running headers | lint swept prose only | sweep header XML too"
+        dup4 = "gate-3 | blacklist term leak in running headers | some other cause | some other fix"
+        add2 = "gate-5 | page count not divisible by four"
+        with contextlib.redirect_stdout(io.StringIO()):
+            for spec in (add4, dup4, add2):
+                main(["--add", spec, "--out", str(out), "--json"])
+        txt = out.read_text("utf-8")
+        if txt.count("### [PROPOSED]") != 4:
+            fails.append(f"--add: expected 4 PROPOSED blocks, got {txt.count('### [PROPOSED]')}")
+        if "- **Cause:** lint swept prose only" not in txt:
+            fails.append("--add: supplied cause missing from the staged block")
+        if "- **Fix:** sweep header XML too" not in txt:
+            fails.append("--add: supplied fix missing from the staged block")
+        if "some other cause" in txt:
+            fails.append("--add: same stage+symptom re-staged (key must be stage+detail only)")
+        tail = txt.split("### [PROPOSED] gate-5", 1)
+        if len(tail) < 2 or "_[curator: root cause]_" not in tail[1] \
+                or "_[curator: the change that prevents it]_" not in tail[1]:
+            fails.append("--add without cause/fix must keep the curator placeholders")
     if fails:
         print("LEDGER_STAGE SELFTEST: FAIL")
         for f in fails:
             print("  - " + f)
         return 1
-    print("LEDGER_STAGE SELFTEST: PASS (harvests HARDSTOPs -> proposed lessons, idempotent)")
+    print("LEDGER_STAGE SELFTEST: PASS (harvests HARDSTOPs -> proposed lessons, idempotent; --add carries cause/fix)")
     return 0
 
 
@@ -168,7 +196,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Auto-draft candidate lessons from engine gate failures.")
     ap.add_argument("--root", default=str(ROOT), help="kit root to scan (default: the kit)")
     ap.add_argument("--out", default=str(DEFAULT_OUT), help="staging file to append to")
-    ap.add_argument("--add", help='stage one entry by hand: "stage | symptom | cause | fix"')
+    ap.add_argument("--add", help='stage one entry by hand: "stage | symptom | cause | fix" '
+                                  "(cause/fix optional; omitted segments keep the curator placeholders)")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--selftest", action="store_true")
     args = ap.parse_args(argv)
@@ -177,11 +206,19 @@ def main(argv=None) -> int:
         return selftest()
     out = Path(args.out)
     if args.add:
-        parts = [p.strip() for p in args.add.split("|")]
+        # the advertised contract is "stage | symptom | cause | fix", but segments 3 and 4
+        # were parsed and silently dropped until 2026-07-28: the nested-additionalProperties
+        # lesson (staging key a31bc99cbf09) landed with curator placeholders that had to be
+        # hand-edited in docs/_lessons_staging.md after the fact. Carry them through; blank
+        # or omitted segments fall back to the placeholders in render_entry(). maxsplit=3
+        # lets the fix segment itself contain "|" without truncation.
+        parts = [p.strip() for p in args.add.split("|", 3)]
         stage = parts[0] if parts else "manual"
         detail = parts[1] if len(parts) > 1 else ""
         e = {"key": key_of(stage, detail), "stage": stage, "detail": detail,
-             "provenance": "manual --add"}
+             "provenance": "manual --add",
+             "cause": parts[2] if len(parts) > 2 else "",
+             "fix": parts[3] if len(parts) > 3 else ""}
         res = stage_entries([e], out)
     else:
         res = stage_entries(harvest(Path(args.root)), out)
