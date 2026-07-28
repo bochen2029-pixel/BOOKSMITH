@@ -241,9 +241,11 @@ def _which(exe):
 
 
 # ---- 9. config keys the toolchain READS are declared in the schema -----------
-# Root additionalProperties:false means an undeclared-but-read key is a feature
-# NO valid config can ever use (the H1/H2/VER-4 gate-hole class). Include-list
-# of the book-config consumers; kit_env/infra tools are out of scope.
+# additionalProperties:false means an undeclared-but-read key is a feature NO
+# valid config can ever use (the H1/H2/VER-4 gate-hole class) — at the root AND
+# equally inside every nested block that pins it (voice/interior/spine/cover/
+# art/...). Include-list of the book-config consumers; kit_env/infra tools are
+# out of scope.
 _BOOKCFG_PY = [
     "assemble_manuscript.py", "build_epub.py", "build_digital_pdf.py",
     "lint_manuscript.py", "verify_build.py", "check_part_pages.py",
@@ -252,51 +254,133 @@ _BOOKCFG_PY = [
     "check_synthesis.py", "check_continuity.py",
 ]
 _BOOKCFG_JS = ["generate_book.js", "generate_kindle.js"]
-# keys read dynamically for legit non-schema reasons (none today; add sparingly)
+# keys read dynamically for legit non-schema reasons (none today; add sparingly);
+# a nested key goes in as its dotted path ("voice.some_key")
 _CFGKEY_ALLOW: set = set()
+
+
+def _schema_blocks(schema: dict) -> dict:
+    """Property name -> union of declared keys, for every object subschema below
+    the root that pins additionalProperties:false. Keyed by property NAME because
+    that is the toolchain's binding convention (voice = cfg.get("voice", {});
+    art = cover.get("art", {})); same-named blocks at different depths union."""
+    out: dict = {}
+
+    def walk(name, node):
+        if not isinstance(node, dict):
+            return
+        props = node.get("properties")
+        if isinstance(props, dict):
+            if name and node.get("additionalProperties") is False:
+                out.setdefault(name, set()).update(props.keys())
+            for k, v in props.items():
+                walk(k, v)
+        walk(None, node.get("items"))  # arrays bind to loop vars, never block names
+    for k, v in schema.get("properties", {}).items():
+        walk(k, v)
+    return out
 
 
 def check_config_key_drift():
     schema_p = TOOLS / "book_config.schema.json"
     try:
-        declared = set(json.load(open(schema_p, encoding="utf-8"))["properties"].keys())
+        schema = json.load(open(schema_p, encoding="utf-8"))
+        declared = set(schema["properties"].keys())
     except Exception as e:
         add("config_keys_declared", FAIL, f"cannot read schema properties: {e}")
         return
-    py_pat = re.compile(
+    # cf61c7e (caught at the 2026-07-28 round table) is why the NESTED scan
+    # exists: lint_manuscript.py shipped reading voice.get("lint_waivers") while
+    # the schema's voice block never declared it — the waiver feature was
+    # unreachable by ANY schema-valid config (GATE-2 rejects a config that
+    # carries it), and the receiver regex here never saw the read because it
+    # hangs off a local named `voice`, not cfg/config/book_config. Nested reads
+    # are therefore checked three ways:
+    #   1. Python block-name locals — voice.get("k") / spine["k"] /
+    #      voice.setdefault("k"). Deliberately unfenced: on this tree every such
+    #      local IS the config block, and the PIL images / Paths that reuse the
+    #      names `art`/`cover` never take quoted string keys.
+    #   2. Python same-line chains — cfg.get("voice", {}).get("k"), any receiver
+    #      (cover_gen's `(config.get("cover") or {}).get("art")` included).
+    #   3. JS config.a.b.c chains walked segment-by-segment against the schema
+    #      tree (stopping at arrays and open blocks like cover.palette), plus
+    #      dotted reads off alias-bound locals (const interior = config.interior
+    #      || {}) and destructured forms. JS bare reads MUST stay alias-gated:
+    #      generate_kindle.js has a param named `art` that carries
+    #      interior.chapter_art, not cover.art — ungated, art.dir false-fails.
+    blocks = _schema_blocks(schema)
+    names_alt = "|".join(sorted(blocks))
+    py_root_pat = re.compile(
         r"\b(?:self\.)?(?:cfg|config|book_config)(?:\.get\(\s*|\[)\s*[\"']([a-z_][a-z0-9_]*)[\"']")
-    js_pat = re.compile(r"\bconfig\.([a-z_][a-z0-9_]*)\b")
+    py_block_pat = re.compile(
+        rf"\b({names_alt})(?:\.get\(\s*|\.setdefault\(\s*|\[\s*)[\"']([a-z_][a-z0-9_]*)[\"']")
+    py_chain_pat = re.compile(
+        rf"\.get\(\s*[\"']({names_alt})[\"'][^)]*\)[ \t]*(?:or[ \t]+\{{\}}[ \t]*)?\)?"
+        rf"[ \t]*(?:\.get\(\s*|\[\s*)[\"']([a-z_][a-z0-9_]*)[\"']")
+    js_chain_pat = re.compile(r"\bconfig((?:\??\.[a-z_][a-z0-9_]*)+)")
+    js_alias_pat = re.compile(rf"\b(?:const|let|var)\s+({names_alt})\s*=\s*\(?\s*config\.\1\b")
+    js_destr_pat = re.compile(rf"\{{([^{{}}]*)\}}\s*=\s*\(?\s*config\.({names_alt})\b")
     js_skip = {"get", "slug"}  # attribute noise; slug obviously declared anyway
     offenders = {}
+
+    def flag(path, fname):
+        if path not in _CFGKEY_ALLOW:
+            offenders.setdefault(path, set()).add(fname)
+
+    def walk_js_chain(segs, fname):
+        node = {"properties": schema.get("properties", {}), "additionalProperties": False}
+        for depth, seg in enumerate(segs):
+            props = node.get("properties") if isinstance(node, dict) else None
+            if not isinstance(props, dict) or node.get("additionalProperties") is not False:
+                return  # array / open block / scalar: cannot judge deeper segments
+            if depth == 0 and seg in js_skip:
+                return
+            if seg not in props:
+                flag(".".join(segs[:depth + 1]), fname)
+                return
+            node = props[seg]
+
     for name in _BOOKCFG_PY:
         f = TOOLS / name
         if not f.exists():
             continue
         src = f.read_text(encoding="utf-8", errors="replace")
-        for m in py_pat.finditer(src):
-            k = m.group(1)
-            if k not in declared and k not in _CFGKEY_ALLOW:
-                offenders.setdefault(k, set()).add(name)
+        for m in py_root_pat.finditer(src):
+            if m.group(1) not in declared:
+                flag(m.group(1), name)
+        for pat in (py_block_pat, py_chain_pat):
+            for m in pat.finditer(src):
+                b, k = m.group(1), m.group(2)
+                if k not in blocks[b]:
+                    flag(f"{b}.{k}", name)
     for name in _BOOKCFG_JS:
         f = TOOLS / name
         if not f.exists():
             continue
         src = f.read_text(encoding="utf-8", errors="replace")
-        for m in js_pat.finditer(src):
-            k = m.group(1)
-            if k in js_skip:
-                continue
-            if k not in declared and k not in _CFGKEY_ALLOW:
-                offenders.setdefault(k, set()).add(name)
+        for m in js_chain_pat.finditer(src):
+            walk_js_chain([s for s in m.group(1).replace("?.", ".").split(".") if s], name)
+        for b in set(js_alias_pat.findall(src)):
+            for m in re.finditer(rf"\b{b}\.([a-z_][a-z0-9_]*)\b", src):
+                if m.group(1) not in blocks[b]:
+                    flag(f"{b}.{m.group(1)}", name)
+        for m in js_destr_pat.finditer(src):
+            b = m.group(2)
+            for part in m.group(1).split(","):
+                if part.strip().startswith("..."):
+                    continue  # rest-spread catch-all, not a key read
+                ident = part.split(":")[0].split("=")[0].strip()
+                if re.fullmatch(r"[a-z_][a-z0-9_]*", ident) and ident not in blocks[b]:
+                    flag(f"{b}.{ident}", name)
     if offenders:
         detail = "; ".join(f"{k} (read by {sorted(v)})" for k, v in sorted(offenders.items()))
         add("config_keys_declared", FAIL,
-            f"read-but-undeclared root config key(s): {detail} — a valid config "
-            f"cannot carry them (root additionalProperties:false)")
+            f"read-but-undeclared config key(s): {detail} — a valid config "
+            f"cannot carry them (additionalProperties:false at that level)")
     else:
         add("config_keys_declared", PASS,
-            f"every root config key read by {len(_BOOKCFG_PY) + len(_BOOKCFG_JS)} "
-            f"toolchain files is schema-declared")
+            f"every config key read by {len(_BOOKCFG_PY) + len(_BOOKCFG_JS)} toolchain "
+            f"files is schema-declared (root + {len(blocks)} nested blocks)")
 
 
 # ---- 10. every shipped tool is documented; format/profile tokens in the spec --
