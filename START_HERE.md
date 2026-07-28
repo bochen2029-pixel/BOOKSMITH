@@ -21,7 +21,7 @@ You are booting a fresh session inside the BOOKSMITH kit — a portable, self-co
 4. `docs/COMPACTION_SURVIVAL.md` — how a session survives context compaction with zero fidelity loss. It governs Step 2 and your standing discipline.
 5. `docs/format_spec_sheet.md` + `_tools/print_presets.json` — exact geometry for all nine formats, every number provenance-tagged. (The service's own previewer/calculator always wins over the preset.)
 
-## 2 — Detect mode: RESUME an in-flight book, or START a new one
+## 2 — Detect mode: RESUME an in-flight book, START a new one, or RE-ISSUE a finished PDF
 Check `book_workspace/` for any `<slug>/_CONTINUITY.md` whose STATUS is not `COMPLETE`.
 
 ### If found → RESUME
@@ -36,7 +36,13 @@ Follow that workspace's **RESUME PROTOCOL** — the numbered list at the top of 
 4. Create `book_workspace/<slug>/_CONTINUITY.md` with a **RESUME PROTOCOL at the very top** (rehydrate → read ledger → read seed → read last chapter → continue), plus STATUS, DONE, NEXT, live invariants, and pointers. Rewrite it after every chapter.
 5. Draft chapter-by-chapter into `manuscript/current/ch_NN_current.md`, then run the production pipeline: lint · assemble (version-pinned master) · produce all formats · cover (gen or supplied art → composite → vision verify) · `verify_build.py --format <each>` until every gate is green. Mark `_CONTINUITY.md` STATUS: COMPLETE.
 
-## 3 — Standing disciplines (both modes)
+### If the input is a FINISHED PDF to re-issue (not to author) → RE-IMPORT
+Someone hands you an already-typeset book PDF (someone else's, or a prior export) and wants it re-issued to Amazon's exact specs — a reflowable Kindle ebook, an EPUB, a KDP paperback, a KDP hardcover, a digital PDF. This is **not** the synthesis path (do NOT `ingest` it to re-derive a new book); it PRESERVES the book and only re-typesets it (extract the content, discard the source layout). Run the inbound front end, then produce:
+1. `python _tools/pdf_to_book.py "book.pdf" --slug <slug> [--title … --author … --trim 6x9]` → decomposes the PDF into `book_workspace/<slug>/` (clean per-unit manuscript + a schema-valid seed `book_config.json`) and prints a **proposed** chapter split. It strips running heads/feet/page-numbers, de-hyphenates, collapses letter-spaced titles, and cross-checks chapters against the book's own table of contents. (Scanned/image-only PDFs need OCR — reported, not wired.)
+2. **Review** `book_config.json` — the tool stops here on purpose (heading detection is heuristic): confirm the chapter split, title/author/trim, `is_fiction`.
+3. `python _tools/produce_book.py --config book_workspace/<slug>/book_config.json --formats kindle,epub,kdp_paperback,kdp_hardcover,digital` → the distinct builds (reflowable ebook vs mirror-margin print vs board-add hardcover). Full runbook: `docs/PDF_REIMPORT_RUNBOOK.md`.
+
+## 3 — Standing disciplines (all modes)
 - **Write every chapter to disk the instant it's done (atomic), and update `_CONTINUITY.md` immediately after.** This is what makes the session survive a compaction or quota reset with zero lost work — proven in production.
 - The compaction hooks are installed (`PreCompact` pre-bakes `_REHYDRATION.md`; `SessionStart` on compact/resume forces the re-read). Trust them, but the continuously-maintained `_CONTINUITY.md` is the real safety net — never let it go stale.
 - Every service's own previewer/calculator (KDP Print Previewer, Mixam job calculator, Blurb booksize calculator) is canonical over `print_presets.json`; a stated dimension goes into `book_config.spine.spine_override_in` and wins.

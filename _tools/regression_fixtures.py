@@ -19,10 +19,11 @@ defects that were invisible under default configs and shipped silently:
   6. even/odd  — with interior.page_number_align="outer", settings.xml carries
                  an ENABLED <w:evenAndOddHeaders/> (not w:val="false").
   7. [IMAGE    — a prose line starting "[IMAGES were everywhere]" is NOT eaten.
-  8. midflow   — a standalone "![alt](images/x.png)" line: kindle EMBEDS it
-                 (word/media present), print SKIPS it, build_epub embeds it as
-                 <figure class="midflow"> — and the literal markdown never
-                 reaches any rendered artifact.
+  8. midflow   — a standalone "![alt](images/x.png)" line: kindle EMBEDS the
+                 original, print EMBEDS too (2026-07-27, the figure-program
+                 feature) and must prefer the grayscale "x_print.png" sibling
+                 when present, build_epub embeds it as <figure class="midflow">
+                 — and the literal markdown never reaches any rendered artifact.
 
 Workspace is a fresh temp dir (config-parent rooted — nothing in the repo is
 touched). Needs node + the vendored _tools/node_modules; exits 2 SKIP without
@@ -92,10 +93,11 @@ def docx_text_and_settings(docx: Path):
         except KeyError:
             settings = ""
         media = [n for n in z.namelist() if n.startswith("word/media/")]
+        media_bytes = [z.read(n) for n in media]
     runs = re.findall(r"<w:t[^>]*>([^<]*)</w:t>", doc)
     # content assertions join with NO separator: adjacent runs in one paragraph
     # render adjacent ("$" + "24.99" is "$24.99" on the page)
-    return runs, "".join(runs), settings, media
+    return runs, "".join(runs), settings, media, media_bytes
 
 
 def tiny_png(path: Path, w=8, h=6, rgb=(180, 40, 40)):
@@ -136,6 +138,8 @@ def main(argv=None) -> int:
         (ws / "book_config.json").write_text(json.dumps(CONFIG, indent=2), encoding="utf-8")
         (ws / "outputs" / "markdown" / "_regfix_v1.md").write_text(MASTER, encoding="utf-8")
         tiny_png(ws / "images" / "mf_test.png")
+        # Grayscale-derivative sibling: print must PREFER this over the original.
+        tiny_png(ws / "images" / "mf_test_print.png", w=10, h=8, rgb=(60, 60, 60))
         tiny_png(ws / "cover_art" / "_regfix_src.png")  # epub leg needs a cover
 
         for gen, outname in (("generate_book.js", None), ("generate_kindle.js", None)):
@@ -153,7 +157,7 @@ def main(argv=None) -> int:
             if not docx.exists():
                 fails.append(f"{label}: DOCX not produced at {docx}")
                 continue
-            runs, text, settings, media = docx_text_and_settings(docx)
+            runs, text, settings, media, media_bytes = docx_text_and_settings(docx)
             def chk(name, ok, detail=""):
                 checks.append({"target": label, "check": name, "pass": bool(ok), "detail": detail})
                 if not ok:
@@ -181,9 +185,18 @@ def main(argv=None) -> int:
                 "literal markdown image line reached the rendered artifact")
             chk("midflow_caption_kept", "A caption line under the photo." in text,
                 "caption paragraph after the mid-flow image was lost")
+            chk("midflow_embedded", len(media) >= 1,
+                f"expected >=1 word/media entry (mid-flow image), got {len(media)}")
+            orig_b = (ws / "images" / "mf_test.png").read_bytes()
+            print_b = (ws / "images" / "mf_test_print.png").read_bytes()
             if label == "kindle":
-                chk("midflow_embedded", len(media) >= 1,
-                    f"expected >=1 word/media entry (mid-flow image), got {len(media)}")
+                chk("midflow_original_variant", any(b == orig_b for b in media_bytes),
+                    "kindle must embed the ORIGINAL (color) mid-flow image")
+            if label == "print":
+                chk("midflow_print_variant",
+                    any(b == print_b for b in media_bytes)
+                    and not any(b == orig_b for b in media_bytes),
+                    "print must prefer the grayscale _print sibling over the original")
             if label == "print":
                 enabled = re.search(r"<w:evenAndOddHeaders\b(?![^>]*w:val=\"(?:false|0)\")", settings)
                 chk("evenAndOddHeaders_enabled", bool(enabled),

@@ -577,7 +577,8 @@ def _is_cover_name(name: str) -> bool:
         return True
     if n == "cover.pdf" or n.endswith("_cover.pdf"):
         return True
-    return any(m in n for m in ("cover_wrap", "front_cover", "back_cover", "_wrap.", "wrap.pdf"))
+    return any(m in n for m in ("cover_wrap", "front_cover", "back_cover", "_wrap.",
+                                "wrap.pdf", "imagewrap", "_cover_", "cover_imagewrap"))
 
 
 def _find_interior_pdf(fmt_dir: Path):

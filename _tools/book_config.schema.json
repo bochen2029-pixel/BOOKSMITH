@@ -221,6 +221,29 @@
             "corner": { "type": "string", "enum": ["bottom_right", "bottom_left"], "default": "bottom_right" }
           },
           "default": { "w_in": 2.25, "h_in": 1.5, "corner": "bottom_right" }
+        },
+        "center_icon": {
+          "type": "object",
+          "description": "Optional emblem centered on EVERY front cover (print wraps + kindle), between the title block and the subtitle block. Alpha-masked; native colors kept unless `ink` is set (then the alpha becomes a solid-ink stencil); a soft cream under-glow lifts it off textured art unless glow:false. Trademark note: shipping another party's mark on a cover is an IP-counsel item on the upload checklist.",
+          "additionalProperties": false,
+          "properties": {
+            "path": { "type": "string", "description": "Workspace-relative image path (PNG with alpha preferred)." },
+            "width_in": { "type": "number", "default": 2.4 },
+            "center_y_frac": { "type": "number", "default": 0.47, "description": "Vertical center as a fraction of front-panel height (clamped below the title block)." },
+            "ink": { "type": "string", "description": "Optional hex ink (no #): render the icon's alpha as this solid color instead of its native colors." },
+            "glow": { "type": "boolean", "default": true }
+          }
+        },
+        "ebook_logo": {
+          "type": "object",
+          "description": "Optional emblem composited onto EBOOK front covers only (the kindle + digital profiles; print wraps untouched). The source's dark pixels become tinted ink on the cover field (alpha = darkness), so B&W line art reads as cover-native ink rather than a pasted white plate. Trademark note: shipping another party's mark on a cover is an IP-counsel item on the upload checklist.",
+          "additionalProperties": false,
+          "properties": {
+            "path": { "type": "string", "description": "Workspace-relative source image (PNG/JPG; dark-on-light line art works best)." },
+            "width_in": { "type": "number", "default": 1.5 },
+            "center_y_frac": { "type": "number", "default": 0.76, "description": "Vertical center of the emblem as a fraction of trim height." },
+            "ink": { "type": "string", "description": "Hex ink color, no #. Defaults to the compositor's body ink." }
+          }
         }
       },
       "default": {}

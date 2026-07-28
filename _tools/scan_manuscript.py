@@ -20,6 +20,9 @@ Per unit in book_config.units[], against manuscript/current/<id>_current.md:
   - zero placeholders: [WARN-glyph ...], [TODO]/[TK]/[TBD]/[XXX], [BO-WRITES],
     'AT LINE-READ', 'NAME AND CREDENTIAL', angle-bracket <stubs>, ___ fill blanks
   - word count within +/-20% of target_words (WARN only; band, not a wall)
+  - every mid-flow "![alt](path)" image reference resolves to an existing file
+    under the workspace (all generators embed these since 2026-07-27; a
+    dangling reference would build an image-less artifact, so it FAILs here)
 
 Usage: python scan_manuscript.py --config book_config.json [--json] [--strict]
 Exit: 0 clean - 1 any FAIL (or WARN with --strict) - 2 usage. Stdlib only.
@@ -139,8 +142,9 @@ def main():
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--strict", action="store_true", help="WARN counts as failure")
     ap.add_argument("--allow-midflow-print", action="store_true",
-                    help="waive the midflow-images-vs-print-format guard "
-                         "(a deliberate operator call)")
+                    help="deprecated no-op (print interiors embed mid-flow "
+                         "images since 2026-07-27; the divergence guard this "
+                         "waived is retired)")
     a = ap.parse_args()
 
     cfgp = Path(a.config).resolve()
@@ -166,39 +170,44 @@ def main():
         any_warn |= "WARN" in levels
         report["units"].append({"id": uid, "verdict": verdict, "words": words,
                                 "findings": [list(x) for x in findings]})
-    # Cross-format divergence guard (2026-07-23): print interiors SKIP mid-flow
-    # "![alt](path)" image lines (kindle/epub embed them). A manuscript that
-    # carries them while a print format is declared would silently ship
-    # image-less print next to image-bearing ebooks — fail loudly instead.
-    # Print image routes: the page-replica pipeline or interior.chapter_art.
-    PRINT_FORMATS = {"kdp_paperback", "kdp_hardcover", "mixam_hardcover",
-                     "mixam_paperback", "blurb_paperback", "blurb_hardcover"}
-    declared_print = sorted(PRINT_FORMATS & set(cfg.get("formats") or []))
-    if declared_print and not a.allow_midflow_print:
-        mf_re = re.compile(r"^!\[[^\]]*\]\([^)\s]+\)\s*$")
-        mf_units = []
-        for uid, _t, _tw in unit_list(cfg):
-            p = cur / f"{uid}_current.md"
-            if not p.exists():
+    # Mid-flow image existence check (2026-07-27): every generator now EMBEDS a
+    # standalone "![alt](path)" line — print embed arrived with the figure
+    # program; kindle/epub have embedded since 2026-07-23 — so the old
+    # midflow-vs-print divergence guard is retired (--allow-midflow-print is
+    # accepted as a no-op for compatibility). What CAN still go wrong is a
+    # dangling reference: generators warn-and-skip a missing file at build time,
+    # silently shipping an image-less artifact. Fail that here, before anything
+    # builds. Paths resolve workspace-relative, exactly as the generators do.
+    mf_re = re.compile(r"^!\[[^\]]*\]\(([^)\s]+)\)\s*$")
+    mf_missing = []
+    mf_refs = 0
+    for uid, _t, _tw in unit_list(cfg):
+        p = cur / f"{uid}_current.md"
+        if not p.exists():
+            continue
+        try:
+            unit_lines = p.read_text(encoding="utf-8").splitlines()
+        except Exception:
+            continue
+        for l in unit_lines:
+            m = mf_re.match(l)
+            if not m:
                 continue
-            try:
-                n = sum(1 for l in p.read_text(encoding="utf-8").splitlines()
-                        if mf_re.match(l))
-            except Exception:
-                continue
-            if n:
-                mf_units.append(f"{uid}({n})")
-        if mf_units:
-            any_fail = True
-            report["units"].append({
-                "id": "_midflow_vs_print", "verdict": "FAIL",
-                "findings": [["FAIL", "midflow_images_print_divergence",
-                              f"{len(mf_units)} unit(s) carry mid-flow image lines "
-                              f"({', '.join(mf_units[:8])}{'…' if len(mf_units) > 8 else ''}) "
-                              f"but print format(s) {', '.join(declared_print)} are declared; "
-                              f"print interiors skip these lines. Use the replica route or "
-                              f"interior.chapter_art for print images, or waive with "
-                              f"--allow-midflow-print."]]})
+            mf_refs += 1
+            rel = m.group(1)
+            if not (ws / rel).exists():
+                mf_missing.append(f"{uid}: {rel}")
+    report["midflow_image_refs"] = mf_refs
+    if mf_missing:
+        any_fail = True
+        report["units"].append({
+            "id": "_midflow_images", "verdict": "FAIL",
+            "findings": [["FAIL", "midflow_image_missing",
+                          f"{len(mf_missing)} mid-flow image reference(s) do not "
+                          f"resolve under the workspace "
+                          f"({'; '.join(mf_missing[:6])}{' …' if len(mf_missing) > 6 else ''}); "
+                          f"generators would warn-and-skip them and ship "
+                          f"image-less artifacts"]]})
     report["all_pass"] = not (any_fail or (a.strict and any_warn))
 
     if a.json:

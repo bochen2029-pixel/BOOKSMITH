@@ -157,6 +157,8 @@ flowchart TD
 
 ```mermaid
 flowchart TD
+    IN{input = a FINISHED PDF to re-issue, not author?} -- yes --> RI[pdf_to_book.py → human reviews split → produce_book.py → KDP formats]
+    IN -- no, author a book --> F
     F{is_fiction?} -- yes --> FD[fiction copyright disclaimer]
     F -- no --> NF[math? → latex_to_unicode path]
     FMT{which formats in formats[]?} --> K[kindle] & E[epub] & KP[kdp_paperback] & KH[kdp_hardcover] & MH[mixam_hardcover] & MP[mixam_paperback] & BP[blurb_paperback] & BH[blurb_hardcover] & DG[digital_pdf]
@@ -254,6 +256,9 @@ flowchart LR
 | 24 | Subagents = sonnet or opus, never Fable | all | Agent/Workflow `model:` | (policy) | wrong‑tier reads |
 | 25 | Continuity survives compaction | 0 | `_CONTINUITY.md` + hooks | SessionStart(compact) inject | resume from summary → drift |
 | 26 | **Kit stays internally coherent / giftable** (clone runs cold) | all | `selfcheck.py` | `selfcheck` meta-gate (nonzero exit on FAIL) | py won't compile / dead script ref / schema drift / missing font in a fresh clone |
+| 27 | Bold pairs ACROSS code/math spans — no literal `**` in rendered prose | 6 | generators' toggle parser (2026-07-23) | `verify_build` `no_unrendered_bold_markers` (mono-exempt) + fixtures `no_literal_doublestar`/`bold_across_code_intact` | `**The brain (\`d3\`)…**` printed literal asterisks in a 344pp run |
+| 28 | Word COM: DispatchEx-first + retry every call + retried Quit (no zombie chain) | 6 | `_com_call` 40×3s in `docx_to_pdf.py` + `check_part_pages.py` | post-run WINWORD leak sweep (LESSONS §3.7b) | `Repaginate()` RPC-rejected mid-build; each leaked WINWORD poisons the next run |
+| 29 | Ebook cover within KDP spec (minimums hard; ideal 1600×2560 @1.6:1 the default) | 6→7 | `composite_cover.py` / `cover_compose_ahss.py` 1.6:1 floor | `verify_build` `kindle_cover_within_kdp_spec` | sub-ideal cover quality-flagged by KDP |
 
 *(The full rule set with exact params live in `docs/LESSONS_LEDGER.md`; the exact numbers per service in `docs/format_spec_sheet.md`; service geometry in `_tools/print_presets.json`.)*
 
@@ -342,5 +347,7 @@ flowchart LR
 | session build history + environment specifics | `SESSION_LOG.md` |
 | machine paths (Word, ComfyUI, KEEL, organs) | `_tools/kit_env.json` |
 | font catalog (OFL library + pairings) | `fonts/library/FONTS.md` |
+| **PDF re-import** (a finished PDF → KDP formats: decompose → human-review split → produce) | `docs/PDF_REIMPORT_RUNBOOK.md` (`_tools/pdf_to_book.py` → `_tools/produce_book.py`) |
+| **Full pre-upload QC audit + remediation method** (provenance → live gates → perceptual sweep → Amazon-official spec check incl. the scriptable cover calculator → severity findings → backed-up, gated fixes) | `docs/QC_FULL_AUDIT_RUNBOOK.md` (worked example: `book_workspace/a_human_still_signs/_QC_EN_AMAZON_2026-07-23/`) |
 
 **No gaps rule:** if a node in the tree (§1) has no matching row in the anti‑forgetting matrix (§6) *and* no pointer here (§8), it is an unheld node — add its enforcer before shipping. Every branch terminates in a gate or a pointer. That is what "held" means.

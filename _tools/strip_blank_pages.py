@@ -10,6 +10,9 @@ CONTRACT (KIT_ARCHITECTURE (c) strip_blank_pages.py / LESSONS_LEDGER §8.1):
   - PyMuPDF (fitz) for detection + a byte-clean rebuild.
   - Keep cover pages 1-2 UNCONDITIONALLY (they are image-only by design and
     carry no extractable text — a naive text check would delete the covers).
+  - Keep ANY page carrying an embedded image (2026-07-27, the figure-program
+    fix): a mid-flow figure page extracts little or no text, but it is content,
+    not a blank — the text heuristics below never run on an image-bearing page.
   - Drop any body page whose page.get_text().strip() is empty, OR whose
     non-whitespace character count is < 30 (a header-only ghost: e.g. a running
     head "THENIGHTWASYOUNG" + a folio, which compacts to ~18 chars).
@@ -106,6 +109,13 @@ def strip_blank_pages(in_pdf: str, out_pdf: str,
         # Keep cover pages unconditionally (image-only, no extractable text).
         if page_num <= keep_covers:
             continue
+        # Keep any image-bearing page unconditionally (2026-07-27): a mid-flow
+        # figure page is content whatever its extractable-text count says.
+        try:
+            if doc[i].get_images(full=True):
+                continue
+        except Exception:
+            pass
         text = doc[i].get_text() or ""
         compact = non_ws_count(text)
         # Truly-empty pages always go. Below-min-chars pages go ONLY if they are
@@ -139,6 +149,51 @@ def strip_blank_pages(in_pdf: str, out_pdf: str,
     }
 
 
+def _selftest() -> int:
+    """Synthesize a 6-page PDF and assert the strip decisions:
+    p1/p2 text covers (kept by keep_covers), p3 long body text (kept),
+    p4 image-only figure page (kept by the image rule), p5 short mid-page
+    text (kept: not a ghost), p6 empty (stripped)."""
+    import struct
+    import tempfile
+    import zlib
+
+    def tiny_png_bytes(w=8, h=6, rgb=(40, 40, 160)):
+        def chunk(tag, data):
+            return (struct.pack(">I", len(data)) + tag + data
+                    + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF))
+        raw = b"".join(b"\x00" + bytes(rgb) * w for _ in range(h))
+        return (b"\x89PNG\r\n\x1a\n"
+                + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+                + chunk(b"IDAT", zlib.compress(raw))
+                + chunk(b"IEND", b""))
+
+    tmp = tempfile.mkdtemp(prefix="bs_stripself_")
+    src = os.path.join(tmp, "src.pdf")
+    out = os.path.join(tmp, "out.pdf")
+    doc = fitz.open()
+    for text in ("FRONT COVER", "BACK COVER",
+                 "Body text long enough to clear the thirty character floor easily."):
+        p = doc.new_page(width=432, height=648)
+        p.insert_text((72, 300), text, fontsize=12)
+    p_img = doc.new_page(width=432, height=648)
+    p_img.insert_image(fitz.Rect(72, 200, 360, 420), stream=tiny_png_bytes())
+    p_short = doc.new_page(width=432, height=648)
+    p_short.insert_text((200, 320), "FINIS", fontsize=12)
+    doc.new_page(width=432, height=648)          # p6: truly empty -> stripped
+    doc.save(src)
+    doc.close()
+
+    result = strip_blank_pages(src, out, keep_covers=2)
+    ok = (result["pages_before"] == 6 and result["pages_after"] == 5
+          and len(result["removed"]) == 1 and result["removed"][0]["page"] == 6)
+    check = fitz.open(out)
+    ok = ok and any(check[i].get_images(full=True) for i in range(len(check)))
+    check.close()
+    print(json.dumps({"selftest": "pass" if ok else "FAIL", **result}))
+    return 0 if ok else 1
+
+
 def main() -> int:
     # UTF-8 stdout so ✦ / em-dashes in page-text previews don't crash on Windows.
     try:
@@ -147,9 +202,11 @@ def main() -> int:
         pass
 
     args = sys.argv[1:]
+    if args and args[0] == "--selftest":
+        return _selftest()
     if len(args) < 2:
         print("Usage: python strip_blank_pages.py <in.pdf> <out.pdf> "
-              "[--min-chars 30] [--keep-covers 2]", file=sys.stderr)
+              "[--min-chars 30] [--keep-covers 2]  |  --selftest", file=sys.stderr)
         return 2
 
     in_pdf = args[0]

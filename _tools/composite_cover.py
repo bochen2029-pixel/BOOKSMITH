@@ -223,6 +223,9 @@ class CoverConfig:
 
         self.title_tracking = float(cover.get("title_tracking_em", 0.05))
         self.author_tracking = float(cover.get("author_tracking_em", 0.18))
+        # Optional centered emblem on every front (print + kindle); see the
+        # render_front_text block. {path, width_in, center_y_frac, ink, glow}.
+        self.center_icon = cover.get("center_icon") or {}
         # Optional title vertical placement (fraction of panel height below the trim top).
         # None = the house default (0.030). Set via the --title-y-frac CLI flag, e.g. from
         # cover_layout.py's chosen band. Leaves default renders byte-identical.
@@ -237,6 +240,9 @@ class CoverConfig:
         # ---- marketing copy for the back panel ----
         meta = cfg.get("kdp_metadata") or {}
         self.description_html = meta.get("description", "")
+        # Series line for back-panel cover copy: this kit's convention stores the
+        # series-page text in top-level `dedication` (both prior library books).
+        self.series_line = (cfg.get("dedication") or "").strip()
 
         # Sacred closing refrain / tagline pull-quote, if the voice config names one.
         voice = cfg.get("voice") or {}
@@ -494,38 +500,62 @@ def render_back_text(canvas: Image.Image, cfg: CoverConfig,
     draw.text((text_left + (text_width - ow) // 2, y), orn, font=orn_font, fill=cfg.col_gold)
     y += int(orn_size * 2.4)
 
+    # --- Series line (cover copy), small, centered, under the ornament ---
+    if getattr(cfg, "series_line", ""):
+        ser_size = int(panel_h * 0.0165)
+        ser_font = load_font(ser_size, weight=400)
+        ser_tracking = 0.05
+        sw2, sh2 = measure_tracked(cfg.series_line, ser_font, ser_tracking)
+        while sw2 > text_width and ser_size > int(panel_h * 0.011):
+            ser_size -= 1
+            ser_font = load_font(ser_size, weight=400)
+            sw2, sh2 = measure_tracked(cfg.series_line, ser_font, ser_tracking)
+        draw_tracked(draw, (text_left + (text_width - sw2) // 2, y),
+                     cfg.series_line, ser_font, ser_tracking, cfg.col_cream)
+        y += int(sh2 * 2.0)
+
     # --- Blurb body (from the KDP description), greedy-wrapped, adaptive width ---
     paragraphs = _strip_html(cfg.description_html)
-    blurb_size = int(panel_h * 0.0195)
-    blurb_font = load_font(blurb_size, weight=400)
-    line_h = int(blurb_size * 1.48)
+    # Fit-to-box: choose the largest blurb size whose full flow (paragraphs +
+    # gaps + refrain reserve) stays above text_bottom. Without this, anything
+    # added above the blurb (e.g. the series line) silently pushes the tail
+    # into the bleed, where the trimmer eats it.
+    refrain_reserve = int(panel_h * 0.023 * 1.5) + int(panel_h * 0.0195 * 1.48)
 
-    def render_paragraph(para_text: str, y_start: int) -> int:
-        words = para_text.split()
+    def _flow(y_start: int, size_px: int, do_draw: bool) -> int:
+        f = load_font(size_px, weight=400)
+        lh = int(size_px * 1.48)
         yy = y_start
-        i = 0
-        while i < len(words):
-            max_w = text_width if (yy + line_h) <= barcode_top_y else narrow_text_width
-            current = []
-            j = i
-            while j < len(words):
-                candidate = (" ".join(current) + " " + words[j]) if current else words[j]
-                if blurb_font.getlength(candidate) <= max_w:
-                    current.append(words[j])
+        for para in paragraphs:
+            words = para.split()
+            i = 0
+            while i < len(words):
+                max_w = text_width if (yy + lh) <= barcode_top_y else narrow_text_width
+                current = []
+                j = i
+                while j < len(words):
+                    candidate = (" ".join(current) + " " + words[j]) if current else words[j]
+                    if f.getlength(candidate) <= max_w:
+                        current.append(words[j])
+                        j += 1
+                    else:
+                        break
+                if not current:
+                    current = [words[j]]
                     j += 1
-                else:
-                    break
-            if not current:
-                current = [words[j]]
-                j += 1
-            draw.text((text_left, yy), " ".join(current), font=blurb_font, fill=cfg.col_cream)
-            yy += line_h
-            i = j
+                if do_draw:
+                    draw.text((text_left, yy), " ".join(current), font=f, fill=cfg.col_cream)
+                yy += lh
+                i = j
+            yy += int(lh * 0.55)
         return yy
 
-    for para in paragraphs:
-        y = render_paragraph(para, y)
-        y += int(line_h * 0.55)
+    blurb_size = int(panel_h * 0.0195)
+    floor_px = int(panel_h * 0.0145)
+    while blurb_size > floor_px and _flow(y, blurb_size, False) > (text_bottom - refrain_reserve):
+        blurb_size -= 1
+    line_h = int(blurb_size * 1.48)
+    y = _flow(y, blurb_size, True)
 
     # --- Closing refrain ---
     refrain = _refrain(cfg)
@@ -568,11 +598,14 @@ def render_front_text(canvas: Image.Image, cfg: CoverConfig,
     draw = ImageDraw.Draw(canvas)
 
     # ---- Title (may wrap to two lines on a space) ----
+    # Sized and weighted for thumbnail/from-afar legibility (2026-07-28 cover
+    # revision): bold TTF, cream fill with a heavy dark halo — the highest-
+    # contrast combination on mid-tone art — at a substantially larger size.
     title = cfg.title.upper()
-    title_font_px = int(panel_h * 0.058)
-    title_font = load_font(title_font_px, weight=600)
+    title_font_px = int(panel_h * 0.085)
+    title_font = load_font(title_font_px, use_bold_ttf=True)
     title_tracking = cfg.title_tracking
-    title_stroke = max(2, int(title_font_px * 0.020))
+    title_stroke = max(3, int(title_font_px * 0.045))
 
     # Split into at most two balanced lines if it's wide.
     words = title.split()
@@ -612,43 +645,120 @@ def render_front_text(canvas: Image.Image, cfg: CoverConfig,
                               trim_bottom - int(panel_h * 0.30)))
     for ln in ([line1, line2] if line2 else [line1]):
         w, h = measure_tracked(ln, title_font, title_tracking)
-        # Shrink an individual over-wide line to fit.
+        # Shrink an individual over-wide line to fit (floor raised with the
+        # larger base so a wrapped title stays poster-sized).
         fsz = title_font_px
-        while w > max_title_w and fsz > int(panel_h * 0.030):
+        while w > max_title_w and fsz > int(panel_h * 0.048):
             fsz -= 4
-            title_font = load_font(fsz, weight=600)
-            title_stroke = max(2, int(fsz * 0.020))
+            title_font = load_font(fsz, use_bold_ttf=True)
+            title_stroke = max(3, int(fsz * 0.045))
             w, h = measure_tracked(ln, title_font, title_tracking)
         draw_tracked(draw, (center_x - w // 2, y), ln, title_font, title_tracking,
                      cfg.col_dark, stroke_width=title_stroke, stroke_fill=cfg.col_cream)
-        y += h - int(fsz * 0.18)
+        y += h - int(fsz * 0.14)
+    title_block_bottom = y
 
-    # ---- Author near the bottom ----
+    # ---- Center mark (optional; cover.center_icon) ----
+    # An alpha-masked emblem centered between the title block and the subtitle
+    # block, kept native-color by default with a soft cream under-glow so it
+    # lifts off textured art. Trademark note: shipping another party's mark on
+    # a cover is an IP-counsel item on the book's upload checklist.
+    ci = getattr(cfg, "center_icon", None) or {}
+    if ci.get("path"):
+        from PIL import ImageFilter
+        icon_path = Path(ci["path"]).expanduser()
+        if not icon_path.is_absolute():
+            icon_path = Path(getattr(cfg, "workspace", ".")) / icon_path
+        if icon_path.exists():
+            icon = Image.open(icon_path).convert("RGBA")
+            tgt_w = int(float(ci.get("width_in", 2.4)) * DPI)
+            tgt_h = int(tgt_w * icon.height / icon.width)
+            icon = icon.resize((tgt_w, tgt_h), Image.LANCZOS)
+            ink_hex = (ci.get("ink") or "").strip()
+            if ink_hex:
+                ink = tuple(int(ink_hex[i:i + 2], 16) for i in (0, 2, 4))
+                solid = Image.new("RGBA", icon.size, ink + (0,))
+                solid.putalpha(icon.getchannel("A"))
+                icon = solid
+            cy = trim_top + int(panel_h * float(ci.get("center_y_frac", 0.47)))
+            ix = center_x - tgt_w // 2
+            iy = max(title_block_bottom + int(panel_h * 0.02), cy - tgt_h // 2)
+            if ci.get("glow", True):
+                glow_a = icon.getchannel("A").filter(
+                    ImageFilter.GaussianBlur(max(6, tgt_w // 40)))
+                glow = Image.new("RGBA", icon.size, cfg.col_cream + (0,))
+                glow.putalpha(glow_a.point(lambda a: int(a * 0.65)))
+                canvas.paste(glow, (ix, iy), glow)
+            canvas.paste(icon, (ix, iy), icon)
+        else:
+            print(f"  Center icon: MISSING ({icon_path}) - skipped")
+
+    # ---- Bottom block: subtitle + author, measured first, then a soft dark
+    # scrim behind the whole zone (guaranteed contrast on busy art), then text.
     author = cfg.author.upper()
-    author_font_px = int(panel_h * 0.026)
+    author_font_px = int(panel_h * 0.035)
     author_font = load_font(author_font_px, use_bold_ttf=True)
-    author_stroke = max(2, int(author_font_px * 0.045))
+    author_stroke = max(2, int(author_font_px * 0.055))
     aw, ah = measure_tracked(author, author_font, cfg.author_tracking)
     ay = trim_bottom - int(panel_h * 0.030) - ah
-    draw_tracked(draw, (center_x - aw // 2, ay), author, author_font, cfg.author_tracking,
-                 cfg.col_cream, stroke_width=author_stroke, stroke_fill=cfg.col_dark)
 
-    # ---- Subtitle above the author ----
+    sub_lines, sub_font, sub_tracking, sub_stroke, sh = [], None, 0.025, 0, 0
     if cfg.subtitle:
-        sub_font_px = int(panel_h * 0.028)
+        sub_font_px = int(panel_h * 0.037)
         sub_font = load_font(sub_font_px, use_bold_ttf=True)
-        sub_tracking = 0.025
-        sub_stroke = max(2, int(sub_font_px * 0.045))
+        sub_stroke = max(2, int(sub_font_px * 0.070))
         sw, sh = measure_tracked(cfg.subtitle, sub_font, sub_tracking)
         # Shrink an over-wide subtitle to fit the safe width (mirrors the title).
-        while sw > max_title_w and sub_font_px > int(panel_h * 0.016):
+        while sw > max_title_w and sub_font_px > int(panel_h * 0.020):
             sub_font_px -= 2
             sub_font = load_font(sub_font_px, use_bold_ttf=True)
-            sub_stroke = max(2, int(sub_font_px * 0.045))
+            sub_stroke = max(2, int(sub_font_px * 0.070))
             sw, sh = measure_tracked(cfg.subtitle, sub_font, sub_tracking)
-        sy = ay - int(panel_h * 0.028) - sh
-        draw_tracked(draw, (center_x - sw // 2, sy), cfg.subtitle, sub_font, sub_tracking,
-                     cfg.col_cream, stroke_width=sub_stroke, stroke_fill=cfg.col_dark)
+        # A subtitle still over-wide at the floor wraps to balanced lines instead
+        # of clipping at the trim (the clipped-subtitle failure, generalized here
+        # from the bespoke compositors' shrink-to-fit lesson).
+        sub_lines = [cfg.subtitle]
+        if sw > max_title_w:
+            words = cfg.subtitle.split()
+            def _balanced_split(ws, parts):
+                if parts == 1:
+                    return [" ".join(ws)]
+                per = max(1, round(len(ws) / parts))
+                out, rest = [], ws[:]
+                for k in range(parts - 1):
+                    out.append(" ".join(rest[:per])); rest = rest[per:]
+                out.append(" ".join(rest))
+                return [s for s in out if s]
+            for parts in (2, 3):
+                sub_lines = _balanced_split(words, parts)
+                sub_font_px = int(panel_h * 0.029)
+                sub_font = load_font(sub_font_px, use_bold_ttf=True)
+                widths = [measure_tracked(l, sub_font, sub_tracking)[0] for l in sub_lines]
+                while max(widths) > max_title_w and sub_font_px > int(panel_h * 0.018):
+                    sub_font_px -= 2
+                    sub_font = load_font(sub_font_px, use_bold_ttf=True)
+                    widths = [measure_tracked(l, sub_font, sub_tracking)[0] for l in sub_lines]
+                if max(widths) <= max_title_w:
+                    break
+            sub_stroke = max(2, int(sub_font_px * 0.070))
+            sh = measure_tracked(sub_lines[0], sub_font, sub_tracking)[1]
+
+    line_gap = int(sh * 0.42) if sub_lines else 0
+    block_h = (len(sub_lines) * sh + (len(sub_lines) - 1) * line_gap) if sub_lines else 0
+    sy = ay - int(panel_h * 0.028) - block_h if sub_lines else ay
+
+    # (Scrim removed 2026-07-28 by operator direction: at cover-thumbnail sizes
+    # the light band read as haze and hurt legibility more than it helped; the
+    # dark-type-with-cream-halo treatment carries the contrast on its own.)
+    draw_tracked(draw, (center_x - aw // 2, ay), author, author_font, cfg.author_tracking,
+                 cfg.col_dark, stroke_width=author_stroke, stroke_fill=cfg.col_cream)
+    if sub_lines:
+        yy = sy
+        for ln in sub_lines:
+            lw, lh = measure_tracked(ln, sub_font, sub_tracking)
+            draw_tracked(draw, (center_x - lw // 2, yy), ln, sub_font, sub_tracking,
+                         cfg.col_dark, stroke_width=sub_stroke, stroke_fill=cfg.col_cream)
+            yy += lh + line_gap
 
 
 # ============================================================
@@ -1336,6 +1446,7 @@ def main(argv=None) -> int:
         cfg.title_y_frac = float(args.title_y_frac)
 
     workspace = Path(args.workspace).expanduser().resolve() if args.workspace else cfg_path.parent
+    cfg.workspace = workspace
     art_path = resolve_art_path(cfg, workspace, args.art)
     if not art_path.exists():
         print(json.dumps({

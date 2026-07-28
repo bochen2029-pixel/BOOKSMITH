@@ -5,7 +5,8 @@ BOOKSMITH toolchain component. Assembles the email/Drive reader PDF:
   page 1  front cover (exact 6x9-pt MediaBox)
   page 2  back cover  (cropped from the print wrap's bleed back to 6x9 trim)
   pages 3+  the print interior with every print-only blank verso + header-ghost
-            page stripped, so it reads continuously.
+            page stripped, so it reads continuously. Image-bearing pages
+            (mid-flow figures) are never stripped (strip_blank_pages 2026-07-27).
 
 CONTRACT (KIT_ARCHITECTURE (c) build_digital_pdf.py):
   - Word-COM interior PDF (reuse docx_to_pdf.py) + crop covers

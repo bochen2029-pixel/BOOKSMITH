@@ -387,9 +387,10 @@ function chapterArtParagraph(art, unitId, tag) {
 // the workspace-relative PNG/JPEG at that point in the flow (replica/photo
 // books). Width = natural size at 150dpi, capped 5.0in; centered. A missing
 // file or unreadable header is warned and SKIPPED — literal markdown must
-// never reach the rendered artifact. generate_book.js skips these lines
-// (print interiors use the replica route or chapter_art); build_epub.py
-// embeds them as <figure class="midflow">.
+// never reach the rendered artifact. generate_book.js embeds these too since
+// 2026-07-27 (print prefers a grayscale "<name>_print.<ext>" sibling; this
+// generator deliberately reads the color ORIGINAL); build_epub.py embeds them
+// as <figure class="midflow">.
 // ============================================================
 const MD_IMAGE_RE = /^!\[[^\]]*\]\(([^)\s]+)\)$/;
 

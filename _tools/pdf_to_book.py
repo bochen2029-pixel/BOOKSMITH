@@ -101,7 +101,10 @@ def is_toc_entry(t: str) -> bool:
 def clean(t: str) -> str:
     for k, v in LIGATURES.items():
         t = t.replace(k, v)
-    return t.replace("­", "").replace(" ", " ")   # soft hyphen, nbsp
+    t = t.replace(" ", " ").rstrip()          # nbsp -> space; trim trailing ws
+    if t.endswith("­"):                        # soft hyphen at EOL -> real hyphen (join signal)
+        t = t[:-1] + "-"
+    return t.replace("­", "")                  # drop any remaining (mid-line) soft hyphens
 
 
 # ---------------------------------------------------------------- extract
@@ -184,6 +187,28 @@ def dehyphenate(lines):
         else:
             out = t
     return re.sub(r"[ \t]+", " ", out).strip()
+
+
+def reflow_paras(paras):
+    """Repair fitz block/page-break splits ACROSS paragraphs: join a paragraph onto its
+    predecessor when the predecessor did NOT end on terminal punctuation — hyphen-join if it
+    ended on a split word (a soft hyphen turned to '-' by clean()), else space-join — regardless
+    of the next paragraph's first-letter case (a page break often resumes on a capitalized proper
+    noun: '...such as Charlie' + 'Munger')."""
+    out = []
+    for p in paras:
+        p = (p or "").strip()
+        if not p:
+            continue
+        if not out:
+            out.append(p)
+        elif out[-1].endswith("-") and len(out[-1]) > 1 and out[-1][-2].isalpha() and p[:1].islower():
+            out[-1] = out[-1][:-1] + p
+        elif not re.search(r'[.!?]["\'”’)\]]*$', out[-1]):
+            out[-1] = out[-1] + " " + p
+        else:
+            out.append(p)
+    return out
 
 
 # ---------------------------------------------------------------- classify
@@ -289,7 +314,7 @@ def segment(seq):
                     and not is_front_drop(b["text"]) and len(b["text"].split()) >= 4):
                 front.append(b["text"])       # dedication / epigraph before ch.1
             continue
-        if b["kind"] == "heading" and not b["toc"]:
+        if b["kind"] == "heading" and not b["toc"] and b["page"] not in drop_pages:
             cur = {"title": b["text"].strip(), "paras": []}
             units.append(cur)
         elif cur is not None and not b["toc"]:
@@ -405,6 +430,8 @@ def run(pdf: Path, slug, title, author, trim, out, is_fiction):
     toc_titles = find_toc_titles(seq)
     toc_marked = apply_toc(seq, pdftoc, toc_titles)   # book's own TOC = authoritative cross-check
     front, units = segment(seq)
+    for u in units:                               # repair cross-block/page-break paragraph splits
+        u["paras"] = reflow_paras(u["paras"])
     m = detect_meta(meta, pages, seq)
     if title:
         m["title"] = title

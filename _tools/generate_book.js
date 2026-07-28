@@ -551,6 +551,76 @@ function chapterArtParagraph(art, unitId, tag) {
 }
 
 // ============================================================
+// Mid-flow figures (2026-07-27, the figure-program feature): a standalone
+// markdown image line "![alt](relpath)" EMBEDS the workspace-relative PNG/JPEG
+// at that point in the print flow (generate_kindle.js and build_epub.py already
+// embed these; print used to skip them). Sizing is natural-at-300dpi, capped to
+// the text-block width and MIDFLOW_MAX_H_IN tall; keepNext binds the figure to
+// the caption paragraph that follows so a page break never separates them. A
+// grayscale-optimized "<name>_print.<ext>" sibling is preferred when present
+// (make_print_figures.py emits them; the color originals keep serving
+// kindle/epub/digital). A missing or unreadable file warns and skips — literal
+// markdown never renders as body text (scan_manuscript.py FAILs a dangling
+// reference before any build).
+// ============================================================
+const MD_IMAGE_RE = /^!\[[^\]]*\]\(([^)\s]+)\)$/;
+const MIDFLOW_DPI = 300;
+const MIDFLOW_MAX_H_IN = 4.3;
+
+function jpgDimensions(buf) {
+  // SOF marker scan (same reader generate_kindle.js uses).
+  if (!buf || buf.length < 4 || buf[0] !== 0xff || buf[1] !== 0xd8) return null;
+  let i = 2;
+  while (i + 9 < buf.length) {
+    if (buf[i] !== 0xff) { i++; continue; }
+    const marker = buf[i + 1];
+    if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) { i += 2; continue; }
+    const len = buf.readUInt16BE(i + 2);
+    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+      return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
+    }
+    i += 2 + len;
+  }
+  return null;
+}
+
+function midflowPrintVariant(file) {
+  const ext = path.extname(file);
+  const sibling = file.slice(0, -ext.length) + "_print" + ext;
+  return fs.existsSync(sibling) ? sibling : file;
+}
+
+function midflowImageParagraph(midflow, relPath, tag) {
+  const resolved = path.resolve(midflow.wsRoot, relPath);
+  if (!fs.existsSync(resolved)) {
+    console.warn(`[${tag}] mid-flow image missing, skipped: ${relPath}`);
+    return null;
+  }
+  const file = midflowPrintVariant(resolved);
+  const data = fs.readFileSync(file);
+  const ext = path.extname(file).toLowerCase();
+  const isJpg = ext === ".jpg" || ext === ".jpeg";
+  const dims = isJpg ? jpgDimensions(data) : pngDimensions(data);
+  if (!dims || !dims.w || !dims.h) {
+    console.warn(`[${tag}] mid-flow image unreadable (${ext}), skipped: ${relPath}`);
+    return null;
+  }
+  let wIn = Math.min(dims.w / MIDFLOW_DPI, midflow.widthIn);
+  let hIn = wIn * (dims.h / dims.w);
+  if (hIn > MIDFLOW_MAX_H_IN) { wIn *= MIDFLOW_MAX_H_IN / hIn; hIn = MIDFLOW_MAX_H_IN; }
+  const wPx = Math.round(wIn * 96);
+  const hPx = Math.round(wPx * (dims.h / dims.w));
+  midflow.count++;
+  console.log(`[${tag}] mid-flow figure embedded: ${path.basename(file)} (${dims.w}x${dims.h} -> ${wIn.toFixed(2)}in wide)`);
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    keepNext: true,
+    spacing: { before: 240, after: 120 },
+    children: [new ImageRun({ type: isJpg ? "jpg" : "png", data, transformation: { width: wPx, height: hPx } })],
+  });
+}
+
+// ============================================================
 // Block-construct detection helpers (shared by the parse loop). Pure + inert on
 // prose: a line matches ONLY the constructs the addendum uses. None of these
 // fire on the 33 existing units (verified by the regression fixture, which
@@ -631,13 +701,15 @@ function parseListItem(rawLine) {
 // unitLevel is "#" (chapter) or "##" (part) — the heading char sequence that
 // opens a unit. When sectionStartUnit is true, the unit's own heading is the
 // first item of its section, so its leading PageBreak is suppressed (§4.3).
-// [IMAGE ...] blocks are consumed and skipped (text-only interior).
+// [IMAGE ...] blocks are consumed and skipped.
 // chapterArtPara, when non-null, is injected once, directly after the unit's
 // own heading (chapter-opener illustration).
+// midflow, when non-null, is {wsRoot, widthIn, count}: mid-flow "![alt](path)"
+// lines embed through it (see the mid-flow figures block above).
 // Three block constructs added (fenced code / pipe tables / lists); all inert on
 // prose that uses none of them.
 // ============================================================
-function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit, chapterArtPara) {
+function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit, chapterArtPara, midflow) {
   const lines = text.split("\n");
   const paragraphs = [];
   let inDisplayMath = false;
@@ -689,12 +761,15 @@ function parseUnitMarkdown(text, unitLevel, F, sectionStartUnit, chapterArtPara)
       console.warn(`[generate_book] unclosed [IMAGE block at line ${i + 1} treated as prose`);
     }
 
-    // Mid-flow markdown image line "![alt](path)" — SKIPPED in print interiors
-    // (replica-route or chapter_art carries print images; generate_kindle.js and
-    // build_epub.py embed these). Skip-with-warning so the literal markdown never
-    // renders as body text.
-    if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(line.trim())) {
-      console.warn(`[generate_book] mid-flow image skipped in print interior: ${line.trim().slice(0, 80)}`);
+    // Mid-flow markdown image line "![alt](path)" — EMBED (2026-07-27; see the
+    // mid-flow figures block above). Without workspace context (a caller that
+    // predates the midflow arg) the line is skipped with a warning so the
+    // literal markdown never renders as body text.
+    const mdImg = line.trim().match(MD_IMAGE_RE);
+    if (mdImg) {
+      const p = midflow ? midflowImageParagraph(midflow, mdImg[1], "generate_book") : null;
+      if (!midflow) console.warn(`[generate_book] mid-flow image skipped (no workspace context): ${line.trim().slice(0, 80)}`);
+      if (p) paragraphs.push(p);
       continue;
     }
 
@@ -1106,7 +1181,11 @@ async function main() {
   if (chapterArt && artCount > 0) {
     console.log(`[generate_book] chapter art: ${artCount} image(s) staged from ${chapterArt.dir}`);
   }
-  const unitContents = unitBodies.map((md, i) => parseUnitMarkdown(md, unitLevel, F, /*sectionStartUnit=*/true, artParas[i]));
+  // Mid-flow figure context: text-block width derived from the resolved
+  // margins (universal across profiles — Blurb's page growth is margin-
+  // compensated, so PAGE_W - gutter - outside is the same block everywhere).
+  const midflowCtx = { wsRoot, widthIn: (PAGE_W - margins.gutter - margins.outside) / 1440, count: 0 };
+  const unitContents = unitBodies.map((md, i) => parseUnitMarkdown(md, unitLevel, F, /*sectionStartUnit=*/true, artParas[i], midflowCtx));
 
   // ---- Front matter sections (one per front_matter[] entry) ----
   const frontSections = buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters);
@@ -1231,6 +1310,7 @@ async function main() {
   console.log(`Contents/TOC    : ${includeToc ? "included — title-case auto-TOC w/ dot leader (§16.3)" : "OMITTED (interior.include_toc=false)"}`);
   console.log(`Page numbers    : ${pnAlign === "outer" ? "OUTER (recto-right / verso-left)" : "centered (house style §16.2)"}`);
   console.log(`Sections total  : ${sections.length}`);
+  console.log(`Mid-flow figures: ${midflowCtx.count} embedded` + (midflowCtx.count ? " (grayscale _print siblings preferred; natural-at-300dpi, block-width/4.3in caps)" : ""));
   console.log(`Page multiple   : must be x${pageMultiple}` + (pageMultiple === 4 ? " (pad in Python via fitz AFTER PDF conversion)" : " (trailing EVEN_PAGE handles it)"));
   console.log(`Mirror inject   : ${args.inject ? "done (mirrorMargins + evenAndOddHeaders + front-matter vAlign)" : "SKIPPED (--no-inject)"}`);
 }
