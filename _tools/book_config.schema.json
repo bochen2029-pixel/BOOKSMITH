@@ -190,6 +190,15 @@
           "description": "AI cover-art generation config (cover_gen.py -> ComfyUI via hermes skill).",
           "additionalProperties": false,
           "properties": {
+            "method": {
+              "type": "string",
+              "enum": ["sdxl", "flux", "hypergen", "catalog", "supplied", "bespoke"],
+              "description": "How the cover art is INTENDED to be produced. Read by verify_build.py's cover_art_provenance gate (2026-07-31). Omit (or set sdxl/flux) when the art should be AI-generated: the gate then FAILS CLOSED unless a cover_art/*.provenance.json proves generation actually happened. Set 'bespoke' (a per-book compositor), 'supplied' (author-provided art), 'catalog', or 'hypergen' to declare deliberately non-generated art and satisfy the gate by declaration. History: cover_gen.py could only launch ComfyUI via comfy-cli, which was not on PATH, so four shipped books silently fell back to hypergen placeholders where the config specified SDXL - and nothing failed, because hypergen's art is good enough to pass the perceptual rubric meant to catch placeholders. Intent is now bound to recorded provenance, not to how the output looks."
+            },
+            "_method_note": {
+              "type": "string",
+              "description": "Optional free-text rationale for the chosen `method` (why this book's cover is bespoke/supplied/etc). Documentation only; never read by the toolchain."
+            },
             "checkpoint": {
               "type": "string",
               "default": "sd_xl_base_1.0.safetensors",
