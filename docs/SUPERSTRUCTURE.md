@@ -230,7 +230,7 @@ flowchart LR
 
 | # | The thing that must not be forgotten | Phase | Tool that does it | Gate that FAILS if skipped | Symptom of the miss |
 |---|---|---|---|---|---|
-| 1 | **Generate the cover ART (text‑to‑image), not a placeholder** | 7 | `cover_gen.py` (ComfyUI SDXL) → writes `cover_art/*.provenance.json` | `check_cover_art_provenance` (verify_build; FAILS CLOSED on missing/≠sdxl provenance) + `vision_verify` art rubric | silent hypergen fallback → provenance MISMATCH; a *tasteful* placeholder still PASSES the perceptual rubric (LEDGER 20.3) |
+| 1 | **Generate the cover ART (text‑to‑image), not a placeholder** | 7 | `cover_gen.py` (ComfyUI SDXL) → writes `cover_art/*.provenance.json` | `check_cover_art_provenance` (verify_build; FAILS CLOSED on missing/≠sdxl provenance; **sha‑bound 2026‑08‑02**: the sidecar must hash‑match the art on disk and the composited `cover_meta`, held by the `verify_build.py --selftest` must‑fail battery in selfcheck) + `vision_verify` art rubric | silent hypergen fallback → provenance MISMATCH; a *tasteful* placeholder still PASSES the perceptual rubric (LEDGER 20.3); a stale/hand‑copied sidecar or post‑hoc art swap → sha‑bind FAIL |
 | 2 | **Chapters start on the RIGHT (recto) page for print** | 6 | per‑chapter `ODD_PAGE` + trailing `EVEN_PAGE` | `check_part_pages.py` / `recto_parity` | heading lands on verso → FAIL |
 | 3 | Mirror margins present (gutter on correct side) | 6 | `inject_mirror_margins.js` | `mirror_flags_in_settings` | KDP "insufficient gutter" |
 | 4 | Empty Header/Footer on every blank/front‑matter section | 6 | `emptyHeadersFooters()` | `empty_headers_on_headerfree_sections` | KDP "text outside margins" |

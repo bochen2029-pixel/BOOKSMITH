@@ -514,6 +514,22 @@ def check_kdp_precheck_selftest():
 
 
 # ---- 15. Image generation is a held, discoverable, autonomous capability -----
+def check_verify_build_selftest():
+    """verify_build.py --selftest must hold: the provenance gate's must-fail
+    fixture battery (tampered sidecars REJECTED, sha-bound good inputs PASS).
+    A gate never shown to fail is indistinguishable from `return PASS`
+    (INVARIANT T, REMEDIATION_PLAN_v2 §2)."""
+    try:
+        r = subprocess.run([sys.executable, str(TOOLS / "verify_build.py"), "--selftest"],
+                           capture_output=True, text=True, timeout=180)
+    except Exception as e:
+        add("verify_build_selftest", FAIL, f"could not run --selftest: {e}")
+        return
+    tail = [l for l in (r.stdout or "").splitlines() if l.strip()]
+    add("verify_build_selftest", PASS if r.returncode == 0 else FAIL,
+        (tail[-1].strip() if tail else f"rc={r.returncode}")[:120])
+
+
 def check_image_gen_capability():
     """Local ComfyUI image generation must stay AUTONOMOUS and DISCOVERABLE.
 
@@ -596,7 +612,8 @@ def main():
                check_kit_env_parity, check_requirements, check_dead_script_refs, check_fonts,
                check_config_key_drift, check_doc_coverage, check_js_dash_literals,
                check_spine_constant_parity, check_produce_book_selftest,
-               check_kdp_precheck_selftest, check_image_gen_capability):
+               check_kdp_precheck_selftest, check_verify_build_selftest,
+               check_image_gen_capability):
         try:
             fn()
         except Exception as e:

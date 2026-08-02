@@ -105,13 +105,27 @@ python _tools/verify_build.py --config book_workspace/<slug>/book_config.json --
 #                                 or "satisfied by declaration")
 ```
 
-## Known gaps in the gate (not yet fixed)
+## Known gaps in the gate
 
-Recorded so nobody mistakes a green for a proof:
-- The gate reads only the sidecar's `method` field. It never opens the art file, so a
-  hand-written sidecar passes and a post-hoc art swap goes unnoticed. The producer
-  already writes `art_sha256`; the gate does not yet read it.
+Recorded so nobody mistakes a green for a proof. **Closed 2026-08-02 (QC session):**
+- ~~The gate reads only the sidecar's `method` field and never opens the art file.~~
+  **SHA-BIND landed:** a generative (`sdxl`/`flux`) sidecar is proof only if its
+  `art_sha256` equals the sha256 of its named `art_file` on disk; a sidecar without
+  those fields is unverifiable-not-proof; a `cover_meta.json` recording a different
+  art hash than every verified sidecar FAILs as a stale wrap (§11 cascade). Proven
+  by the standing must-fail battery `verify_build.py --selftest` (13 cases, run by
+  `selfcheck.py` on every invocation).
+- ~~`cover_gen.py --batch` writes no sidecar.~~ `do_batch` now writes one per
+  produced image (with each run's seed where the runner reports it).
+- ~~A FLUX run records `method: "sdxl"` (hardcoded literal).~~ The method is now
+  derived from the workflow actually used; the gate accepts `sdxl` and `flux` as
+  generated-proof.
+
+**Still open:**
 - `wants_generated` keys off `prompt_seed`, which nearly every config inherits — the
-  source of most of the false red above.
-- `cover_gen.py --batch` and the bespoke compositors write no sidecar at all.
-- A FLUX run records `method: "sdxl"` (hardcoded literal).
+  source of most of the original false red. After the 2026-08-02 method declarations
+  + verified backfills this only affects fixture/stub workspaces
+  (`_enginetest`, `proof_oneshot`); deliberately deferred (RECONCILE open item 2 —
+  if changed, ship the subject-set diff).
+- The bespoke compositors (`cover_compose_{ahss,yha,drdj}.py`, `cover_art_carlquist.py`)
+  write no sidecar; their books pass by config declaration instead (C-5's completion).

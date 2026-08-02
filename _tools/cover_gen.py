@@ -791,10 +791,13 @@ def do_single(args) -> int:
     resolved_seed = run_json.get("seed")
     if not isinstance(resolved_seed, int) or resolved_seed == -1:
         resolved_seed = _resolved_seed(paths["server"], run_json.get("prompt_id"), args.seed)
+    # Record the method that actually ran: a FLUX workflow must not be recorded
+    # as "sdxl" (a hardcoded literal here once made every FLUX record a lie).
+    gen_method = "flux" if "flux" in Path(workflow_path).name.lower() else "sdxl"
     provenance = None
     try:
         provenance = str(write_provenance(
-            Path(final_png), "sdxl", {
+            Path(final_png), gen_method, {
                 "generator": "ComfyUI",
                 "comfyui_version": _comfy_version(paths["server"]),
                 "comfyui_server": paths["server"],
@@ -909,10 +912,49 @@ def do_batch(args) -> int:
                           "runner": run_json}, indent=2))
         return 1
 
+    # ---- provenance sidecars (batch) ----
+    # Every produced image records how it was made, same as do_single. A
+    # variations run that writes no record is exactly the producer-with-no-proof
+    # gap check_cover_art_provenance exists to catch (LESSONS_LEDGER 20.3).
+    gen_method = "flux" if "flux" in Path(workflow_path).name.lower() else "sdxl"
+    seed_by_file = {}
+    for key in ("runs", "results", "batch"):
+        seq = run_json.get(key)
+        if isinstance(seq, list):
+            for entry in seq:
+                if not isinstance(entry, dict):
+                    continue
+                outs = entry.get("outputs")
+                if isinstance(outs, dict):
+                    outs = [outs]
+                for o in outs or []:
+                    if isinstance(o, dict) and o.get("file"):
+                        seed_by_file[str(Path(o["file"]).resolve())] = entry.get("seed")
+    sidecar_paths = []
+    for png in pngs:
+        try:
+            sidecar_paths.append(str(write_provenance(
+                Path(png), gen_method, {
+                    "generator": "ComfyUI",
+                    "comfyui_server": paths["server"],
+                    "checkpoint": checkpoint,
+                    "workflow": Path(workflow_path).name,
+                    "steps": args.steps,
+                    "seed": seed_by_file.get(str(Path(png).resolve())),
+                    "prompt": args.prompt,
+                    "negative_prompt": negative,
+                    "batch": True,
+                })))
+        except OSError as exc:
+            print(f"[cover_gen] WARNING: batch art generated but a provenance "
+                  f"sidecar could not be written for {png} ({exc}); verify_build "
+                  f"will fail closed until it exists", file=sys.stderr)
+
     print(json.dumps({
         "status": "success",
         "pngs": pngs,
         "count": len(pngs),
+        "provenance": sidecar_paths,
         "seeds": [r.get("seed") for r in (run_json.get("results")
                                           or run_json.get("runs") or [])
                   if isinstance(r, dict)],

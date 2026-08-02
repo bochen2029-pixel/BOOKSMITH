@@ -53,6 +53,7 @@ SOURCE
     invokes _tools/check_part_pages.py + _tools/lint_manuscript.py.
 """
 import argparse
+import hashlib
 import html
 import json
 import re
@@ -1028,18 +1029,76 @@ def check_cover_art_provenance(root: Path, cfg: dict):
                 "cover.art.method ('bespoke' | 'supplied' | 'catalog' | 'hypergen') in "
                 "book_config.json.")
 
+    # SHA-BIND (2026-08-02): a generative sidecar is proof only if it describes
+    # bytes actually on disk — sidecar.art_sha256 must equal sha256(art_file).
+    # Closes the gap where a stale/hand-copied "sdxl" sidecar beside swapped art
+    # passed on the method string alone (the gate never opened the file).
+    generative = {"sdxl", "flux"}
     methods = []
+    verified_gen_shas = set()
+    bind_problems = []
     for sc in sidecars:
         try:
-            methods.append(str((json.loads(sc.read_text(encoding="utf-8")) or {})
-                               .get("method", "")).strip().lower())
+            rec = json.loads(sc.read_text(encoding="utf-8")) or {}
         except Exception as exc:                                  # noqa: BLE001
             return (name, False, f"unreadable provenance sidecar {sc.name}: {exc}")
+        method = str(rec.get("method", "")).strip().lower()
+        methods.append(method)
+        if method not in generative:
+            continue
+        art_file = rec.get("art_file")
+        claimed = str(rec.get("art_sha256") or "").strip().lower()
+        if not art_file or not claimed:
+            bind_problems.append(
+                f"{sc.name}: claims '{method}' but carries no art_file/art_sha256 to "
+                f"bind against — unverifiable, not proof")
+            continue
+        art_path = sc.parent / art_file
+        if not art_path.exists():
+            bind_problems.append(
+                f"{sc.name}: art_file '{art_file}' does not exist on disk — stale "
+                f"sidecar, not proof")
+            continue
+        actual = hashlib.sha256(art_path.read_bytes()).hexdigest()
+        if actual != claimed:
+            bind_problems.append(
+                f"{sc.name}: sha256 mismatch — sidecar records {claimed[:12]}… but "
+                f"{art_file} on disk is {actual[:12]}… (art swapped or regenerated "
+                f"after the record was written; not proof)")
+            continue
+        verified_gen_shas.add(actual)
 
-    if "sdxl" in methods:
+    if verified_gen_shas:
+        # Composites must have been built FROM provenance-verified art. A
+        # cover_meta.json recording a different art hash means the shipped wrap
+        # was composited from other bytes — the §11 cascade owes a recomposite.
+        # cover_meta files predating the art_sha256 field are skipped, not failed.
+        stale = []
+        outputs = root / "outputs"
+        if outputs.is_dir():
+            for meta in sorted(outputs.rglob("cover_meta*.json")):
+                try:
+                    msha = str((json.loads(meta.read_text(encoding="utf-8")) or {})
+                               .get("art_sha256") or "").strip().lower()
+                except Exception:                                 # noqa: BLE001
+                    continue
+                if msha and msha not in verified_gen_shas:
+                    stale.append(str(meta.relative_to(root)))
+        if stale:
+            return (name, False,
+                    f"SHA-BIND: generated art is proven, but composited cover_meta "
+                    f"records a DIFFERENT art hash — the wrap was built from other "
+                    f"bytes and must be recomposited from the proven art: "
+                    f"{', '.join(stale)}")
         return (name, True,
-                f"generated cover art confirmed by provenance sidecar (methods: "
+                f"generated cover art confirmed by sha-bound provenance "
+                f"({len(verified_gen_shas)} verified sidecar(s); methods: "
                 f"{', '.join(m or '?' for m in methods)})")
+
+    if bind_problems:
+        return (name, False,
+                "FAIL-CLOSED: generative provenance sidecar(s) present but none "
+                "survive the sha-bind: " + " | ".join(bind_problems))
 
     return (name, False,
             f"PROVENANCE MISMATCH: config asks for generated (SDXL) cover art, but the "
@@ -1524,14 +1583,119 @@ def _run_continuity_check(root: Path):
     return {"all_pass": proc.returncode == 0, "detail": detail}
 
 
+def run_provenance_selftest() -> int:
+    """--selftest: the must-fail fixture battery for check_cover_art_provenance.
+
+    INVARIANT T (REMEDIATION_PLAN_v2 §2): a gate that has never been shown to
+    FAIL is indistinguishable from `return PASS`. Every case below builds a
+    throwaway workspace in a temp dir and asserts the gate's verdict — tampered
+    inputs must be REJECTED, good inputs must PASS (the positive controls that
+    stop the hardening from reddening clean books). Exit 0 = every assertion
+    held; 1 = any case went the wrong way. Run standing by selfcheck.py.
+    """
+    import shutil
+    import tempfile
+
+    art_bytes = b"\x89PNG\r\n\x1a\n selftest-fake-art-bytes"
+    good_sha = hashlib.sha256(art_bytes).hexdigest()
+    gen_cfg = {"cover": {"art": {"checkpoint": "sd_xl_base_1.0.safetensors",
+                                 "workflow": "sdxl_txt2img.json",
+                                 "prompt_seed": "x"}}}
+
+    def sidecar(method, *, bind=True, sha=None, art_file="x_src.png", extra=None):
+        rec = {"method": method}
+        if bind:
+            rec["art_file"] = art_file
+            rec["art_sha256"] = sha or good_sha
+        rec.update(extra or {})
+        return rec
+
+    # (name, cfg, {art?, art_dir?, sidecar?, meta?}, expected_pass)
+    cases = [
+        ("missing_art_dir_FAILS", gen_cfg,
+         {"art_dir": False}, False),
+        ("no_sidecar_FAILS", gen_cfg,
+         {"art": art_bytes}, False),
+        ("declared_bespoke_PASSES", {"cover": {"art": {"method": "bespoke",
+                                                       "prompt_seed": "x"}}},
+         {"art_dir": False}, True),
+        ("nothing_configured_PASSES", {"cover": {"art": {}}},
+         {"art_dir": False}, True),
+        ("sdxl_shabound_PASSES", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("sdxl")}, True),
+        ("flux_shabound_PASSES", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("flux")}, True),
+        ("sha_mismatch_FAILS", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("sdxl", sha="0" * 64)}, False),
+        ("unbound_generative_sidecar_FAILS", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("sdxl", bind=False)}, False),
+        ("sidecar_names_missing_file_FAILS", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("sdxl", art_file="gone.png")}, False),
+        ("hypergen_sidecar_undeclared_FAILS", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("hypergen")}, False),
+        ("stale_cover_meta_FAILS", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("sdxl"),
+          "meta": {"art_sha256": "f" * 64}}, False),
+        ("matching_cover_meta_PASSES", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("sdxl"),
+          "meta": {"art_sha256": good_sha}}, True),
+        ("premeta_without_sha_PASSES", gen_cfg,
+         {"art": art_bytes, "sidecar": sidecar("sdxl"), "meta": {}}, True),
+    ]
+
+    tmp = tempfile.mkdtemp(prefix="vb_selftest_")
+    failures = 0
+    try:
+        for i, (case, cfg, fx, expect_pass) in enumerate(cases):
+            root = Path(tmp) / f"case_{i:02d}"
+            ca = root / "cover_art"
+            if fx.get("art_dir", True):
+                ca.mkdir(parents=True)
+            else:
+                root.mkdir(parents=True)
+            if fx.get("art") is not None:
+                (ca / "x_src.png").write_bytes(fx["art"])
+            if fx.get("sidecar") is not None:
+                (ca / "x_src.provenance.json").write_text(
+                    json.dumps(fx["sidecar"]), encoding="utf-8")
+            if fx.get("meta") is not None:
+                md = root / "outputs" / "kindle"
+                md.mkdir(parents=True)
+                (md / "cover_meta.json").write_text(
+                    json.dumps(fx["meta"]), encoding="utf-8")
+            _, ok, detail = check_cover_art_provenance(root, cfg)
+            held = (bool(ok) == expect_pass)
+            failures += (not held)
+            print(f"  [{'OK ' if held else 'BAD'}] {case:38s} "
+                  f"gate={'PASS' if ok else 'FAIL'} expected="
+                  f"{'PASS' if expect_pass else 'FAIL'}"
+                  + ("" if held else f"  <- {detail[:120]}"))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    verdict = "PASS" if failures == 0 else "FAIL"
+    print(f"VERIFY_BUILD SELFTEST (provenance gate): {verdict} "
+          f"({len(cases) - failures}/{len(cases)} assertions held)")
+    return 0 if failures == 0 else 1
+
+
 def main() -> int:
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
 
+    if "--selftest" in sys.argv[1:]:
+        # Checked pre-parse: --config/--format are required=True and must not
+        # block the fixture battery, which needs neither.
+        return run_provenance_selftest()
+
     ap = argparse.ArgumentParser(
         description="Mechanical build verifier (spec checks -> pass/fail JSON).")
+    ap.add_argument("--selftest", action="store_true",
+                    help="Run the must-fail fixture battery for the provenance "
+                         "gate (no config needed) and exit. INVARIANT T: proves "
+                         "the gate CAN fail; re-run by selfcheck.py.")
     ap.add_argument("--config", required=True, help="Path to book_config.json.")
     ap.add_argument("--format", required=True,
                     choices=FORMAT_CHOICES + ["all"],
@@ -1543,6 +1707,9 @@ def main() -> int:
                     help="FINAL/ship sweep: a missing cover is a HARD fail "
                          "(export v1.0 passes this); also validates _CONTINUITY.md.")
     args = ap.parse_args()
+
+    if args.selftest:
+        return run_provenance_selftest()
 
     config_path = Path(args.config)
     if not config_path.exists():
