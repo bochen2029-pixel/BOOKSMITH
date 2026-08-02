@@ -1,0 +1,22 @@
+{
+  "method": "sdxl",
+  "generator": "ComfyUI",
+  "checkpoint": "sd_xl_base_1.0.safetensors",
+  "seed": 42,
+  "steps": 30,
+  "cfg": 7.5,
+  "sampler": "dpmpp_2m",
+  "latent": "1024x1024",
+  "prompt": "a lone tall sailing ship at dusk on a calm dark sea, painterly and atmospheric, muted navy cream and gold palette, cinematic golden light on the horizon, oil painting, dramatic cloudy sky, generous empty sky in the upper third",
+  "negative_prompt": "text, watermark, letters, title, signature, frame, border",
+  "art_file": "testvoyage_src.png",
+  "art_sha256": "ccdd50ffd2dcea678bd9c09ce02594fdbe9bf5f7c99506cf49466c814d26728e",
+  "art_dims": "1024x1024",
+  "recorded_at": "2026-08-02T16:59:57.600051+00:00",
+  "recorded_by": "backfill (QC session 2026-08-02): verified from the PNG tEXt 'prompt' chunk",
+  "backfill": {
+    "verified_from": "PNG tEXt 'prompt' chunk (full ComfyUI generation graph embedded at render time)",
+    "verification": "graph parsed; CheckpointLoaderSimple + KSampler + EmptyLatentImage present; sha256 recorded from the proven bytes on disk",
+    "session": "QC 2026-08-02 (RECONCILE_ACTION_LOG open items 3/9)"
+  }
+}
