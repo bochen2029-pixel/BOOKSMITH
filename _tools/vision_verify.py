@@ -337,7 +337,21 @@ def _resolve_auto_backend(config_path: Path) -> str:
         return "claude"
     server = str(vision.get("llama_server", ""))
     if server and Path(server).exists():
-        return "keel"
+        # C-21 slice (2026-08-02): a binary on disk is not a live verifier.
+        # Probe the configured endpoint; ANY HTTP answer (even 503-loading)
+        # proves liveness, a connection failure downgrades to claude so GATE-6
+        # stays adjudicable instead of erroring against a stopped server.
+        host = str(vision.get("host") or "127.0.0.1")
+        port = int(vision.get("port") or 8080)
+        try:
+            requests.get(f"http://{host}:{port}/health", timeout=2)
+            return "keel"
+        except Exception:                                          # noqa: BLE001
+            print(f"[vision_verify] note: KEEL binary present but {host}:{port} "
+                  f"is not answering — auto backend downgraded keel->claude "
+                  f"(start it via kit_env.vision.start_cmd for $0 on-box verify)",
+                  file=sys.stderr)
+            return "claude"
     if server:
         # a configured local verifier silently vanishing must be visible
         print(f"[vision_verify] note: kit_env.vision.llama_server not found on "

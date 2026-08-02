@@ -164,8 +164,11 @@ def vision_rescore(art, ranked, title_rgb, title_text, top_k=3):
                   "'VERDICT: PASS' if the title is easy to read and well placed, else "
                   "'VERDICT: FAIL', then list issues.")
         try:
+            # --backend auto (2026-08-02, C-21): the old hardcoded "keel" made
+            # every candidate FAIL whenever the local server was down, silently
+            # collapsing the re-rank to the pure heuristic.
             r = subprocess.run([sys.executable, str(TOOLS / "vision_verify.py"),
-                                "--image", str(tmp), "--rubric", rubric, "--backend", "keel"],
+                                "--image", str(tmp), "--rubric", rubric, "--backend", "auto"],
                                capture_output=True, text=True, timeout=90)
             v = json.loads(r.stdout.strip().splitlines()[-1]) if r.stdout.strip() else {}
             verdict = str(v.get("verdict", "PENDING")).upper()
