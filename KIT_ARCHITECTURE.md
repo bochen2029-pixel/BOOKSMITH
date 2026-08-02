@@ -369,7 +369,8 @@ Every script lives in `_tools/`. Each has a single PURPOSE and an exact I/O cont
 
 1. Read `CLAUDE.md` (this orchestrator) fully.
 2. Read `KIT_ARCHITECTURE.md` (the invariant) fully.
-3. Detect mode: is `intake/` populated with a new gist+docs (→ INIT), or does a `book_workspace/<slug>/` already exist (→ RESUME)?
+3. Detect mode: is `intake/` populated with a new gist+docs (→ INIT); does a `book_workspace/<slug>/` exist WITH a `seed.md`/`book_config.json` (→ RESUME); or does a workspace exist WITHOUT them (→ **STAGED** — materials were dropped into the workspace itself and the seed has not been built)?
+   **STAGED is INIT with the workspace as the drop:** run the INTAKE + INGEST path scoped to the workspace's own files, reading them where they lie — the workspace is authoritative and is never reorganized to fit the kit. Sweep for strays that belong to the book but sit outside the workspace (kit-root `<SLUG>_*.md` files; pre-chunked outputs under `_tools/chunker/_*_chunks/`) and read those in place too. The kit-level `intake/` is NOT ingested for a staged book unless it contains a gist naming this slug. If the staged drop includes an explicit book spec (a one-pager/five-pager declaring the book's form), the integration question is answered by that spec and recorded; it is asked only when genuinely ambiguous.
 4. RESUME: read `seed.md`, `book_config.json`, scan `manuscript/`, latest `state/` snapshot, most-recent `handoffs/`, tail of `WRONG.md` + `CHANGELOG.md`, and `_warm_start.md`. Check for live in-progress work (a `.in_progress` marker / `current_unit` pointer) → resume mid-unit.
 5. Report status briefly, then act (autonomous) or standby per the invoked command.
 
