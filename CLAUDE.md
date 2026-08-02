@@ -1,5 +1,30 @@
 # CLAUDE.md — BOOKSMITH Orchestrator
 
+> ## 🖼 STANDING CAPABILITY — YOU CAN GENERATE IMAGES YOURSELF, RIGHT NOW
+>
+> **This kit runs a LOCAL ComfyUI (SDXL) and starts it ITSELF, from fully stopped, with no
+> human step, no API key, and no cost.** Any session may generate any image it needs — cover
+> art, chapter openers, figures, test plates — at any time, on its own authority:
+>
+> ```
+> python _tools/cover_gen.py --prompt "<subject, no lettering>" --out path/to/art.png
+> ```
+>
+> That one command **auto-launches ComfyUI if it is down** (~45–60s) and writes a provenance
+> sidecar. `comfy-cli` is **not** on PATH here and is **not needed** — the direct
+> ComfyUI-Desktop `main.py` launch is the live path. **Proven end-to-end 2026-08-02:** cold
+> start from dead → ComfyUI 0.3.76 in 48.6s → real 1024×1024 SDXL art → sidecar, zero
+> intervention.
+>
+> **NEVER conclude** that ComfyUI is unavailable/unreachable, that image generation needs the
+> operator, that it needs comfy-cli or a cloud service, or that a placeholder is an acceptable
+> substitute. Every one of those beliefs has been held by a past session and every one was
+> false — they are exactly what shipped placeholder covers on three books for months. If image
+> generation appears broken, **diagnose it or HARD-STOP and escalate — never degrade the
+> output.** Full contract, resolved paths, and troubleshooting:
+> **[`docs/IMAGE_GENERATION.md`](docs/IMAGE_GENERATION.md)** (read it before writing any
+> placeholder). Why it matters: [`docs/LESSONS_LEDGER.md`](docs/LESSONS_LEDGER.md) §20.3.
+
 > ## ⛔ THE FRAME — LOAD THIS BEFORE ANY BOOK WORK
 >
 > This kit is held by a **superstructure**, not by memory or discipline. Before you draft, produce, or ship anything, load the frame — it ships in this folder and travels with it:
@@ -9,7 +34,7 @@
 > **The law that makes it gap-proof:** nothing here is "remembered by discipline." Every requirement is bound to a **gate** — mechanical (`verify_build.py`) or perceptual (`vision_verify.py`) — that **fails loudly** if the step did not happen. Any node with neither a gate nor a pointer is *unheld*.
 >
 > **The high-stakes cannot-skips (the frame proves all 25):**
-> - ★ **Generate the cover ART** — text-to-image (`cover_gen.py` → ComfyUI SDXL). A placeholder fails the `vision_verify` gate ("subject must match the Book Bible").
+> - ★ **Generate the cover ART** — text-to-image (`cover_gen.py` → ComfyUI SDXL, **auto-launched locally**; see [`docs/IMAGE_GENERATION.md`](docs/IMAGE_GENERATION.md)). A placeholder is caught by the **provenance** gate (`check_cover_art_provenance`, enforced at `--final`) — **NOT** by `vision_verify`. Tasteful placeholder art sails through a perceptual rubric, which is exactly how it shipped on three books for months. Bind intent to a recorded fact, never to how the output looks (`docs/LESSONS_LEDGER.md` §20.3).
 > - ★ **Chapters start on the RIGHT (recto) page** for physical print — per-chapter `ODD_PAGE` + trailing `EVEN_PAGE`. A verso landing fails `check_part_pages.py`.
 > - ★ Mirror margins + empty headers injected · page count **÷2** (KDP/Blurb) / **÷4** (Mixam) · correct spine + **exact fitz MediaBox** per format · **PAGES re-derived** from the interior PDF (never hard-coded) · ebook word count **not below** print · **no title/author text baked** into the AI art.
 >

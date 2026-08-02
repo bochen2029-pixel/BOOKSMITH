@@ -513,6 +513,80 @@ def check_kdp_precheck_selftest():
         (head[0].strip() if head else f"rc={r.returncode}")[:120])
 
 
+# ---- 15. Image generation is a held, discoverable, autonomous capability -----
+def check_image_gen_capability():
+    """Local ComfyUI image generation must stay AUTONOMOUS and DISCOVERABLE.
+
+    For months the kit could not cold-start ComfyUI, silently fell back to
+    placeholder art, and no session knew the capability existed — the capability
+    was 'held' only by prose in a session log. This check binds it to a gate.
+
+    FAIL = the KIT forgot (a doc or the call convention rotted).
+    WARN = THIS MACHINE is unprovisioned (paths/checkpoint) — not a kit defect.
+    """
+    name = "image_gen_capability"
+    problems, warns = [], []
+
+    # (a) the authoritative doc must exist
+    doc = ROOT / "docs" / "IMAGE_GENERATION.md"
+    if not doc.is_file():
+        problems.append("docs/IMAGE_GENERATION.md missing")
+
+    # (b) CLAUDE.md must carry the standing declaration, so no session can boot
+    #     without learning it (CLAUDE.md is read in full every session).
+    claude = ROOT / "CLAUDE.md"
+    if claude.is_file():
+        txt = claude.read_text(encoding="utf-8", errors="replace")
+        if "STANDING CAPABILITY" not in txt or "IMAGE_GENERATION.md" not in txt:
+            problems.append("CLAUDE.md lost the STANDING CAPABILITY image-gen block")
+    else:
+        problems.append("CLAUDE.md missing")
+
+    # (c) THE REGRESSION GUARD. launch_server() returns False before the only
+    #     working launch strategy when handed anything but the paths dict.
+    #     Passing paths["server"] made the cold-start dead code for months.
+    cg = TOOLS / "cover_gen.py"
+    if cg.is_file():
+        src = cg.read_text(encoding="utf-8", errors="replace")
+        bad = len(re.findall(r'launch_server\(\s*paths\[', src))
+        good = len(re.findall(r'launch_server\(\s*paths\s*\)', src))
+        if bad:
+            problems.append(f"cover_gen.py passes a STRING to launch_server() at "
+                            f"{bad} site(s): Desktop cold-start is unreachable; "
+                            f"pass the paths DICT")
+        if not good:
+            problems.append("cover_gen.py never calls launch_server(paths)")
+    else:
+        problems.append("_tools/cover_gen.py missing")
+
+    # (d) does the launch actually resolve on THIS box? (machine, not kit)
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("_cg_probe", cg)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        paths = mod._resolve_cover_gen_paths(mod.load_kit_env(None))
+        py, main_py, _base, _extra = mod._resolve_comfy_launch(paths)
+        if not (py and os.path.exists(py) and main_py and os.path.exists(main_py)):
+            warns.append("ComfyUI launch paths do not resolve on this machine "
+                         "(kit_env.cover_gen: comfyui_app / checkpoints_dir)")
+        ckpt_dir = paths.get("checkpoints_dir")
+        ckpt = paths.get("default_checkpoint")
+        if ckpt_dir and ckpt and not (Path(ckpt_dir) / ckpt).is_file():
+            warns.append(f"checkpoint {ckpt} not in checkpoints_dir — fetch it "
+                         f"(url+sha256 in kit_env.cover_gen)")
+    except Exception as e:                                        # noqa: BLE001
+        warns.append(f"could not probe the launch path: {type(e).__name__}: {e}")
+
+    if problems:
+        add(name, FAIL, "; ".join(problems)[:220])
+    elif warns:
+        add(name, WARN, "kit contract OK; machine: " + "; ".join(warns)[:180])
+    else:
+        add(name, PASS, "local ComfyUI auto-launch held, documented, and "
+                        "discoverable from CLAUDE.md")
+
+
 def main():
     ap = argparse.ArgumentParser(description="BOOKSMITH kit self-consistency meta-gate")
     ap.add_argument("--json", action="store_true")
@@ -522,7 +596,7 @@ def main():
                check_kit_env_parity, check_requirements, check_dead_script_refs, check_fonts,
                check_config_key_drift, check_doc_coverage, check_js_dash_literals,
                check_spine_constant_parity, check_produce_book_selftest,
-               check_kdp_precheck_selftest):
+               check_kdp_precheck_selftest, check_image_gen_capability):
         try:
             fn()
         except Exception as e:
