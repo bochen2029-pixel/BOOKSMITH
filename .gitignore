@@ -88,3 +88,17 @@ checkpoints/
 *.safetensors
 *.ckpt
 _handoff/
+
+# --- chunker organ (2026-08-02): the vendored TOOL under _tools/chunker/ is
+#     tracked; its chunk OUTPUT dirs are per-book source material (personal
+#     transcripts, corpus slices) and must never enter git. The root /chunker/
+#     is the operator's ad-hoc working copy of the same tool — local only. ---
+_tools/chunker/_*_chunks/
+/chunker/
+
+# --- intake drop zone (2026-08-02): contents are per-book private source and
+#     never ship; only the drop-zone README is tracked. Prior builds' intake
+#     material is preserved locally under _intake_archive/ (never committed). ---
+intake/*
+!intake/README_DROP_ZONE.md
+_intake_archive/
