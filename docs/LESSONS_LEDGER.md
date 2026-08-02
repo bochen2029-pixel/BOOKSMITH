@@ -825,10 +825,19 @@ F1 em/en-dash == 0 (HARD) · F2 semicolon density ≥ 40/10k · F3 no bullets/me
 ## 20.3 · A fallback that preserves APPEARANCE defeats a perceptual gate (the silent hypergen cover)
 
 **Symptom.** For months, books whose `book_config.cover.art` specified SDXL shipped with
-procedurally-generated `hypergen.py` placeholder covers instead. At least four builds are known
-to have gone out this way (`governed_practice`, `last_mile`, `openworker`, `gate_and_ledger`).
+procedurally-generated `hypergen.py` placeholder covers instead. Three builds are known
+to have gone out this way (`governed_practice`, `last_mile`, `openworker`).
 Nothing failed. No gate went red. The operator discovered it by eye, months later, having already
 paid to have the wiring "made sure of" more than once.
+
+> **Amended 2026-08-02.** This entry originally named `gate_and_ledger` as a fourth victim. It is
+> not one. Its cover is deliberate procedural PIL art: documented in
+> `cover_art/COVER_BUILD_NOTES.md`, shipping its own deterministic generators (`make_art.py`,
+> `make_mark.py`), and sanctioned explicitly for text-forward books by `docs/cover_pipeline.md`.
+> `docs/COVER_PROVENANCE_BACKFILL.md` inherited the error and, until it was corrected the same
+> day, instructed an operator to *regenerate* that good cover. **Naming a correct artifact as
+> damaged is its own failure mode** — a remediation list is a loaded weapon, and an over-broad
+> one destroys work the gate was built to protect.
 
 **Proximate cause.** `cover_gen.py` could only start ComfyUI via `comfy launch` (comfy-cli), which
 has never been on PATH on the reference machine. The method that actually works (launch ComfyUI
@@ -846,6 +855,17 @@ real cover?"
 Every graceful degradation in this kit is a candidate for the same failure. A fallback that
 degrades **provenance** without degrading **appearance** is invisible to a perceptual check, and a
 perceptual check is exactly what we reached for.
+
+**A second mechanism, found 2026-08-02 — the roll-up, not the leaf.** "Nothing recorded it" is
+not quite true, and the difference is the more useful lesson. `last_mile`'s own
+`cover_art/last_mile_src_VERDICT.json` contains
+`"provenance": "hypergen.py --style geometric --seed 7 …"`. **The leaf verdict was honest.** What
+failed was the roll-up: the `STATUS: … all gates green` token in a continuity ledger is typed by
+hand and is never *derived* from the leaf sidecars, so the qualifier was simply dropped on the way
+up. A truthful leaf underneath a hand-authored summary is still a silent failure — and it is the
+harder one to see, because the evidence exists and reads as if it were checked. **Any roll-up a
+human or agent types by hand is a place where a recorded fact can disappear.** Derive the summary
+from the sidecars, or it is a wish.
 
 **Fix (2026-07-31).** Bind intent to a recorded fact, never to how the output looks.
 1. `book_config.cover.art.method` (schema-declared, enum: `sdxl|flux|hypergen|catalog|supplied|bespoke`)

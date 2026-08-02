@@ -1,7 +1,26 @@
-# Cover-art provenance — backfill for the four silent-fallback books
+# Cover-art provenance — backfill guide
 
-*Created 2026-07-31 as part of finishing the cover-provenance node. Read
+*Created 2026-07-31 as part of finishing the cover-provenance node.
+**Amended 2026-08-02** after a six-lane review found the original version would have
+told an operator to destroy good covers, including a published one. Read
 `docs/LESSONS_LEDGER.md` §20.3 first — it is the why. This file is the what-to-do.*
+
+## ⛔ READ THIS BEFORE YOU REMEDIATE ANYTHING
+
+**Failing the gate does NOT mean the cover is bad.** The gate fails whenever it cannot
+*prove* how the art was made. Most red books have perfectly good, deliberate covers that
+simply never recorded a method. Regenerating those destroys correct work.
+
+**Never run Option A on:**
+- a **published** book (its cover is unrecallable — see the census below),
+- a book with **deliberate procedural/PIL art** (`gate_and_ledger`),
+- a book with **bespoke or author-supplied art** (`Carlquist`, and the two published books),
+- any book you have not individually confirmed is a genuine silent-fallback victim.
+
+The original version of this file made exactly this mistake: it listed
+`gate_and_ledger` as a fallback victim and recommended regeneration, and it described
+the affected set as "unpublished v1.0 builds" while both published books sat in the
+gate's red set. Both errors are corrected below.
 
 ## What happened
 
@@ -19,35 +38,44 @@ generation; `cover_pick.py` writes `method: hypergen|catalog`; and
 `verify_build.py :: check_cover_art_provenance` **fails closed** unless a sidecar
 proves `method: sdxl` (or the book declares a non-generated `cover.art.method`).
 
-## The four known-affected books
+## Genuinely affected books (silent-fallback victims)
 
-Each has `cover_art/<slug>_src.png` on disk but **no** `*.provenance.json` — the
-fingerprint of the silent fallback. Under the new gate they FAIL CLOSED until fixed.
+| slug | evidence |
+|---|---|
+| `governed_practice` | shipped art byte-identical to its own hypergen candidate |
+| `last_mile` | shipped art byte-identical to its own hypergen candidate; its VERDICT json records `provenance: hypergen.py --style geometric --seed 7` |
+| `openworker` | src.png present, 0 provenance, config specifies SDXL |
 
-| slug | workspace | state |
-|---|---|---|
-| `governed_practice` | `book_workspace/governed_practice/` | src.png present, 0 provenance |
-| `last_mile`         | `book_workspace/last_mile/`         | src.png present, 0 provenance |
-| `openworker`        | `book_workspace/openworker/`        | src.png present, 0 provenance |
-| `gate_and_ledger`   | `book_workspace/gate_and_ledger/`   | src.png present, 0 provenance |
+**`gate_and_ledger` is NOT affected — do not remediate it.** Its cover is deliberate
+procedural PIL art. `cover_art/COVER_BUILD_NOTES.md` documents the choice, it ships its
+own deterministic generators (`make_art.py`, `make_mark.py`), and
+`docs/cover_pipeline.md` sanctions an all-PIL cover explicitly for text-forward books.
+It fails the gate only because it never declared a method. It needs **Option B**, and it
+was wrongly listed as a victim in the original version of this file.
 
-Check current gate status for all four at once:
+## The rest of the red set is mostly undeclared, not damaged
+
+The gate treats `cover.art.prompt_seed` alone as intent-to-generate, and nearly every
+config inherits a `prompt_seed` from the template. That makes most of the corpus red
+for a bookkeeping reason rather than a real one. **Both published books
+(`a_human_still_signs`, `your_hermes_agent`) are red this way**: they set `prompt_seed`
+but no `checkpoint` and no `workflow`, and their covers came from bespoke compositors
+(`cover_compose_ahss.py`, `cover_compose_yha.py`) that never promised SDXL. They need
+**Option B**, never Option A.
+
+Check gate status for a book (note `--final`: the provenance gate is enforced on the
+final sweep, because the cover stage runs *after* produce):
 
 ```bash
-for s in governed_practice last_mile openworker gate_and_ledger; do
-  python _tools/verify_build.py --config "book_workspace/$s/book_config.json" --format kindle 2>/dev/null \
-    | grep -i cover_art_provenance || echo "$s: (run manually)"
-done
+python _tools/verify_build.py --config "book_workspace/<slug>/book_config.json" --format kindle --final 2>/dev/null | grep -i cover_art_provenance
 ```
 
 ## Remediation — pick ONE per book
 
-These are unpublished v1.0 builds, so either path is legitimate; the point is that
-intent and record must agree.
-
-**Option A — regenerate the real SDXL cover (recommended).** The launcher is fixed,
-so this now produces genuine SDXL art AND writes the provenance sidecar. Then
-recomposite the wrap/ebook cover and re-verify (an interior-unchanged cover swap):
+**Option A — regenerate the real SDXL cover.** *Only for a confirmed silent-fallback
+victim that is unpublished.* The launcher is fixed, so this now produces genuine SDXL
+art AND writes the provenance sidecar. Then recomposite the wrap/ebook cover and
+re-verify (an interior-unchanged cover swap):
 
 ```bash
 python _tools/cover_gen.py --config book_workspace/<slug>/book_config.json \
@@ -55,21 +83,35 @@ python _tools/cover_gen.py --config book_workspace/<slug>/book_config.json \
 # then recomposite every profile the book ships + re-run its gates (see §12 build order)
 ```
 
-**Option B — keep the hypergen art, declare it.** If the shipped abstract cover is
-acceptable, record the truth in `book_workspace/<slug>/book_config.json`:
+**Option B — keep the existing art, declare it.** The correct path for every book whose
+cover is deliberate: bespoke, author-supplied, procedural, catalog, or a hypergen cover
+you have decided to keep. Record the truth in
+`book_workspace/<slug>/book_config.json`:
 
 ```json
-"cover": { "art": { "method": "hypergen",
-  "_method_note": "v1.0 shipped a hypergen cover during the comfy-cli-absent window; kept deliberately." } }
+"cover": { "art": { "method": "bespoke",
+  "_method_note": "hand-composited by cover_compose_<x>.py; never AI-generated." } }
 ```
 
-The gate then passes by declaration. (Do **not** declare `sdxl` for a hypergen
-cover — that reintroduces the exact lie the gate exists to catch.)
+Valid values: `bespoke` · `supplied` · `catalog` · `hypergen`. The gate then passes by
+declaration. (Do **not** declare `sdxl` for art that was not SDXL — that reintroduces
+the exact lie the gate exists to catch. A declaration is a claim you are signing.)
 
 ## Verify the fix held
 
 ```bash
-python _tools/verify_build.py --config book_workspace/<slug>/book_config.json --format <fmt>
+python _tools/verify_build.py --config book_workspace/<slug>/book_config.json --format <fmt> --final
 # cover_art_provenance -> PASS  (either "confirmed by provenance sidecar (methods: sdxl)"
 #                                 or "satisfied by declaration")
 ```
+
+## Known gaps in the gate (not yet fixed)
+
+Recorded so nobody mistakes a green for a proof:
+- The gate reads only the sidecar's `method` field. It never opens the art file, so a
+  hand-written sidecar passes and a post-hoc art swap goes unnoticed. The producer
+  already writes `art_sha256`; the gate does not yet read it.
+- `wants_generated` keys off `prompt_seed`, which nearly every config inherits — the
+  source of most of the false red above.
+- `cover_gen.py --batch` and the bespoke compositors write no sidecar at all.
+- A FLUX run records `method: "sdxl"` (hardcoded literal).
