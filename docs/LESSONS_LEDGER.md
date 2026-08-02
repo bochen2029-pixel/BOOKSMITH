@@ -854,8 +854,8 @@ perceptual check is exactly what we reached for.
    art and no `cover_art/*.provenance.json` proves generation happened, that is a FAIL. A generator
    that will not say what it did is not trusted. Books with deliberately non-generated covers declare
    `method` and pass by declaration.
-3. Producers must write the provenance sidecar. Any that do not will now fail loudly instead of
-   shipping quietly.
+3. Producers (`cover_gen.py` SDXL, `cover_pick.py` hypergen/catalog) write the provenance sidecar at
+   generation time. Any producer that does not will now fail loudly instead of shipping quietly.
 
 **The standing rule.** *When a step can silently degrade, the gate must check that the step HAPPENED,
 not that the output LOOKS right.* Perceptual gates catch ugly. They do not catch counterfeit.

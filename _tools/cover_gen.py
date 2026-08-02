@@ -46,6 +46,7 @@ SOURCE: a hermes-style ComfyUI runner skill (run_workflow.py, run_batch.py,
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -56,6 +57,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -485,6 +487,112 @@ def _last_json_blob(text: str) -> str | None:
 
 
 # ============================================================
+# Provenance sidecar — bind INTENT to a recorded FACT
+# ============================================================
+# The single source of truth read by verify_build.py::check_cover_art_provenance
+# (2026-07-31). book_config.cover.art declares HOW the cover is MEANT to be
+# produced; this file records what ACTUALLY happened. A perceptual gate cannot
+# tell genuine SDXL art from a tasteful hypergen placeholder — for months a
+# silent hypergen fallback shipped placeholder covers on four books where the
+# config said SDXL, and nothing went red. Recording the method, not judging the
+# pixels, is what makes the miss visible. See docs/LESSONS_LEDGER.md 20.3.
+def _comfy_version(server_url: str, timeout: float = 3.0):
+    """Best-effort ComfyUI version from /system_stats (None if unavailable)."""
+    url = server_url.rstrip("/") + "/system_stats"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            data = json.loads(r.read().decode("utf-8"))
+        return (data.get("system") or {}).get("comfyui_version")
+    except (urllib.error.URLError, OSError, ValueError, json.JSONDecodeError):
+        return None
+
+
+def _resolved_seed(server_url: str, prompt_id, fallback, timeout: float = 5.0):
+    """The ACTUAL seed ComfyUI used, read back from /history/<prompt_id>.
+
+    A `seed: -1` request expands to a real value server-side; the run_workflow
+    runner does not echo it, so without this the winning cover could never be
+    regenerated. Best-effort: returns `fallback` if history/the seed can't be
+    read — provenance is never blocked on this optional lookup.
+    """
+    if not prompt_id:
+        return fallback
+    url = server_url.rstrip("/") + f"/history/{prompt_id}"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            hist = json.loads(r.read().decode("utf-8"))
+    except (urllib.error.URLError, OSError, ValueError, json.JSONDecodeError):
+        return fallback
+    prompt = ((hist or {}).get(prompt_id) or {}).get("prompt")
+    graph = prompt if isinstance(prompt, dict) else None
+    if isinstance(prompt, list):                        # [num, id, graph, extra, ...]
+        for el in prompt:
+            if isinstance(el, dict) and any(
+                    isinstance(v, dict) and "class_type" in v for v in el.values()):
+                graph = el
+                break
+    if not isinstance(graph, dict):
+        return fallback
+    for node in graph.values():
+        if isinstance(node, dict):
+            ins = node.get("inputs") or {}
+            for key in ("seed", "noise_seed"):
+                v = ins.get(key)
+                if isinstance(v, int) and not isinstance(v, bool):
+                    return v
+    return fallback
+
+
+def _sha256_file(path: Path):
+    """Streamed SHA-256 of a file (None if it cannot be read)."""
+    try:
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    except OSError:
+        return None
+
+
+def _image_dims(path: Path):
+    """'<w>x<h>' of an image via PIL (None if PIL missing or file unreadable)."""
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            return f"{im.width}x{im.height}"
+    except Exception:                                             # noqa: BLE001
+        return None
+
+
+def write_provenance(art_path, method: str, record: dict, recorded_by: str = None) -> Path:
+    """Write `cover_art/<art-stem>.provenance.json` next to the generated art.
+
+    `method` is the recorded fact (sdxl | hypergen | catalog | ...). `record` is
+    an ordered dict of generation params (checkpoint/workflow/seed/…); None values
+    are dropped. The file/sha256/dims of the actual art and a UTC timestamp are
+    appended, so the sidecar always describes the bytes that shipped. This is the
+    fact verify_build's provenance gate trusts, in place of judging the pixels.
+
+    `recorded_by` names the producer that actually wrote the record; cover_pick.py
+    reuses this helper and passes its own name, so a sidecar never misattributes
+    itself (the record must not lie about who made it).
+    """
+    art_path = Path(art_path)
+    sidecar = art_path.with_name(art_path.stem + ".provenance.json")
+    payload = {"method": method}
+    payload.update({k: v for k, v in record.items() if v is not None})
+    payload["art_file"] = art_path.name
+    payload["art_sha256"] = _sha256_file(art_path)
+    payload["art_dims"] = _image_dims(art_path)
+    payload["recorded_at"] = datetime.now(timezone.utc).isoformat()
+    payload["recorded_by"] = recorded_by or Path(__file__).name
+    sidecar.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                       encoding="utf-8")
+    return sidecar
+
+
+# ============================================================
 # High-level entry points
 # ============================================================
 def _resolve_cover_gen_paths(env: dict) -> dict:
@@ -615,7 +723,7 @@ def do_single(args) -> int:
     # ---- ensure server ----
     _adopt_live_server(paths)
     if not args.no_launch:
-        if not launch_server(paths["server"]):
+        if not launch_server(paths):  # pass the DICT so the Desktop-launch fallback (Strategy 2) is reachable
             print(json.dumps({
                 "status": "error",
                 "error": f"ComfyUI server not reachable at {paths['server']} and could not "
@@ -673,6 +781,38 @@ def do_single(args) -> int:
         except Exception:
             final_png = png  # keep the runner's location if the move/transcode fails
 
+    # ---- provenance sidecar (the SDXL FACT the verify_build gate trusts) ----
+    # Written on SUCCESS only, so a failed run leaves no false proof. If the write
+    # itself fails we WARN but keep status=success (the art is real): the missing
+    # sidecar then trips check_cover_art_provenance downstream, which is the correct
+    # loud failure, never a silent pass. See docs/LESSONS_LEDGER.md 20.3.
+    # The ACTUAL seed ComfyUI used (a -1 request expands server-side) — read back
+    # from /history so the winning cover stays reproducible instead of lost as -1.
+    resolved_seed = run_json.get("seed")
+    if not isinstance(resolved_seed, int) or resolved_seed == -1:
+        resolved_seed = _resolved_seed(paths["server"], run_json.get("prompt_id"), args.seed)
+    provenance = None
+    try:
+        provenance = str(write_provenance(
+            Path(final_png), "sdxl", {
+                "generator": "ComfyUI",
+                "comfyui_version": _comfy_version(paths["server"]),
+                "comfyui_server": paths["server"],
+                "checkpoint": checkpoint,
+                "workflow": Path(workflow_path).name,
+                "steps": args.steps,
+                # the RESOLVED seed regenerates this exact art; keep the request too
+                "seed": resolved_seed,
+                "seed_requested": args.seed,
+                "prompt": args.prompt,
+                "negative_prompt": negative,
+                "prompt_id": run_json.get("prompt_id"),
+            }))
+    except OSError as exc:
+        print(f"[cover_gen] WARNING: cover art generated but the provenance sidecar "
+              f"could not be written ({exc}); verify_build will fail closed until it "
+              f"exists", file=sys.stderr)
+
     # a dropped negative prompt voids the anti-baked-text backstop (FLUX has no
     # negative CLIPTextEncode) — that must be a loud caveat, not a buried note
     caveats = [w for w in (run_json.get("warnings") or [])
@@ -683,10 +823,11 @@ def do_single(args) -> int:
     print(json.dumps({
         "status": "success",
         "png": str(Path(final_png).resolve()),
+        "provenance": provenance,
         "caveats": caveats,
         # the RESOLVED seed (a -1 request expands server-side); without it the
         # winning cover could never be regenerated
-        "seed": run_json.get("seed", args.seed),
+        "seed": resolved_seed,
         "steps": args.steps,
         "checkpoint": checkpoint,
         "workflow": str(workflow_path),
@@ -729,7 +870,7 @@ def do_batch(args) -> int:
 
     _adopt_live_server(paths)
     if not args.no_launch:
-        if not launch_server(paths["server"]):
+        if not launch_server(paths):  # pass the DICT so the Desktop-launch fallback (Strategy 2) is reachable
             print(json.dumps({
                 "status": "error",
                 "error": f"ComfyUI server not reachable at {paths['server']} and could not "

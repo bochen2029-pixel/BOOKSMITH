@@ -25,6 +25,7 @@ TOOLS = Path(__file__).resolve().parent
 ROOT = TOOLS.parent
 sys.path.insert(0, str(TOOLS))
 import hypergen  # noqa: E402
+import cover_gen  # noqa: E402  (write_provenance: one sidecar shape shared with the SDXL path)
 
 # genre keyword -> mood palette
 GENRE_MOOD = [
@@ -153,6 +154,10 @@ def main(argv=None):
     if choice.startswith("hypergen:"):
         style = choice.split(":", 1)[1]
         hypergen.render(style, palette, size=(w, h), seed=args.seed).save(dest)
+        prov_method, prov_record = "hypergen", {
+            "generator": "hypergen.py", "style": style,
+            "palette": [str(c) for c in palette], "seed": args.seed,
+        }
     elif choice.startswith("catalog:"):
         cid = choice.split(":", 1)[1]
         entry = next((e for e in catalog if str(e.get("id")) == cid), None)
@@ -176,9 +181,25 @@ def main(argv=None):
             print(f"recoloured catalog art to the book palette (strength {args.recolor_strength})"
                   if rr.returncode == 0 else
                   f"(palette recolour skipped: {(rr.stderr or rr.stdout).strip()[-120:]})")
+        prov_method, prov_record = "catalog", {
+            "generator": "cover_pick.py (prerendered SDXL catalog)",
+            "catalog_id": cid, "catalog_file": entry.get("file"),
+            "recolored": bool(args.recolor and palette),
+            "palette": [str(c) for c in palette] if (args.recolor and palette) else None,
+        }
     else:
         print(f"bad --pick {choice}", file=sys.stderr)
         return 1
+    # Provenance sidecar — the SAME shape cover_gen.py writes, so verify_build's
+    # cover_art_provenance gate reads one contract. method=hypergen|catalog here
+    # makes a SILENT SDXL->fallback surface as a MISMATCH (not a bare missing file)
+    # when book_config asked for generated art. See docs/LESSONS_LEDGER.md 20.3.
+    try:
+        prov = cover_gen.write_provenance(dest, prov_method, prov_record,
+                                          recorded_by="cover_pick.py")
+        print(f"provenance -> {prov.name} (method={prov_method})")
+    except (OSError, TypeError, ValueError) as exc:
+        print(f"(provenance sidecar not written: {exc})", file=sys.stderr)
     print(f"installed cover art -> {dest}")
     print(f"next: python _tools/composite_cover.py --config {cfg_path} --profile <p> --pages <N>")
     return 0
