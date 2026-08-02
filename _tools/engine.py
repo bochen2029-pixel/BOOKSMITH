@@ -1017,12 +1017,38 @@ class Engine:
         return "produced + verify_build pass"
 
     def _cover_source_art(self, art: Path) -> str:
-        """Resolve source art: author-supplied art in cover_art/ wins (never
-        overwritten), else bespoke SDXL, else cover_pick (hypergen/catalog,
-        renders anywhere). Nothing usable -> HARD-STOP: a book must never emit
-        coverless because both generators quietly failed."""
+        """Resolve source art, method-aware (2026-08-02, plan C-1).
+
+        A declared non-generative cover (bespoke/supplied/catalog) is NEVER
+        auto-generated over — a series design must not be replaced by SDXL or a
+        hypergen fallback because the engine found no <slug>_src.png. For
+        generative covers, reuse must be EARNED via `_may_reuse_art` (the old
+        `if art.exists()` sticky latch let a silent placeholder survive months
+        of rebuilds while re-reporting success). Unreusable art is preserved
+        aside, never overwritten, then regenerated: cover_gen (SDXL), else
+        cover_pick — and a fallback now writes an honest sidecar that the
+        --final provenance gate flags, so it can no longer ship silently."""
+        method = _cover_art_method(self.cfg)
+        if method in ("bespoke", "supplied", "catalog"):
+            if art.exists():
+                return f"pre-existing cover_art/ (method '{method}': trusted, never regenerated)"
+            raise HardStop(
+                "cover",
+                f"cover.art.method='{method}': this book's cover is deliberately NOT "
+                f"AI-generated; refusing to auto-generate over a {method} design. "
+                f"Produce the art with its {method} compositor (docs/cover_pipeline.md) "
+                f"or place the intended art at {art}, then re-run.")
+        reuse, why = _may_reuse_art(art, self.cfg, force=getattr(self, "force_cover", False))
         if art.exists():
-            return "pre-existing cover_art/"
+            if reuse:
+                return f"pre-existing cover_art/ ({why})"
+            # cover_art source files are never overwritten (design constant):
+            # preserve the unreusable art aside, then regenerate fresh.
+            keep = art.with_name(f"{art.stem}_superseded_"
+                                 f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+                                 f"{art.suffix}")
+            os.replace(art, keep)
+            self.log("cover.art_superseded", reason=why, preserved=keep.name)
         rc, o, e = run([sys.executable, str(TOOLS / "cover_gen.py"),
                         "--config", str(self.config_path), "--out", str(art)])
         if rc == 0 and art.exists():
@@ -1401,7 +1427,144 @@ class Engine:
         return 0
 
 
+def _cover_art_method(cfg: dict) -> str:
+    return str(((cfg.get("cover") or {}).get("art") or {}).get("method") or "").strip().lower()
+
+
+def _sha256_full(p: Path) -> str:
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def _may_reuse_art(art: Path, cfg: dict, force: bool = False) -> tuple[bool, str]:
+    """Pure cover-art reuse predicate (REMEDIATION_PLAN_v2 C-1).
+
+    The old rule was `if art.exists(): reuse` — the sticky-placeholder latch:
+    once ANY run wrote art (including a silent hypergen fallback), every later
+    run reported success while regenerating nothing. Reuse is now EARNED:
+
+      force                                 -> never reuse (--force-cover)
+      no art on disk                        -> nothing to reuse
+      method in {bespoke,supplied,catalog}  -> permanently trusted, always reuse
+      generative (sdxl/flux or undeclared)  -> reuse ONLY if the art's
+          provenance sidecar records a generative method AND its art_sha256
+          hash-matches the bytes on disk; TRANSITIONAL GRANDFATHER: no sidecar
+          at all but an outputs/**/cover_meta.json records art_sha256 ==
+          sha256(disk) -> reuse (the pre-producer window must not regenerate
+          good covers).
+
+    Pure decision: reads disk, mutates nothing. Proven by --selftest-cover-reuse.
+    """
+    if force:
+        return False, "forced regeneration (--force-cover)"
+    if not art.exists():
+        return False, "no art on disk"
+    method = _cover_art_method(cfg)
+    if method in ("bespoke", "supplied", "catalog"):
+        return True, f"method '{method}' is permanently trusted (never regenerated)"
+    sidecar = art.with_name(art.stem + ".provenance.json")
+    if sidecar.exists():
+        try:
+            rec = load_json(sidecar) or {}
+        except Exception:                                          # noqa: BLE001
+            return False, f"unreadable sidecar {sidecar.name} — regenerate"
+        rec_method = str(rec.get("method", "")).strip().lower()
+        if rec_method not in ("sdxl", "flux"):
+            return False, (f"sidecar records method '{rec_method}' where generated art "
+                           f"is wanted — silent-fallback artifact, regenerate")
+        claimed = str(rec.get("art_sha256") or "").strip().lower()
+        if claimed != _sha256_full(art):
+            return False, ("sidecar sha256 does not match the art on disk — stale "
+                           "record, regenerate")
+        return True, f"sha-bound {rec_method} provenance"
+    actual = _sha256_full(art)
+    outputs = art.parent.parent / "outputs"
+    if outputs.is_dir():
+        for meta in sorted(outputs.rglob("cover_meta*.json")):
+            try:
+                msha = str((load_json(meta) or {}).get("art_sha256") or "").strip().lower()
+            except Exception:                                      # noqa: BLE001
+                continue
+            if msha and msha == actual:
+                return True, (f"grandfathered: {meta.name} sha-matches the art "
+                              f"(pre-producer window)")
+    return False, "no provenance sidecar and no matching cover_meta — unproven art, regenerate"
+
+
+def run_cover_reuse_selftest() -> int:
+    """--selftest-cover-reuse: the must-fail battery for `_may_reuse_art`
+    (INVARIANT T). Each case builds a throwaway cover_art/ fixture and asserts
+    the reuse decision — including the latch-killer: existing art with no
+    provenance must NOT be reused."""
+    import shutil
+    import tempfile
+
+    art_bytes = b"\x89PNG\r\n\x1a\n engine-selftest-art"
+    good_sha = hashlib.sha256(art_bytes).hexdigest()
+    gen_cfg = {"cover": {"art": {"checkpoint": "sd_xl_base_1.0.safetensors",
+                                 "workflow": "sdxl_txt2img.json"}}}
+    bespoke_cfg = {"cover": {"art": {"method": "bespoke"}}}
+
+    # (name, cfg, {art?, sidecar?, meta_sha?}, force, expected_reuse)
+    cases = [
+        ("no_art_NOREUSE", gen_cfg, {}, False, False),
+        ("bespoke_art_REUSE", bespoke_cfg, {"art": art_bytes}, False, True),
+        ("bespoke_missing_NOREUSE", bespoke_cfg, {}, False, False),
+        ("force_NOREUSE", bespoke_cfg, {"art": art_bytes}, True, False),
+        ("shabound_sdxl_REUSE", gen_cfg,
+         {"art": art_bytes,
+          "sidecar": {"method": "sdxl", "art_sha256": good_sha}}, False, True),
+        ("no_sidecar_no_meta_NOREUSE (latch-killer)", gen_cfg,
+         {"art": art_bytes}, False, False),
+        ("sha_mismatch_NOREUSE", gen_cfg,
+         {"art": art_bytes,
+          "sidecar": {"method": "sdxl", "art_sha256": "0" * 64}}, False, False),
+        ("hypergen_sidecar_NOREUSE", gen_cfg,
+         {"art": art_bytes,
+          "sidecar": {"method": "hypergen", "art_sha256": good_sha}}, False, False),
+        ("grandfather_meta_REUSE", gen_cfg,
+         {"art": art_bytes, "meta_sha": good_sha}, False, True),
+        ("wrong_meta_NOREUSE", gen_cfg,
+         {"art": art_bytes, "meta_sha": "f" * 64}, False, False),
+    ]
+
+    tmp = tempfile.mkdtemp(prefix="engine_reuse_selftest_")
+    failures = 0
+    try:
+        for i, (case, cfg, fx, force, expect) in enumerate(cases):
+            ws = Path(tmp) / f"case_{i:02d}"
+            ca = ws / "cover_art"
+            ca.mkdir(parents=True)
+            art = ca / "x_src.png"
+            if fx.get("art") is not None:
+                art.write_bytes(fx["art"])
+            if fx.get("sidecar") is not None:
+                (ca / "x_src.provenance.json").write_text(
+                    json.dumps(fx["sidecar"]), encoding="utf-8")
+            if fx.get("meta_sha") is not None:
+                md = ws / "outputs" / "kindle"
+                md.mkdir(parents=True)
+                (md / "cover_meta.json").write_text(
+                    json.dumps({"art_sha256": fx["meta_sha"]}), encoding="utf-8")
+            got, why = _may_reuse_art(art, cfg, force=force)
+            held = (got == expect)
+            failures += (not held)
+            print(f"  [{'OK ' if held else 'BAD'}] {case:42s} reuse={got} "
+                  f"expected={expect}" + ("" if held else f"  <- {why}"))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    verdict = "PASS" if failures == 0 else "FAIL"
+    print(f"ENGINE SELFTEST (cover-reuse predicate): {verdict} "
+          f"({len(cases) - failures}/{len(cases)} assertions held)")
+    return 0 if failures == 0 else 1
+
+
 def main(argv=None) -> int:
+    if "--selftest-cover-reuse" in (argv if argv is not None else sys.argv[1:]):
+        # Pre-parse: the battery needs no --config and must not be blocked by
+        # argparse's required arguments.
+        return run_cover_reuse_selftest()
+
     ap = argparse.ArgumentParser(description="Deterministic BOOKSMITH engine (control inversion).")
     ap.add_argument("--config", required=True)
     ap.add_argument("--backend", choices=["mock", "anthropic", "openai", "harness"], default=None,
@@ -1411,6 +1574,9 @@ def main(argv=None) -> int:
     ap.add_argument("--dry-run", action="store_true",
                     help="mock model + skip cover art; every mechanical gate still runs")
     ap.add_argument("--no-cover", action="store_true")
+    ap.add_argument("--force-cover", action="store_true",
+                    help="regenerate the cover art even if reusable art exists "
+                         "(the existing file is preserved aside, never overwritten)")
     ap.add_argument("--status", action="store_true", help="print state and exit")
     ap.add_argument("--fresh", action="store_true", help="discard prior engine state")
     args = ap.parse_args(argv)
@@ -1425,6 +1591,7 @@ def main(argv=None) -> int:
     except HardStop as hs:
         print(f"\n=== HARD-STOP at {hs.stage} ===\n{hs.detail}", file=sys.stderr)
         return 2
+    eng.force_cover = args.force_cover
     if args.fresh:
         (eng.eng_dir / "state.json").unlink(missing_ok=True)
         eng.state = State(eng.eng_dir / "state.json", eng.slug, sha_file(cfg_path))

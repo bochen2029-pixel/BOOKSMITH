@@ -514,6 +514,23 @@ def check_kdp_precheck_selftest():
 
 
 # ---- 15. Image generation is a held, discoverable, autonomous capability -----
+def check_engine_cover_reuse_selftest():
+    """engine.py --selftest-cover-reuse must hold: the cover-art reuse predicate
+    (plan C-1) refuses unproven/mismatched art and honors the trusted-method
+    carve-out. The old `if art.exists()` sticky latch let a silent placeholder
+    survive months of rebuilds; this battery goes RED if it is ever restored."""
+    try:
+        r = subprocess.run([sys.executable, str(TOOLS / "engine.py"),
+                            "--selftest-cover-reuse"],
+                           capture_output=True, text=True, timeout=120)
+    except Exception as e:
+        add("engine_cover_reuse_selftest", FAIL, f"could not run: {e}")
+        return
+    tail = [l for l in (r.stdout or "").splitlines() if l.strip()]
+    add("engine_cover_reuse_selftest", PASS if r.returncode == 0 else FAIL,
+        (tail[-1].strip() if tail else f"rc={r.returncode}")[:120])
+
+
 def check_assemble_selftest():
     """assemble_manuscript.py --selftest must hold: the parity comparator
     genuinely compares (a mid-run source mutation flips parity_ok false) and a
@@ -630,7 +647,8 @@ def main():
                check_config_key_drift, check_doc_coverage, check_js_dash_literals,
                check_spine_constant_parity, check_produce_book_selftest,
                check_kdp_precheck_selftest, check_verify_build_selftest,
-               check_assemble_selftest, check_image_gen_capability):
+               check_assemble_selftest, check_engine_cover_reuse_selftest,
+               check_image_gen_capability):
         try:
             fn()
         except Exception as e:
