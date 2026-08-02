@@ -1280,6 +1280,7 @@ def check_no_artifact_emdash(path, cfg: dict):
                 text = html.unescape(text)
                 for ch in _EM_DASH_SET:
                     start = 0
+                    found = False
                     while True:
                         i = text.find(ch, start)
                         if i < 0:
@@ -1291,10 +1292,15 @@ def check_no_artifact_emdash(path, cfg: dict):
                             start = i + 1
                             continue
                         hits.append(f"{member}: U+{ord(ch):04X} ...{ctx}...")
+                        found = True
                         break
-                    else:
-                        continue
-                    break
+                    # A `while True` can only exit via break, so a while/else here
+                    # is dead code and the trailing break abandoned the scan after
+                    # _EM_DASH_SET[0] — leaving 4 of the 5 dash characters wholly
+                    # unchecked on the HARD em-dash gate. An explicit flag keeps
+                    # the one-hit-per-member behaviour while scanning every char.
+                    if found:
+                        break
                 if _EM_DASH_ENTITY.search(xml):
                     hits.append(f"{member}: numeric/named dash entity")
     except (zipfile.BadZipFile, OSError, KeyError) as exc:
@@ -1453,9 +1459,20 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
     # lint runs for every format (voice + corruption gate).
     checks.append(check_lint(config_path))
 
-    # Cover-art provenance runs for every format: the silent hypergen fallback
-    # shipped placeholder covers across four books before anything noticed.
-    checks.append(check_cover_art_provenance(root, cfg))
+    # Cover-art provenance: the silent hypergen fallback shipped placeholder
+    # covers across four books before anything noticed. ENFORCED ON --final ONLY.
+    # engine.py runs verify_build inside stage_produce (engine.py:1014), and the
+    # fixed stage order puts stage_produce BEFORE stage_cover — the stage that
+    # creates the sidecar this gate demands. Enforcing it earlier HardStops the
+    # pipeline before the cover can possibly exist, which wedged produce for 29 of
+    # 31 books. Deferring to the final sweep matches check_epub_parity/
+    # check_kindle_parity, which report DEFERRED early and hard-fail at --final.
+    if final:
+        checks.append(check_cover_art_provenance(root, cfg))
+    else:
+        checks.append(("cover_art_provenance", True,
+                       "DEFERRED to the --final sweep (the cover stage runs after "
+                       "produce; --final enforces that the sidecar exists)"))
 
     # --final: the local KDP acceptance simulator (kdp_precheck.py) — the
     # deterministic layer of Amazon's own validator (page ranges, trim
