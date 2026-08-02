@@ -299,10 +299,19 @@ def launch_server(paths, comfy_bin: str = "comfy", wait_s: float = 150.0) -> boo
               f"{py} {main_py} --base-directory {base_dir} --port {port} "
               f"{' '.join(extra)}".rstrip(), file=sys.stderr)
         creationflags = 0x00000008 if os.name == "nt" else 0  # DETACHED_PROCESS
+        # close_fds=True on EVERY platform (2026-08-02). With close_fds=False on
+        # Windows the detached server inherits ALL inheritable handles - not
+        # just its stdio - including the WRITE ends of any pipes a CAPTURING
+        # caller (engine.py run(), a driver script) attached to cover_gen
+        # itself. The server outlives cover_gen, the pipe never sees EOF, and
+        # the caller wedges forever in communicate() even after cover_gen
+        # exits. Python >=3.7 supports close_fds=True together with stdio
+        # redirection on Windows (stdio passes via STARTUPINFO, not handle
+        # inheritance), so nothing is lost by closing the rest.
         subprocess.Popen(
             cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             stdin=subprocess.DEVNULL, creationflags=creationflags,
-            close_fds=(os.name != "nt"),
+            close_fds=True,
         )
     except (subprocess.SubprocessError, OSError) as exc:
         print(f"[cover_gen] direct ComfyUI launch failed: {exc}", file=sys.stderr)
