@@ -144,13 +144,16 @@ def render_cover_jpeg(img: Image.Image, cover_rgb, dpi: int = DPI) -> bytes:
     return buf.getvalue()
 
 
-def build_cover_pages_pdf(front_jpeg: bytes, back_jpeg: bytes, out_path: str):
-    """Two-page PDF, each page an EXACT 432x648-pt MediaBox (via fitz, not PIL)."""
+def build_cover_pages_pdf(front_jpeg: bytes, back_jpeg, out_path: str):
+    """Cover PDF, each page an EXACT 432x648-pt MediaBox (via fitz, not PIL).
+    Two pages (front + back) when back_jpeg is provided; front-only when it is
+    None (an ebook-first digital edition has no print back cover)."""
     doc = fitz.open()
     p_front = doc.new_page(width=PAGE_W_PTS, height=PAGE_H_PTS)
     p_front.insert_image(p_front.rect, stream=front_jpeg)
-    p_back = doc.new_page(width=PAGE_W_PTS, height=PAGE_H_PTS)
-    p_back.insert_image(p_back.rect, stream=back_jpeg)
+    if back_jpeg is not None:
+        p_back = doc.new_page(width=PAGE_W_PTS, height=PAGE_H_PTS)
+        p_back.insert_image(p_back.rect, stream=back_jpeg)
     doc.save(out_path, deflate=True, garbage=4, clean=True)
     doc.close()
 
@@ -223,10 +226,12 @@ def resolve_covers(cfg, ws: str):
             os.path.join(pb_dir, "back_cover.jpg"),
         )
         if not back_standalone:
-            # Fall back to reusing the front as the back rather than failing —
-            # a reader PDF still opens; note it in the summary.
-            back_img = front_img
-            back_src = front_path + " (reused as back)"
+            # Ebook-first / no print back cover: a reader PDF should open on the
+            # front cover and go straight to the content. Reusing the front as a
+            # fake "back" (the old behavior) shipped a confusing duplicate-cover
+            # page 2. Return no back -> a front-only digital edition.
+            back_img = None
+            back_src = "(none; front-only digital edition, no print back cover)"
         else:
             back_img = Image.open(back_standalone).convert("RGB")
             back_src = back_standalone
@@ -259,7 +264,7 @@ def build(config_path, workspace_arg):
     # 3. Build the two exact-MediaBox cover pages.
     front_img, back_img, cover_rgb, front_src, back_src = resolve_covers(cfg, ws)
     front_jpeg = render_cover_jpeg(front_img, cover_rgb)
-    back_jpeg = render_cover_jpeg(back_img, cover_rgb)
+    back_jpeg = render_cover_jpeg(back_img, cover_rgb) if back_img is not None else None
     fd, cover_pdf = tempfile.mkstemp(suffix="_covers.pdf", dir=out_dir)
     os.close(fd)
     build_cover_pages_pdf(front_jpeg, back_jpeg, cover_pdf)

@@ -491,8 +491,12 @@ def scan_voice(text: str, cs, ci, rx, locked_terms, greenlist=None) -> list:
     # Sacred-term drift: for each locked exact wording, flag a near-miss —
     # the same words in the same order but with altered punctuation/casing that
     # is NOT the exact string. A whole-manuscript scan (drift can span a line).
+    # Titles are exempt from the sacred-term paraphrase rule (a chapter titled
+    # after the refrain is a sanctioned echo, not drift); count body prose only.
+    body_text = "\n".join(ln for ln in text.splitlines()
+                          if not ln.lstrip().startswith("#"))
     for phrase, note in locked_terms:
-        exact_count = text.count(phrase)
+        exact_count = body_text.count(phrase)
         # Build a loose pattern: word tokens of the phrase separated by any
         # non-word run, case-insensitive. A loose hit that is not also an
         # exact hit is a paraphrase-drift candidate.
@@ -500,7 +504,7 @@ def scan_voice(text: str, cs, ci, rx, locked_terms, greenlist=None) -> list:
         if not tokens:
             continue
         loose = r"\W+".join(re.escape(t) for t in tokens)
-        loose_hits = re.findall(loose, text, flags=re.IGNORECASE)
+        loose_hits = re.findall(loose, body_text, flags=re.IGNORECASE)
         drift = len(loose_hits) - exact_count
         if drift > 0:
             findings.append(("SACRED_DRIFT", 0,

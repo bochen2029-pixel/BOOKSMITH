@@ -81,9 +81,10 @@ def _prose_only(text: str):
     return out
 
 
-def scan_unit(path: Path, title: str, target, no_dash: bool):
+def scan_unit(path: Path, title: str, target, no_dash: bool, waivers=None):
     """Return (findings, words). findings: list of (level, code, detail)."""
     f = []
+    waivers = [w for w in (waivers or []) if w]
     raw = path.read_bytes()
     if raw[:3] == b"\xef\xbb\xbf":
         f.append(("FAIL", "bom", "UTF-8 BOM present (tools expect no-BOM)"))
@@ -114,9 +115,25 @@ def scan_unit(path: Path, title: str, target, no_dash: bool):
         f.append(("FAIL", "h2_present", f"{n_h2} '## ' heading(s) (generators drop these)"))
 
     if no_dash:
-        n = sum(text.count(c) for c in EM_EN)
+        # voice.lint_waivers: exact source-faithful strings (a verbatim quote whose
+        # own punctuation carries an em/en dash). A line carrying a waived string is
+        # excluded from the dash count and reported as WAIVED, so this gate agrees
+        # with lint_manuscript.py instead of contradicting it. Fidelity for quoted
+        # source; the hard gate still stands over the author's own prose.
+        n = waived = 0
+        for line in text.splitlines():
+            c = sum(line.count(ch) for ch in EM_EN)
+            if not c:
+                continue
+            if any(w in line for w in waivers):
+                waived += c
+            else:
+                n += c
         if n:
             f.append(("FAIL", "emdash", f"{n} em/en dash(es) (voice.no_em_dashes on)"))
+        if waived:
+            f.append(("WAIVED", "emdash_waived",
+                      f"{waived} em/en dash(es) in verbatim quote(s) (voice.lint_waivers)"))
 
     for code, pat in PLACEHOLDER_PATTERNS:
         m = pat.search(prose_text)
@@ -152,6 +169,7 @@ def main():
     ws = cfgp.parent
     cur = ws / "manuscript" / "current"
     no_dash = (cfg.get("voice") or {}).get("no_em_dashes", True) is not False
+    waivers = (cfg.get("voice") or {}).get("lint_waivers") or []
 
     report = {"config": str(cfgp), "units": [], "total_words": 0}
     any_fail = any_warn = False
@@ -162,7 +180,7 @@ def main():
                                      "findings": [["FAIL", "missing_file", str(path)]]})
             any_fail = True
             continue
-        findings, words = scan_unit(path, title, target, no_dash)
+        findings, words = scan_unit(path, title, target, no_dash, waivers)
         report["total_words"] += words
         levels = {x[0] for x in findings}
         verdict = "FAIL" if "FAIL" in levels else ("WARN" if "WARN" in levels else "PASS")

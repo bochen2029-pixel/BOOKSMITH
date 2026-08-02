@@ -1252,6 +1252,40 @@ async function main() {
     });
   }
 
+  // ABOUT THE AUTHOR back matter, from config.about_the_author. generate_kindle.js
+  // and build_epub.py have always emitted this; the PRINT interior did not, so a
+  // print/digital edition ended on the last line of the last chapter with no
+  // author note at all. Its own recto section, page numbers continuing, so it
+  // reads as real back matter rather than a tacked-on paragraph.
+  const aboutAuthor = typeof config.about_the_author === "string"
+    ? config.about_the_author.trim() : "";
+  if (aboutAuthor) {
+    const aboutKids = [
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 480, after: 360 },
+        children: [new TextRun({
+          text: "ABOUT THE AUTHOR", font: T.FONT, size: 22,
+          color: T.BODY_COLOR, characterSpacing: 60,
+        })],
+      }),
+    ];
+    for (const para of aboutAuthor.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean)) {
+      aboutKids.push(new Paragraph({
+        spacing: { line: T.BODY_LINE, lineRule: "atLeast", after: 160 },
+        children: [new TextRun({ text: para, font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR })],
+      }));
+    }
+    sections.push({
+      properties: {
+        type: recto === "odd_page_sections" ? SectionType.ODD_PAGE : SectionType.NEXT_PAGE,
+        page: { ...PAGE_COMMON },
+      },
+      ...pageNumberFooters(),
+      children: aboutKids,
+    });
+  }
+
   // Trailing EVEN_PAGE blank — guarantees an even total page count (KDP ×2).
   // Truly-empty paragraph + explicit empty footers so KDP sees a blank page and
   // does NOT flag an inherited page number as "text outside margins" (§3.5).

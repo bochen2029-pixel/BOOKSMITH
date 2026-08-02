@@ -819,3 +819,45 @@ F1 em/en-dash == 0 (HARD) · F2 semicolon density ≥ 40/10k · F3 no bullets/me
 - **21.12 · Self-referential chapters trip their own gates.** The colophon's first draft QUOTED the banned strings it was describing and was rejected by the lint it praises. FIX: describe-not-quote — and print the rejection story; it is the most convincing sentence such a chapter can carry.
 - **21.13 · CJK/fullwidth stray sweep.** SYMPTOM: one Chinese numeral (五) mid-English-sentence (bilingual-model artifact), caught ad hoc. FIX: a 2-line unicode-range sweep belongs in scan_manuscript.py as a standing check for English-language books.
 - **21.14 · The pre-reconciled master source is the biggest upstream multiplier.** Book 3's single-file intake (gist + voice bible + refrain law + chapter map + four-layer fact base with binding rulings + per-chapter allocations + kill-list + locked decisions + assumptions/worklist) collapsed INGEST to size-slice-manifest and eliminated reconciliation risk entirely. Distill its section shape into templates/master_source.template.md and commission that artifact BEFORE booting the kit on any fact-heavy book.
+
+---
+
+## 20.3 · A fallback that preserves APPEARANCE defeats a perceptual gate (the silent hypergen cover)
+
+**Symptom.** For months, books whose `book_config.cover.art` specified SDXL shipped with
+procedurally-generated `hypergen.py` placeholder covers instead. At least four builds are known
+to have gone out this way (`governed_practice`, `last_mile`, `openworker`, `gate_and_ledger`).
+Nothing failed. No gate went red. The operator discovered it by eye, months later, having already
+paid to have the wiring "made sure of" more than once.
+
+**Proximate cause.** `cover_gen.py` could only start ComfyUI via `comfy launch` (comfy-cli), which
+has never been on PATH on the reference machine. The method that actually works (launch ComfyUI
+Desktop's `main.py` with its bundled CUDA venv) had been discovered and written into
+`SESSION_LOG.md` line 175 - and never wired into the tool. **A session log is not a mechanism.**
+
+**Root cause, and the part that generalizes.** `SUPERSTRUCTURE.md` row 1 of the anti-forgetting
+matrix claimed this exact failure was held by `vision_verify`, whose stated symptom-of-the-miss was
+"a blank gradient fails subject-matches-Bible." But `hypergen.py` exists precisely to produce
+*tasteful* abstract cover art. It sails through a perceptual rubric asking "does this look like a
+real cover?"
+
+> **The fallback was good enough to defeat the gate designed to catch fallbacks.**
+
+Every graceful degradation in this kit is a candidate for the same failure. A fallback that
+degrades **provenance** without degrading **appearance** is invisible to a perceptual check, and a
+perceptual check is exactly what we reached for.
+
+**Fix (2026-07-31).** Bind intent to a recorded fact, never to how the output looks.
+1. `book_config.cover.art.method` (schema-declared, enum: `sdxl|flux|hypergen|catalog|supplied|bespoke`)
+   states how the art is MEANT to be produced.
+2. `verify_build.py :: check_cover_art_provenance` **fails closed**: if the config asks for generated
+   art and no `cover_art/*.provenance.json` proves generation happened, that is a FAIL. A generator
+   that will not say what it did is not trusted. Books with deliberately non-generated covers declare
+   `method` and pass by declaration.
+3. Producers must write the provenance sidecar. Any that do not will now fail loudly instead of
+   shipping quietly.
+
+**The standing rule.** *When a step can silently degrade, the gate must check that the step HAPPENED,
+not that the output LOOKS right.* Perceptual gates catch ugly. They do not catch counterfeit.
+Ask any new node: "if this silently fell back, what would go red?" If the answer is nothing, it is
+unheld, no matter what the matrix claims.

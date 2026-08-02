@@ -53,6 +53,7 @@ SOURCE
     invokes _tools/check_part_pages.py + _tools/lint_manuscript.py.
 """
 import argparse
+import html
 import json
 import re
 import subprocess
@@ -970,6 +971,83 @@ def check_no_residual_latex(root: Path, cfg: dict, fmt: str):
                          f"{hits[:8]} — the LaTeX->Unicode transform did not run")
 
 
+def check_cover_art_provenance(root: Path, cfg: dict):
+    """HARD GATE (2026-07-31): the config declares HOW the cover art is meant to be
+    produced; this proves that is what actually happened.
+
+    Why this exists. `cover_gen.py` could only launch ComfyUI via `comfy launch`
+    (comfy-cli), which is not on PATH on the reference machine, so for MONTHS every
+    book silently fell back to `hypergen.py` and shipped a procedural placeholder
+    where the config specified SDXL. Four shipped books (governed_practice,
+    last_mile, openworker, gate_and_ledger) are known to have gone out this way.
+
+    Nothing caught it, and the reason is the interesting part: SUPERSTRUCTURE.md
+    row 1 claimed `vision_verify` held this, expecting the miss to look like "a
+    blank gradient." But hypergen produces genuinely tasteful abstract art, so it
+    PASSES a perceptual rubric asking "does this look like a real cover?" **The
+    fallback was good enough to defeat the gate designed to catch fallbacks.**
+
+    The lesson generalizes past covers: a fallback that degrades PROVENANCE without
+    degrading APPEARANCE is invisible to a perceptual check. Bind intent to a
+    recorded fact, not to how the output looks.
+
+    FAILS CLOSED. When the config asks for generated art, an unknown provenance is
+    a FAIL, not a pass. A generator that will not say what it did is not trusted.
+    Producers record `cover_art/<name>.provenance.json` as {"method": "sdxl" |
+    "hypergen" | "catalog" | "supplied" | "bespoke", ...}. Books whose cover is
+    deliberately not generated (a bespoke compositor, author-supplied art) declare
+    `cover.art.method` in book_config and this check honors it.
+    """
+    name = "cover_art_provenance"
+    cover = (cfg.get("cover") or {})
+    art = (cover.get("art") or {})
+
+    declared = str(art.get("method") or "").strip().lower()
+    if declared in {"bespoke", "supplied", "catalog", "hypergen"}:
+        return (name, True,
+                f"config declares cover.art.method='{declared}' (not AI-generated); "
+                f"provenance gate satisfied by declaration")
+
+    # SDXL/ComfyUI is intended when a checkpoint or workflow is configured.
+    wants_generated = bool(art.get("checkpoint") or art.get("workflow") or art.get("prompt_seed"))
+    if not wants_generated:
+        return (name, True, "no generated cover art configured; nothing to prove")
+
+    art_dir = root / "cover_art"
+    if not art_dir.is_dir():
+        return (name, False, "cover.art configured for generation but cover_art/ does not exist")
+
+    sidecars = sorted(art_dir.glob("*.provenance.json"))
+    if not sidecars:
+        return (name, False,
+                "FAIL-CLOSED: config asks for generated cover art (checkpoint/workflow/"
+                "prompt_seed set) but NO *.provenance.json exists in cover_art/, so the "
+                "pipeline cannot prove the art was generated rather than a silent "
+                "hypergen/placeholder fallback. Either run cover_gen.py (which must write "
+                "the sidecar) or, if the cover is deliberately not AI-generated, declare "
+                "cover.art.method ('bespoke' | 'supplied' | 'catalog' | 'hypergen') in "
+                "book_config.json.")
+
+    methods = []
+    for sc in sidecars:
+        try:
+            methods.append(str((json.loads(sc.read_text(encoding="utf-8")) or {})
+                               .get("method", "")).strip().lower())
+        except Exception as exc:                                  # noqa: BLE001
+            return (name, False, f"unreadable provenance sidecar {sc.name}: {exc}")
+
+    if "sdxl" in methods:
+        return (name, True,
+                f"generated cover art confirmed by provenance sidecar (methods: "
+                f"{', '.join(m or '?' for m in methods)})")
+
+    return (name, False,
+            f"PROVENANCE MISMATCH: config asks for generated (SDXL) cover art, but the "
+            f"recorded provenance is {methods!r}. This is the silent-fallback failure: a "
+            f"placeholder shipped where real art was specified. Fix the generator, or "
+            f"declare cover.art.method in book_config if the fallback is intended.")
+
+
 def check_lint(config_path: Path):
     name = "lint_manuscript_clean"
     if not LINT_SCRIPT.exists():
@@ -1174,6 +1252,13 @@ def check_no_artifact_emdash(path, cfg: dict):
     if path is None or not Path(path).exists():
         return (name, False, "artifact not found — artifact dash scan could not run")
     path = Path(path)
+    # voice.lint_waivers: exact source-faithful strings (a verbatim quote whose own
+    # punctuation carries the dash). lint_manuscript.py and scan_manuscript.py both
+    # honor these; without the same rule here a legitimately waived quote passes the
+    # source gates and then fails at the artifact gate, which is a contradiction, not
+    # a defect. A dash inside a waived string is skipped and counted as waived.
+    waivers = [w for w in ((cfg.get("voice") or {}).get("lint_waivers") or []) if w]
+    waived_n = 0
     hits = []
     try:
         with zipfile.ZipFile(path) as z:
@@ -1189,19 +1274,39 @@ def check_no_artifact_emdash(path, cfg: dict):
                     text = re.sub(r"<[^>]+>", " ", xml)
                 else:
                     continue
+                # Un-escape entities before matching: a DOCX writes an apostrophe as
+                # &apos;, so a waiver string like "K'bosch" would never match the raw
+                # extracted run text.
+                text = html.unescape(text)
                 for ch in _EM_DASH_SET:
-                    i = text.find(ch)
-                    if i >= 0:
+                    start = 0
+                    while True:
+                        i = text.find(ch, start)
+                        if i < 0:
+                            break
                         ctx = text[max(0, i - 24):i + 24].strip()
+                        window = text[max(0, i - 160):i + 160]
+                        if any(w in window for w in waivers):
+                            waived_n += 1
+                            start = i + 1
+                            continue
                         hits.append(f"{member}: U+{ord(ch):04X} ...{ctx}...")
                         break
+                    else:
+                        continue
+                    break
                 if _EM_DASH_ENTITY.search(xml):
                     hits.append(f"{member}: numeric/named dash entity")
     except (zipfile.BadZipFile, OSError, KeyError) as exc:
         return (name, False, f"could not scan artifact: {exc}")
     ok = not hits
-    return (name, ok, "rendered text clean (zero em/en dashes)" if ok
-            else "; ".join(hits[:4]))
+    if ok:
+        clean = "rendered text clean (zero em/en dashes)"
+        if waived_n:
+            clean += (f"; {waived_n} WAIVED in verbatim quote(s) "
+                      f"(voice.lint_waivers)")
+        return (name, True, clean)
+    return (name, False, "; ".join(hits[:4]))
 
 
 _MONO_FONTS = {"consolas", "courier new", "courier", "cascadia code", "cascadia mono",
@@ -1347,6 +1452,10 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
 
     # lint runs for every format (voice + corruption gate).
     checks.append(check_lint(config_path))
+
+    # Cover-art provenance runs for every format: the silent hypergen fallback
+    # shipped placeholder covers across four books before anything noticed.
+    checks.append(check_cover_art_provenance(root, cfg))
 
     # --final: the local KDP acceptance simulator (kdp_precheck.py) — the
     # deterministic layer of Amazon's own validator (page ranges, trim
