@@ -60,6 +60,20 @@ def unit_list(cfg):
     return out
 
 
+def unit_class(cfg, uid):
+    """Authorship class for a unit (CLAUDE.md §9): the unit's own `class` wins,
+    else `authorship.per_chapter_overrides[uid]`, else `authorship.default_class`
+    (default C). Returned uppercased."""
+    for u in cfg.get("units", []):
+        if isinstance(u, dict) and u.get("id") == uid and u.get("class"):
+            return str(u["class"]).upper()
+    auth = cfg.get("authorship") or {}
+    over = auth.get("per_chapter_overrides") or {}
+    if uid in over and over[uid]:
+        return str(over[uid]).upper()
+    return str(auth.get("default_class") or "C").upper()
+
+
 # Inline `code` and $math$ spans legitimately hold '<stubs>', '_', '|' and the
 # like; they are blanked before the prose structural + placeholder checks (the
 # inline analogue of the fenced-block exclusion in _prose_only).
@@ -175,18 +189,41 @@ def main():
     any_fail = any_warn = False
     for uid, title, target in unit_list(cfg):
         path = cur / f"{uid}_current.md"
-        if not path.exists():
+        cls = unit_class(cfg, uid)
+        # Class-A awareness (2026-08-02, CLAUDE.md §9): a Class-A manuscript is
+        # SUPPOSED to be empty until the author writes it — an empty/absent file
+        # is its correct mid-project state, not a packaging failure. Once prose
+        # exists it is scanned normally PLUS a visible WARN to confirm the prose
+        # is human-authored (machine-drafting a Class-A is the never-list's top
+        # entry, and no scan can tell authorship from bytes — a human confirms).
+        if cls == "A":
+            if not path.exists() or not path.read_text(
+                    encoding="utf-8", errors="replace").strip():
+                report["units"].append({
+                    "id": uid, "verdict": "PASS", "words": 0, "class": "A",
+                    "findings": [["PASS", "class_a_empty",
+                                  "Class-A unit awaiting the author "
+                                  "(empty by design; CLAUDE.md 9)"]]})
+                continue
+        elif not path.exists():
             report["units"].append({"id": uid, "verdict": "FAIL",
                                      "findings": [["FAIL", "missing_file", str(path)]]})
             any_fail = True
             continue
         findings, words = scan_unit(path, title, target, no_dash, waivers)
+        if cls == "A":
+            findings.append(("WARN", "class_a_has_prose",
+                             "Class-A unit carries prose: confirm it is "
+                             "HUMAN-authored (a machine-drafted Class-A "
+                             "violates CLAUDE.md 9; no scan can tell "
+                             "authorship from bytes)"))
         report["total_words"] += words
         levels = {x[0] for x in findings}
         verdict = "FAIL" if "FAIL" in levels else ("WARN" if "WARN" in levels else "PASS")
         any_fail |= verdict == "FAIL"
         any_warn |= "WARN" in levels
         report["units"].append({"id": uid, "verdict": verdict, "words": words,
+                                "class": cls,
                                 "findings": [list(x) for x in findings]})
     # Mid-flow image existence check (2026-07-27): every generator now EMBEDS a
     # standalone "![alt](path)" line — print embed arrived with the figure
