@@ -886,8 +886,11 @@ def main() -> int:
         })
     all_pass = all(c["pass"] for c in checks)
 
-    # Internal flag — not part of the emitted JSON contract.
-    info.pop("cover_is_raw_art", None)
+    # C-27 (2026-08-02): the flag used to be POPPED here, so no caller could
+    # ever detect the raw-art cover — the tool self-certified. It now ships in
+    # the emitted JSON; the inline check above stays advisory (an epub built
+    # mid-pipeline legitimately precedes cover compositing), but the fact is
+    # visible to orchestrators and future verify_build reads.
 
     print(json.dumps({
         "epub": str(out_path),

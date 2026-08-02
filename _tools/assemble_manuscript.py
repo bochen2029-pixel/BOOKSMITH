@@ -260,9 +260,10 @@ def assemble(config_path, workspace_arg, forced_version, overwrite=False):
     }
     print(json.dumps(summary, indent=2))
     if not parity_ok:
-        print(f"[WARN] parity mismatch: re-read source sum {parts_sum} != "
+        print(f"[FAIL] parity mismatch: re-read source sum {parts_sum} != "
               f"stitched master {total_words} (a source file changed on disk "
-              f"during assembly, or a piece was dropped/duplicated).",
+              f"during assembly, or a piece was dropped/duplicated). Fatal "
+              f"unless --allow-parity-drift is passed (C-2, 2026-08-02).",
               file=sys.stderr)
     # BODY_WORDS is the parity baseline every format is checked against: the
     # generators render front matter FROM CONFIG and drop any stitched front-
@@ -274,12 +275,77 @@ def assemble(config_path, workspace_arg, forced_version, overwrite=False):
     return summary
 
 
+def run_selftest() -> int:
+    """--selftest: prove the parity gate CAN fail (INVARIANT T).
+
+    Builds a throwaway one-unit workspace, then simulates the mid-run mutation
+    the gate guards against by monkeypatching read_text so the independent
+    parity re-read returns different text than the stitch read. Asserts:
+    (1) clean assembly -> parity_ok true (positive control); (2) mutated
+    re-read -> parity_ok false, i.e. the comparator genuinely compares.
+    (The deliberately-deleted alternative — truncating a source BEFORE the run —
+    moves both sides equally and passes whether or not the gate exists; that
+    inert test generates fake-green and must not return. REMEDIATION_PLAN_v2 C-2.)
+    """
+    import shutil
+    import tempfile
+
+    tmp = tempfile.mkdtemp(prefix="assemble_selftest_")
+    failures = 0
+    global read_text
+    real_read_text = read_text
+    try:
+        ws = os.path.join(tmp, "st")
+        cur = os.path.join(ws, "manuscript", "current")
+        os.makedirs(cur)
+        with open(os.path.join(cur, "ch_01_current.md"), "w", encoding="utf-8") as f:
+            f.write("# One\n\nalpha beta gamma delta epsilon\n")
+        cfg_path = os.path.join(ws, "book_config.json")
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            json.dump({"title": "T", "author": "A", "slug": "st",
+                       "is_fiction": False, "formats": ["kindle"],
+                       "units": [{"id": "ch_01"}]}, f)
+
+        summary = assemble(cfg_path, ws, None, False)
+        ok1 = summary.get("parity_ok") is True
+        failures += (not ok1)
+        print(f"  [{'OK ' if ok1 else 'BAD'}] clean_assembly_parity_PASSES")
+
+        # Mid-run mutation: the parity re-read (2nd read of each source) sees
+        # extra words the stitch never saw.
+        calls = {}
+
+        def mutated_read_text(path):
+            calls[path] = calls.get(path, 0) + 1
+            text = real_read_text(path)
+            if calls[path] > 1:
+                return text + "\ninjected mid-run drift words\n"
+            return text
+
+        read_text = mutated_read_text
+        summary2 = assemble(cfg_path, ws, None, False)
+        ok2 = summary2.get("parity_ok") is False
+        failures += (not ok2)
+        print(f"  [{'OK ' if ok2 else 'BAD'}] mutated_reread_parity_FAILS")
+    finally:
+        read_text = real_read_text
+        shutil.rmtree(tmp, ignore_errors=True)
+
+    verdict = "PASS" if failures == 0 else "FAIL"
+    print(f"ASSEMBLE SELFTEST (parity gate): {verdict} "
+          f"({2 - failures}/2 assertions held)")
+    return 0 if failures == 0 else 1
+
+
 def main() -> int:
     args = sys.argv[1:]
+    if "--selftest" in args:
+        return run_selftest()
     config_path = None
     workspace_arg = None
     forced_version = None
     overwrite = False
+    allow_parity_drift = False
     i = 0
     while i < len(args):
         a = args[i]
@@ -291,14 +357,23 @@ def main() -> int:
             forced_version = int(args[i + 1]); i += 2; continue
         if a == "--overwrite":
             overwrite = True; i += 1; continue
+        if a == "--allow-parity-drift":
+            allow_parity_drift = True; i += 1; continue
         i += 1
 
     if not config_path:
         print("Usage: python assemble_manuscript.py --config book_config.json "
-              "[--workspace <dir>] [--version N] [--overwrite]", file=sys.stderr)
+              "[--workspace <dir>] [--version N] [--overwrite] "
+              "[--allow-parity-drift] [--selftest]", file=sys.stderr)
         return 2
 
-    assemble(config_path, workspace_arg, forced_version, overwrite)
+    summary = assemble(config_path, workspace_arg, forced_version, overwrite)
+    # C-2 (2026-08-02): the anti-drift keystone fails CLOSED on a parity
+    # mismatch instead of warning and shipping a possibly-mutilated master.
+    # Both orchestrators already treat nonzero as fatal (engine.py HardStop,
+    # produce_book.py return 1), so this cannot abort a legitimate build.
+    if not summary.get("parity_ok", True) and not allow_parity_drift:
+        return 1
     return 0
 
 

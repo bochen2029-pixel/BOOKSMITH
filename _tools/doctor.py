@@ -515,11 +515,15 @@ def check_kit_env():
                                 f"add a '{blk}' block (see the template)"))
 
     # cover_gen -> AI cover art (OPTIONAL capability).
+    # C-18.2 (2026-08-02): ALL declared paths must resolve, not ANY. The old
+    # truthy-list test passed with 1 of 3 paths present, so a box missing the
+    # skill dir (or the model) still reported "paths resolve" — a false green
+    # feeding every downstream capability claim (env audit HIGH-6).
     cg = env.get("cover_gen", {}) or {}
     cg_paths = [cg.get("comfyui_skill_dir"), cg.get("run_workflow"),
                 cg.get("workflows_dir")]
     present = _paths_exist(*cg_paths)
-    if cg and present:
+    if cg and len(present) == len(cg_paths):
         ckpt = cg.get("checkpoints_dir")
         ckpt_note = ""
         if ckpt and not _paths_exist(ckpt):
@@ -527,15 +531,18 @@ def check_kit_env():
         checks.append(Check("cap: AI cover art (cover_gen)", PASS,
                             f"ComfyUI/hermes paths resolve{ckpt_note}", ""))
     else:
+        missing = [p for p in cg_paths if not (p and Path(p).exists())]
         checks.append(Check("cap: AI cover art (cover_gen)", WARN,
-                            "cover_gen paths missing -> AI cover art disabled",
+                            f"cover_gen paths missing ({len(missing)} of "
+                            f"{len(cg_paths)} unresolved) -> AI cover art disabled",
                             "supply your own art in cover_art/ -- compositing + "
                             "verification still work (Tier 2)"))
 
     # vision -> local KEEL verification (OPTIONAL; Claude vision is the fallback).
+    # C-18.2: same ALL-of-N rule as cover_gen above.
     vis = env.get("vision", {}) or {}
     vis_paths = [vis.get("llama_server"), vis.get("qwen_model"), vis.get("mmproj")]
-    if vis and _paths_exist(*vis_paths):
+    if vis and len(_paths_exist(*vis_paths)) == len(vis_paths):
         checks.append(Check("cap: local vision (KEEL)", PASS,
                             f"llama-server + Qwen model + mmproj resolve "
                             f"({vis.get('host','?')}:{vis.get('port','?')})", ""))

@@ -1372,19 +1372,39 @@ def resolve_art_path(cfg: CoverConfig, workspace: Path, override: str | None) ->
         if not p.is_absolute():
             p = (workspace / p) if workspace else (Path.cwd() / p)
         return p
-    # Default location + a couple of tolerant fallbacks.
-    candidates = [
+    # Canonical location first.
+    canonical = [
         workspace / "cover_art" / f"{cfg.slug}_src.png",
         workspace / "cover_art" / f"{cfg.slug}_src.jpg",
     ]
+    for c in canonical:
+        if c.exists():
+            return c
+    # C-4 (2026-08-02): the old fallback globbed cover_art/ and took the first
+    # image ALPHABETICALLY — with several images on disk the compositor could
+    # silently build the wrap from the wrong art (fallbacks audit F7). Rule now:
+    # exactly ONE image in cover_art/ is unambiguous operator intent (kept — the
+    # single-file workspaces depend on it, loudly noted); MORE than one is a
+    # refusal naming the candidates, never a silent alphabetical pick.
     art_dir = workspace / "cover_art"
     if art_dir.is_dir():
         pngs = sorted(art_dir.glob("*.png")) + sorted(art_dir.glob("*.jpg"))
-        candidates += pngs
-    for c in candidates:
-        if c.exists():
-            return c
-    return candidates[0]  # return the canonical default even if missing (caller errors)
+        if len(pngs) == 1:
+            print(f"[composite_cover] note: canonical {canonical[0].name} absent; "
+                  f"using the single image in cover_art/: {pngs[0].name}",
+                  file=sys.stderr)
+            return pngs[0]
+        if len(pngs) > 1:
+            print(json.dumps({
+                "status": "error",
+                "error": f"cover_art/ holds {len(pngs)} images and none is the "
+                         f"canonical {cfg.slug}_src.png — refusing to pick one "
+                         f"alphabetically (silent wrong-art hazard, F7).",
+                "candidates": [p.name for p in pngs],
+                "hint": "Pass --art <path> to name the source art explicitly.",
+            }, indent=2))
+            sys.exit(2)
+    return canonical[0]  # canonical default even if missing (caller errors)
 
 
 def build_kindle_front(cfg: CoverConfig, art_path: Path, out_dir: Path):

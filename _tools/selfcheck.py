@@ -514,6 +514,23 @@ def check_kdp_precheck_selftest():
 
 
 # ---- 15. Image generation is a held, discoverable, autonomous capability -----
+def check_assemble_selftest():
+    """assemble_manuscript.py --selftest must hold: the parity comparator
+    genuinely compares (a mid-run source mutation flips parity_ok false) and a
+    clean assembly stays true. C-2's inert truncation test is deliberately NOT
+    used — it passes whether or not the gate exists."""
+    try:
+        r = subprocess.run([sys.executable, str(TOOLS / "assemble_manuscript.py"),
+                            "--selftest"],
+                           capture_output=True, text=True, timeout=120)
+    except Exception as e:
+        add("assemble_selftest", FAIL, f"could not run --selftest: {e}")
+        return
+    tail = [l for l in (r.stdout or "").splitlines() if l.strip()]
+    add("assemble_selftest", PASS if r.returncode == 0 else FAIL,
+        (tail[-1].strip() if tail else f"rc={r.returncode}")[:120])
+
+
 def check_verify_build_selftest():
     """verify_build.py --selftest must hold: the provenance gate's must-fail
     fixture battery (tampered sidecars REJECTED, sha-bound good inputs PASS).
@@ -613,7 +630,7 @@ def main():
                check_config_key_drift, check_doc_coverage, check_js_dash_literals,
                check_spine_constant_parity, check_produce_book_selftest,
                check_kdp_precheck_selftest, check_verify_build_selftest,
-               check_image_gen_capability):
+               check_assemble_selftest, check_image_gen_capability):
         try:
             fn()
         except Exception as e:
