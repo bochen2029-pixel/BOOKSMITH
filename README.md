@@ -23,6 +23,36 @@ Each is checked against the production gates before the folder is surfaced — t
 
 ---
 
+## The Studio — drive it from a browser 🖥
+
+A localhost web UI over the same deterministic engine, for when you would rather click than type
+into a coding harness. Run `studio.cmd`; it prints a tokenized `http://127.0.0.1:8756/…` and opens it.
+
+![BOOKSMITH Studio — the New Book wizard](docs/studio-new-book.png)
+
+- **Library / Overview** — every workspace, the engine's stage rail (done · **stale** · failed ·
+  awaiting model), a live run console, deliverables, and a spend meter.
+- **Run** — run, resume, dry-run, run-to-stage, cancel (process-tree kill). The engine resumes from
+  hash-keyed disk state, so a cancelled run costs only the stage it interrupted.
+- **Revise** — write a direction for one chapter, see exactly which stages it re-opens, approve, and
+  the engine re-drafts under the same gates. Every take is archived; nothing is overwritten.
+- **Revision chat** — talk to the book in plain language. The model *compiles* intent into
+  operations; it proposes, you approve. It cannot write prose, edit files, or delete anything.
+- **Cover studio** — art provenance and reuse verdicts, re-roll, print wraps, and the perceptual
+  gate: when no vision backend answers, you adjudicate PASS/FAIL yourself and the verdict is
+  recorded against the image's hash.
+- **Formats / QA** — `verify_build` rendered as a checks × formats grid with per-cell drill-down.
+- **Settings / Doctor** — model backend, machine tier. **API keys live in the environment only**;
+  the Studio never writes one to disk or echoes one back.
+
+Optional install: `pip install -r requirements-studio.txt` (FastAPI + uvicorn — nothing else).
+Design spec: [`docs/STUDIO_SPEC.md`](docs/STUDIO_SPEC.md) · build state + gate evidence:
+[`docs/STUDIO_BUILD_LOG.md`](docs/STUDIO_BUILD_LOG.md).
+
+The Studio holds no book state of its own: it *spawns* the engine and *projects* what the engine
+writes. Every mutation — button or chat — goes through one typed operation catalog, under the same
+gates, appended to the same ledgers.
+
 ## How to use it
 
 ### 1. Drop your intake
@@ -35,6 +65,8 @@ Put two things in `intake/`:
 You do not need to organize the folder or name files a particular way. The harness discovers and classifies what's there.
 
 ### 2. Boot the harness
+
+*(Prefer a browser? Run `studio.cmd` instead — see [The Studio](#the-studio--drive-it-from-a-browser-) above. The rest of this section is the coding-harness path.)*
 
 Open Claude Code in the BOOKSMITH folder and say, in plain language, what you want. (First time on this machine? Read `INSTALL.md` and run `python _tools/doctor.py` first.) The harness matches intent, not syntax:
 
@@ -95,6 +127,8 @@ BOOKSMITH\
 │   ├── cover_pipeline.md      art-gen prompt rules + composite + perceptual verify
 │   ├── COMPACTION_SURVIVAL.md session-survival: jsonl→md rehydration + hooks
 │   └── VALIDATION.md          the loop-test proof record
+├── studio/                the localhost web UI (server + projection + ops + chat; optional)
+├── studio.cmd             launch the Studio
 ├── _tools/                the portable toolchain + schemas + kit_env.template.json
 ├── fonts/                 vendored OFL TTFs + per-family licenses (fonts/LICENSES/)
 ├── templates/             blank scaffolds the seed builder fills per book

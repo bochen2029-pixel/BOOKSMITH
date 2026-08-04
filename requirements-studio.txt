@@ -1,0 +1,5 @@
+# BOOKSMITH Studio (studio/server.py) — an OPTIONAL capability tier, per docs/STUDIO_SPEC.md.
+# The kit runs fully without these; install only to use the localhost Studio face.
+#   pip install -r requirements-studio.txt
+fastapi>=0.110
+uvicorn>=0.27

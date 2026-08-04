@@ -94,6 +94,7 @@ class ModelClient:
         t0 = time.time()
         err = None
         text = ""
+        self._last_usage = None      # E-4: per-call token usage, when the API reports it
         retries = int(self.cfg.get("max_retries", 4))
         for attempt in range(retries):
             try:
@@ -157,6 +158,10 @@ class ModelClient:
         if stop:
             body["stop_sequences"] = stop
         resp = self._http_json(base + "/v1/messages", headers, body)
+        u = resp.get("usage") or {}
+        if u:
+            self._last_usage = {"in_tokens": u.get("input_tokens"),
+                                "out_tokens": u.get("output_tokens")}
         parts = [b.get("text", "") for b in resp.get("content", []) if b.get("type") == "text"]
         return "".join(parts).strip()
 
@@ -181,6 +186,10 @@ class ModelClient:
             body["stop"] = stop
         url = base + ("/chat/completions" if not base.endswith("/chat/completions") else "")
         resp = self._http_json(url, headers, body)
+        u = resp.get("usage") or {}
+        if u:
+            self._last_usage = {"in_tokens": u.get("prompt_tokens"),
+                                "out_tokens": u.get("completion_tokens")}
         return resp["choices"][0]["message"]["content"].strip()
 
     def _mock(self, system, prompt, mt) -> str:
@@ -236,6 +245,9 @@ class ModelClient:
             "seconds": round(dt, 2),
             "error": repr(err) if err else None,
         }
+        usage = getattr(self, "_last_usage", None)
+        if usage:
+            rec.update({k: v for k, v in usage.items() if v is not None})
         try:
             (self.log_dir / f"call_{self._n:04d}.json").write_text(
                 json.dumps(rec, indent=2), encoding="utf-8")

@@ -31,7 +31,7 @@ end. An already-architected book skips the preamble untouched.
 Usage:
   python _tools/engine.py --config <book_config.json> [--backend mock|anthropic|openai]
                           [--to STAGE] [--from STAGE] [--dry-run] [--no-cover]
-                          [--status] [--fresh]
+                          [--status] [--explain] [--fresh]
 
 --dry-run  = backend defaults to mock + external-service stages (cover art) are
              skipped, but every mechanical gate still runs. This is how you
@@ -272,11 +272,19 @@ class Engine:
         contract = self.ws / "contracts" / f"{uid}.md"
         prior = self._prior_prose_path(uid)
         seed = self.ws / "seed.md"
-        blob = "|".join([
+        parts = [
             sha_file(contract), sha_file(prior), sha_file(seed),
             sha_text(json.dumps(unit, sort_keys=True)),
             str(self.cfg.get("voice", {})),
-        ])
+        ]
+        # E-2 (docs/STUDIO_SPEC.md): a revision note is a draft INPUT — its
+        # appearance or growth must invalidate the draft so the cascade is
+        # automatic. Joined ONLY when the file exists, so every pre-E-2 book
+        # keeps byte-identical hashes (no retroactive false staleness).
+        notes_p = self.ws / "revision_notes" / f"{uid}.md"
+        if notes_p.exists():
+            parts.append(sha_file(notes_p))
+        blob = "|".join(parts)
         return sha_text(blob)
 
     def _prior_prose_path(self, uid: str) -> Path:
@@ -316,10 +324,16 @@ class Engine:
             f"Honor the author's voice. {'Do NOT use em-dashes (U+2014/U+2013); use semicolons, colons, or periods. ' if no_em else ''}"
             + (f"Never use these words: {', '.join(blacklist)}. " if blacklist else "")
         )
+        # E-2: accumulated revision directives (the `revise … with <note>` verb,
+        # KIT_ARCHITECTURE §d) ride the prompt; the notes file is hash-folded in
+        # draft_inputs_sha, so appending a note re-opens exactly this draft.
+        notes_p = self.ws / "revision_notes" / f"{uid}.md"
+        notes = notes_p.read_text(encoding="utf-8")[-4000:] if notes_p.exists() else ""
         prompt = (
             (f"# {bible_label} (excerpt)\n{seed}\n\n" if seed else "")
             + (f"# Previous {noun} (for continuity; echo its close with variation, do not quote)\n{prior}\n\n" if prior else "")
             + f"# Your contract for this {noun}\n{contract}\n\n"
+            + (f"# Revision directives (accumulated across takes; newest last; honor ALL)\n{notes}\n\n" if notes else "")
             + f"# Task\nWrite the {noun} titled \"{title}\" at ~{target} words. "
             + f"Begin with the exact line: # {title}\n"
             + f"Return only the {noun} markdown."
@@ -1426,6 +1440,33 @@ class Engine:
         print(f"\n=== engine complete: {self.slug} ===")
         return 0
 
+    def explain(self) -> dict:
+        """--explain: the read-only staleness oracle (docs/STUDIO_SPEC.md, E-1).
+        Reports the ordered plan with each stage's input hash, satisfaction, and
+        state record. Runs nothing, calls no model, mutates nothing. Any face on
+        the engine (the Studio, a future console) reads staleness from HERE, so
+        the hash logic is never reimplemented outside this file."""
+        entries = []
+        for key, kind in self.plan():
+            arg = key.split(":", 1)[1] if ":" in key else ""
+            isha = self.input_sha(key, kind, arg)
+            entries.append({
+                "key": key, "kind": kind, "input_sha": isha,
+                "satisfied": self.satisfied(key, kind, arg, isha),
+                "expected_outputs": [str(p) for p in self.expected_outputs(kind, arg)],
+                "state": self.state.rec(key) or None,
+            })
+        architect = {"ingest_needed": self._ingest_needed(),
+                     "seed_needed": self._seed_needed()}
+        for k in ("ingest", "seed"):
+            rec = self.state.rec(k)
+            if rec:
+                architect[f"{k}_state"] = rec
+        return {"slug": self.slug, "domain": self.domain,
+                "backend": self.model.backend, "dry_run": self.dry_run,
+                "no_cover": self.no_cover, "config_sha": sha_file(self.config_path),
+                "architect": architect, "plan": entries}
+
 
 def _cover_art_method(cfg: dict) -> str:
     return str(((cfg.get("cover") or {}).get("art") or {}).get("method") or "").strip().lower()
@@ -1578,6 +1619,15 @@ def main(argv=None) -> int:
                     help="regenerate the cover art even if reusable art exists "
                          "(the existing file is preserved aside, never overwritten)")
     ap.add_argument("--status", action="store_true", help="print state and exit")
+    ap.add_argument("--explain", action="store_true",
+                    help="print the ordered stage plan with input hashes + satisfaction "
+                         "(JSON) and exit; runs nothing, calls no model")
+    ap.add_argument("--only", metavar="STAGE_KEY", default=None,
+                    help="run exactly ONE stage (e.g. draft:ch_03, produce:kindle, cover) "
+                         "through the standard mark/gate/hard-stop machinery, then exit "
+                         "(docs/STUDIO_SPEC.md E-3)")
+    ap.add_argument("--force-stage", action="store_true",
+                    help="with --only: re-run the stage even if it is currently satisfied")
     ap.add_argument("--fresh", action="store_true", help="discard prior engine state")
     args = ap.parse_args(argv)
 
@@ -1598,6 +1648,29 @@ def main(argv=None) -> int:
     if args.status:
         print(json.dumps(eng.state.data, indent=2, ensure_ascii=False))
         return 0
+    if args.explain:
+        print(json.dumps(eng.explain(), indent=2, ensure_ascii=False))
+        return 0
+    if args.only:
+        key = args.only.strip()
+        pairs = dict(eng.plan())
+        pairs.setdefault("ingest", "ingest")
+        pairs.setdefault("seed", "seed")
+        if key not in pairs:
+            print(f"unknown stage key: {key}; known: {', '.join(pairs)}", file=sys.stderr)
+            return 1
+        kind = pairs[key]
+        arg = key.split(":", 1)[1] if ":" in key else ""
+        if kind == "draft":
+            unit = next(u for u in eng.units() if u["id"] == arg)
+            if str(unit.get("class", "C")).upper() == "A":
+                # mirror stage_draft: Class A prose is human-only, so a forced
+                # single-stage run must refuse rather than silently skip
+                print(f"refusing --only {key}: Class A units are human-authored",
+                      file=sys.stderr)
+                return 1
+        rc = eng._run_one(key, kind, arg, force=args.force_stage)
+        return 0 if rc is None else rc
     return eng.drive(only_to=args.to, only_from=args.from_)
 
 

@@ -58,6 +58,10 @@ docs/_lessons_staging.md
 _snapshots/
 # engine runtime state (engine.py owns it; regenerable, per-machine; never track)
 **/_engine/
+# studio runtime state (studio/server.py owns it: token, jobs, per-book chat/proposals;
+# regenerable, per-machine, may carry session content — never track)
+_studio/
+**/_studio/
 # prerendered cover-catalog IMAGES: large + regenerable (hypergen renders live;
 # SDXL via catalog_build on a GPU box). The manifest cover_catalog/catalog.json IS
 # tracked; a curated image subset ships via make_giftable or `git add -f`.
