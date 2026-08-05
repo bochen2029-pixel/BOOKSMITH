@@ -406,6 +406,9 @@ function makeFactories(T, buildInlineRuns) {
     return new Paragraph({
       spacing: { before: 300, after: 160 },
       alignment: AlignmentType.LEFT,
+      keepNext: true,        // bind a subhead to the text that follows it, so a
+                             // heading can never strand alone at a page foot
+      keepLines: true,
       children: [new TextRun({ text: title, font: T.FONT, size: 24, color: T.BODY_COLOR, bold: true })],
     });
   }
