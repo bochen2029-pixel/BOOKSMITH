@@ -38,17 +38,47 @@ for p in sorted(HERE.glob("*.py")):
     except SyntaxError as e:
         check(False, f"python parses: {p.name}", f"line {e.lineno}: {e.msg}")
 
-js = HERE / "web" / "app.js"
-if not js.is_file():
-    check(False, "web/app.js exists")
-elif shutil.which("node"):
-    r = subprocess.run(["node", "--check", str(js)], capture_output=True, text=True)
-    check(r.returncode == 0, "node --check web/app.js",
-          (r.stderr or "").strip().splitlines()[:3] and
-          " / ".join((r.stderr or "").strip().splitlines()[:3]))
-else:
-    print("  --   node absent; skipping the JS syntax gate")
+for jsname in ("app.js", "conductor.js", "i18n.js"):
+    js = HERE / "web" / jsname
+    if not js.is_file():
+        check(False, f"web/{jsname} exists")
+    elif shutil.which("node"):
+        r = subprocess.run(["node", "--check", str(js)], capture_output=True, text=True)
+        check(r.returncode == 0, f"node --check web/{jsname}",
+              (r.stderr or "").strip().splitlines()[:3] and
+              " / ".join((r.stderr or "").strip().splitlines()[:3]))
+    else:
+        print("  --   node absent; skipping the JS syntax gate")
 
+# S6 vocabulary gate: the Conductor is the plain-language face, so no engine
+# jargon may appear in any string a reader could see. Mechanical version of
+# the invariant: scan conductor.js string literals that LOOK like display
+# text (contain a space); token/URL literals pass untouched; a line carrying
+# a "jargon-ok" marker is exempt (API values, not display).
+import re as _re
+_FORBID = _re.compile(
+    r"\b(stale|reconverge|hard[ -]?stops?|hardstops?|blast\s+radius|nonce|"
+    r"proposals?|backends?|subprocess(es)?|stages?|gate[sd]?)\b", _re.I)
+_LIT = _re.compile(r'"((?:[^"\\\n]|\\.)*)"|\'((?:[^\'\\\n]|\\.)*)\'|`((?:[^`\\]|\\.)*)`')
+cond = HERE / "web" / "conductor.js"
+if cond.is_file():
+    hits = []
+    for n, line in enumerate(cond.read_text(encoding="utf-8").splitlines(), 1):
+        if "jargon-ok" in line:
+            continue
+        for m in _LIT.finditer(line):
+            lit = next(g for g in m.groups() if g is not None)
+            if " " not in lit:
+                continue                      # token/URL literal, not display text
+            hit = _FORBID.search(lit)
+            if hit:
+                hits.append(f"line {n}: {hit.group(0)!r} in {lit[:60]!r}")
+    check(not hits, "conductor speaks plain language (no engine jargon in display strings)",
+          " | ".join(hits[:4]))
+
+for page in ("index.html", "pro.html"):
+    check((HERE / "web" / page).is_file(), f"web/{page} present")
+check((HERE / "reference_config.json").is_file(), "reference_config.json vendored (new-book fallback)")
 check((HERE / "prompts" / "compiler.md").is_file(), "prompts/compiler.md present")
 
 sys.path.insert(0, str(HERE))

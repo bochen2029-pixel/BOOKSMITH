@@ -129,12 +129,13 @@ function setView(...nodes) {
 function chrome() {
   return h("div", { class: "top" },
     h("a", { href: "#/", class: "wordmark" }, "BOOKSMITH ", h("b", null, "Studio")),
-    h("span", { class: "ver" }, "S4 · full surface"),
+    h("span", { class: "ver" }, "S6 · advanced face"),
     h("nav", null,
       h("a", { href: "#/" }, "Library"),
       h("a", { href: "#/jobs" }, "Jobs"),
       h("a", { href: "#/settings" }, "Settings"),
-      h("a", { href: "#/doctor" }, "Doctor")));
+      h("a", { href: "#/doctor" }, "Doctor"),
+      h("a", { href: "/" + location.hash, title: "the plain-language face" }, "Simple view")));
 }
 function route() {
   const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);

@@ -149,9 +149,16 @@ def list_books() -> list[dict]:
         sp = d / "_engine" / "state.json"
         if sp.is_file():
             mtimes.append(sp.stat().st_mtime)
+        # Composited ebook cover, when it exists — the shelf renders it via the
+        # jailed /file route (outputs/ is a serve root). Cheap existence check.
+        cover_rel = f"outputs/kindle/{d.name}_KINDLE_cover.jpg"
+        if not (d / cover_rel).is_file():
+            cover_rel = None
         out.append({
             "slug": d.name,
             "title": cfg.get("title") or d.name,
+            "subtitle": cfg.get("subtitle") or "",
+            "cover_rel": cover_rel,
             "author": cfg.get("author") or "",
             "domain": cfg.get("domain", "book"),
             "is_fiction": bool(cfg.get("is_fiction")),
@@ -473,6 +480,94 @@ def cover(slug: str) -> dict:
         "reroll_budget": int(((cfg.get("cover") or {}).get("art") or {}).get("reroll_budget", 6)),
         "formats": cfg.get("formats") or [],
     }
+
+
+# ---------------------------------------------------------------------------
+# S10: one archived version's text (the take-picker reads competing takes)
+# ---------------------------------------------------------------------------
+def unit_version_text(slug: str, uid: str, ref: str) -> dict:
+    ws = resolve_slug(slug)
+    if not re.fullmatch(r"[A-Za-z0-9._\-]+", uid or ""):
+        raise ValueError(f"bad unit id {uid!r}")
+    if ref == "current":
+        p = ws / "manuscript" / "current" / f"{uid}_current.md"
+    elif re.fullmatch(r"v\d+", ref or ""):
+        p = ws / "manuscript" / "drafts" / f"{uid}_{ref}.md"
+    else:
+        raise ValueError(f"ref must be 'current' or 'vN', got {ref!r}")
+    if not p.is_file():
+        raise ValueError(f"no such take: {p.name}")
+    text = _read_text(p) or ""
+    return {"uid": uid, "ref": ref, "words": len(text.split()), "text": text}
+
+
+# ---------------------------------------------------------------------------
+# S10: the book passport — a self-contained, shareable receipts page
+# ---------------------------------------------------------------------------
+def passport_html(slug: str) -> str:
+    """One HTML file, no external assets: what the book is, its cover (inlined),
+    its chapters, its checks, and the machine-work ledger. Read-only — derived
+    entirely from the projections; writes nothing."""
+    import base64
+    import html as _h
+    ws = resolve_slug(slug)
+    d = book_detail(slug)
+    us = units(slug)
+    sp = spend(slug)
+    vm = verify_matrix(slug)
+    cov = ws / "outputs" / "kindle" / f"{slug}_KINDLE_cover.jpg"
+    cover_uri = ""
+    if cov.is_file() and cov.stat().st_size < 3_000_000:
+        cover_uri = "data:image/jpeg;base64," + base64.b64encode(cov.read_bytes()).decode()
+    total_words = sum(u.get("current_words") or 0 for u in us)
+    checks = []
+    for fmt, res in (vm.get("results") or {}).items():
+        if res:
+            checks.append((fmt, bool(res.get("all_pass")),
+                           len(res.get("checks") or [])))
+    tokens = sp.get("tokens") if sp.get("exact") else sp.get("est_tokens")
+    esc_ = _h.escape
+    rows = "".join(
+        f"<tr><td class='n'>{i + 1}</td><td>{esc_(u.get('title') or u.get('id'))}</td>"
+        f"<td class='w'>{(u.get('current_words') or 0):,}</td></tr>"
+        for i, u in enumerate(us))
+    checkrows = "".join(
+        f"<li>{esc_(fmt)}: <b class='{ 'ok' if ok else 'bad'}'>"
+        f"{'all checks green' if ok else 'not green'}</b> ({n} checks)</li>"
+        for fmt, ok, n in checks) or "<li>no verification sweep recorded yet</li>"
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc_(d['title'])} — book passport</title>
+<style>
+ body{{font:16px/1.6 Georgia,serif;color:#23201a;background:#f5f0e4;margin:0;padding:2rem 1rem}}
+ .card{{max-width:640px;margin:0 auto;background:#fdfbf4;border:1px solid #e3dbc6;
+   border-radius:16px;padding:2.2rem;box-shadow:0 10px 34px rgba(60,50,25,.12)}}
+ img.cover{{width:200px;border-radius:6px 10px 10px 6px;box-shadow:0 12px 30px rgba(60,50,25,.3);
+   display:block;margin:0 auto 1.4rem}}
+ h1{{font-size:1.7rem;text-align:center;margin:.2rem 0}}
+ .by{{text-align:center;color:#77705e;margin-bottom:1.6rem}}
+ h2{{font-size:1.05rem;border-bottom:1px solid #e3dbc6;padding-bottom:.3rem;margin-top:1.8rem}}
+ table{{width:100%;border-collapse:collapse;font-size:.92rem}}
+ td{{padding:.25rem .4rem;border-bottom:1px solid #efe9d8}} td.n{{color:#a49b85;width:2rem}}
+ td.w{{text-align:right;color:#77705e}}
+ ul{{padding-left:1.2rem;font-size:.92rem}} .ok{{color:#2e6b47}} .bad{{color:#9c4a33}}
+ .foot{{margin-top:2rem;text-align:center;color:#a49b85;font-size:.8rem}}
+ .stat{{display:flex;gap:1.6rem;justify-content:center;font-size:.9rem;color:#4a4437;
+   flex-wrap:wrap;margin-top:.6rem}}
+</style></head><body><div class="card">
+{f'<img class="cover" src="{cover_uri}" alt="cover">' if cover_uri else ''}
+<h1>{esc_(d['title'])}</h1>
+{f"<div class='by'>{esc_(d.get('subtitle') or '')}</div>" if d.get('subtitle') else ''}
+<div class="by">by {esc_(d.get('author') or 'unknown')}</div>
+<div class="stat"><span>{len(us)} {esc_(d.get('unit_noun') or 'chapter')}s</span>
+<span>{total_words:,} words</span>
+<span>{(sp.get('calls') or 0)} model calls</span>
+{f"<span>~{int(tokens or 0):,} tokens of machine work</span>" if tokens else ''}</div>
+<h2>Contents</h2><table>{rows}</table>
+<h2>Every page checked</h2><ul>{checkrows}</ul>
+<div class="foot">Made with BOOKSMITH · the machine wrote under hard checks;
+a human approved every change · {esc_(_iso(time.time()))}</div>
+</div></body></html>"""
 
 
 # ---------------------------------------------------------------------------

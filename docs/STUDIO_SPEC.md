@@ -818,6 +818,41 @@ satisfied by this Shell + a binding, not a parallel build.
 
 ---
 
+---
+
+## §14 · S6 addendum — the two faces (added 2026-08-05, built same day; see STUDIO_BUILD_LOG §1/S6)
+
+The Studio grew a second face: the **Conductor**, the plain-language surface for a person who has
+never seen this spec. The architecture § s0–§13 describe is unchanged — the Conductor is the §10
+Shell/Binding insight turned inward: *a face is data over the same contract*.
+
+- **Routing:** `/` (index.html) is the Conductor; the operator dashboard moved intact to
+  `/pro.html`. "Advanced view" ↔ "Simple view" cross-links carry the route hash.
+- **Same API, same ops, zero new write paths.** The Conductor calls the §4 surface and the §8 ops
+  verbatim; CONTENT still proposes, the human still approves; DESTRUCTIVE still does not exist.
+- **The vocabulary layer is load-bearing and gated.** Every display string lives in one `STR` table
+  (i18n-ready); engine keys map to human phrases; **`studio/selfcheck.py` mechanically forbids
+  engine jargon in Conductor display strings** (the same bind-intent-to-a-gate move the kit applies
+  to books). Gates are translated, never hidden: a hard failure quotes the engine verbatim inside a
+  plain frame.
+- **Conductor screens:** bookshelf (cover-forward; `_`-fixtures hidden; the reference book badged
+  as the example) · book hub (one status line, one primary CTA, progress theater over the SSE event
+  stream, plain attention cards for hardstop / bridge / cover-adjudication / pending proposals,
+  chapters, files grouped Ebook/Share/Print, chat) · reader with per-chapter revision · interview
+  wizard → brief.md → create/upload/run · welcome tour · completion reveal.
+- **Non-goals inherited whole:** not an editor, not multi-user, not a KDP uploader, and never a
+  second writer of book state.
+
+**S7–S10 additions (same day; reality in STUDIO_BUILD_LOG §1):** a `#/setup` page (writer choice /
+keys / capability / spending guard) · **E-6, the spend floor** in `model_client.py`
+(`BOOKSMITH_TOKEN_BUDGET` ← `kit_env.studio.token_budget`: metered calls refuse past the cap —
+arithmetic, not discretion; free backends never blocked) plus append-only call-ledger numbering ·
+a full 中文 overlay (`web/i18n.js`) · op catalog +1: **`restore_cover_take`** (CONTENT; append-only
+both directions; sha-honest provenance with carried method + lineage) · multi-op plans accepted on
+the button channel (`POST /ops {ops:[…]}` → the same `submit_plan` the chat uses) · two read routes:
+`GET /units/{uid}/version` (take text) and `GET /passport` (self-contained receipts HTML) · the
+taste seed (`_studio/taste.jsonl`, appended on explicit human picks).
+
 *BOOKSMITH Studio v0.1.0 — a face, not a second brain: two primitives (spawn, project), one write
 path (ops), one chokepoint (approval), zero new authorities over a book. Build S0 first; the stage
 rail rendering a real book truthfully is the artifact that grades this spec.*

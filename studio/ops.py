@@ -78,6 +78,21 @@ def _ledger(ws: Path, op: str, detail: str, proposal: str | None, job: str | Non
         f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
+def _taste(ws: Path, kind: str, detail: dict) -> None:
+    """The taste seed (ROADMAP H2.4 fuel, gathered for free): every explicit
+    human PICK — a cover kept, a take chosen, a verdict passed — appends one
+    record to the book's _studio/taste.jsonl. Append-only, never read by the
+    pipeline today; a future taste model learns the operator's preferences
+    from it. Never raises."""
+    try:
+        rec = {"ts": _now(), "kind": kind, **{k: v for k, v in (detail or {}).items()
+                                              if isinstance(v, (str, int, float, bool))}}
+        with (_studio_dir(ws) / "taste.jsonl").open("a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
 # ---------------------------------------------------------------------------
 # unit helpers (append-only versioning lives HERE)
 # ---------------------------------------------------------------------------
@@ -202,6 +217,7 @@ def _exec_revert(ws: Path, slug: str, params: dict, pid: str) -> dict:
     shutil.copy2(src, cur)
     _ledger(ws, "revert_unit", f"{uid} -> {to} (was archived as {archived or '—'})",
             pid, None)
+    _taste(ws, "kept_version", {"uid": uid, "chose": to, "over": archived or ""})
     return {"job": None, "archived": archived, "reverted_to": to}
 
 
@@ -331,7 +347,59 @@ def _exec_adjudicate_cover(ws: Path, slug: str, params: dict, pid: str | None) -
     out = img.with_suffix(".verdict.json")
     out.write_text(json.dumps(rec, indent=2, ensure_ascii=False), encoding="utf-8")
     _ledger(ws, "adjudicate_cover", f"{verdict} ({len(rec['issues'])} issue(s))", pid, None)
+    if verdict == "PASS":
+        _taste(ws, "cover_approved", {"image_sha256": rec.get("image_sha256") or ""})
     return {"job": None, "verdict": verdict}
+
+
+def _exec_restore_cover_take(ws: Path, slug: str, params: dict, pid: str | None) -> dict:
+    """S10 cover chooser: bring a preserved-aside cover take back as the source
+    art. Append-only in BOTH directions (the engine's own preserve-aside idiom):
+    the present art is set aside with a timestamp before the chosen take is
+    copied in. Provenance stays sha-honest: the restored art gets a fresh
+    sidecar whose art_sha256 matches its bytes, carrying the original method
+    when a matching sidecar can be found (else 'supplied' — a human chose it),
+    plus a restored_from lineage line. Recomposite + re-adjudication follow as
+    their own steps; this op only swaps the source art."""
+    import hashlib
+    name = Path(str(params.get("name") or "")).name          # basename-jailed
+    take = ws / "cover_art" / name
+    if not take.is_file() or "_superseded_" not in name:
+        raise OpError(f"no preserved cover take named {name!r} under cover_art/")
+    src = ws / "cover_art" / f"{slug}_src.png"
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    take_bytes = take.read_bytes()
+    take_sha = hashlib.sha256(take_bytes).hexdigest()
+    # carry the original method when any sidecar in cover_art/ matches this sha
+    method = "supplied"
+    for sc in ws.glob("cover_art/*.provenance.json*"):
+        try:
+            d = json.loads(sc.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if d.get("art_sha256") == take_sha:
+            method = d.get("method") or method
+            break
+    aside = None
+    if src.is_file():
+        aside = src.with_name(f"{slug}_src_superseded_{ts}.png")
+        shutil.move(str(src), str(aside))
+        # the kit's sidecar convention is <stem>.provenance.json (what the
+        # engine's _may_reuse_art and the projection both read)
+        old_sc = src.with_name(src.stem + ".provenance.json")
+        if old_sc.is_file():
+            shutil.move(str(old_sc), str(aside.with_name(aside.stem + ".provenance.json")))
+    shutil.copy2(take, src)
+    sidecar = {"method": method, "art_sha256": take_sha,
+               "restored_from": name, "restored_ts": _now(),
+               "note": "restored by the Studio cover chooser; sha-bound to these bytes"}
+    src.with_name(src.stem + ".provenance.json").write_text(
+        json.dumps(sidecar, indent=2, ensure_ascii=False), encoding="utf-8")
+    _ledger(ws, "restore_cover_take",
+            f"{name} -> src (method={method}; prior art {'set aside as ' + aside.name if aside else 'absent'})",
+            pid, None)
+    _taste(ws, "cover_choice", {"chose": name, "sha256": take_sha, "method": method})
+    return {"job": None, "restored": name, "aside": aside.name if aside else None}
 
 
 def _exec_fulfill_bridge(ws: Path, slug: str, params: dict, pid: str | None) -> dict:
@@ -410,6 +478,16 @@ OPS = {
                          "predict": lambda ws, p: {"immediate": [], "eventual": [],
                                                    "formats_stale": [],
                                                    "note": "records a human gate verdict; no artifact changes"}},
+    "restore_cover_take": {"risk": "CONTENT", "exec": _exec_restore_cover_take,
+                           "predict": lambda ws, p: {
+                               "immediate": ["cover"],
+                               "eventual": ["cover"] + [f"produce:{f}" for f in
+                                                        (_cfg(ws).get("formats") or [])
+                                                        if f in ("epub", "digital_pdf", "kindle")]
+                               + ["verify", "emit"],
+                               "formats_stale": [f for f in (_cfg(ws).get("formats") or [])
+                                                 if f in ("epub", "digital_pdf", "kindle")],
+                               "note": "restored art → recomposite the ebook cover, then re-judge it"}},
     "fulfill_bridge": {"risk": "CONTENT", "exec": _exec_fulfill_bridge,
                        "predict": lambda ws, p: _predict_unit_change(ws, p.get("uid", "")),
                        },
@@ -494,6 +572,10 @@ def validate_item(ws: Path, item: dict) -> dict:
     elif op_id == "adjudicate_cover":
         if str(params.get("verdict") or "").upper() not in ("PASS", "FAIL"):
             raise OpError("verdict must be PASS or FAIL")
+    elif op_id == "restore_cover_take":
+        nm = Path(str(params.get("name") or "")).name
+        if "_superseded_" not in nm or not (ws / "cover_art" / nm).is_file():
+            raise OpError(f"no preserved cover take named {nm!r} under cover_art/")
     return {"op": op_id, "params": params}
 
 

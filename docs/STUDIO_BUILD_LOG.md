@@ -4,8 +4,10 @@
 VERIFIED, in the house BUILD_STATE idiom: where this log contradicts the spec, reality wins and the
 spec gets amended, not the other way around.*
 
-**Updated:** 2026-08-04 · **Phase:** **S4 COMPLETE — stranger-sim gate PASSED** (S0–S4 all passed
-same day) · S5 (second binding: `domains/course/studio.json`, the reusability falsifier) not started.
+**Updated:** 2026-08-05 · **Phase:** **S6 COMPLETE — the Conductor (plain-language face) gate
+PASSED**, on top of S4 (S0–S4 passed 2026-08-04) · S5 (second binding: `domains/course/studio.json`,
+the reusability falsifier) still not started — S6 was pulled forward on the operator's priority
+(self-service browser UX for the average person).
 
 ---
 
@@ -64,6 +66,91 @@ same day) · S5 (second binding: `domains/course/studio.json`, the reusability f
 | Settings | `GET/PUT /api/settings`, `/settings/key`, `/settings/test-model`, `viewSettings` | kit_env model/vision/cover_gen form; **keys are env-only** — presence booleans out, never a value; a "set for this session" path that prints the `setx` hint instead of writing a key to disk; live model ping |
 | Bridge fulfillment | `ops.fulfill_bridge`, bridge card | a pending harness turn can be answered from the browser by **pasting prose** or letting the **API model** answer the engine's own request; the engine still gates it (nonce + gate_draft + 3-attempt budget) |
 | Studio selfcheck | `studio/selfcheck.py` | `node --check` on app.js + `ast.parse` on every studio module + catalog/risk-class invariants. Added because a single missing `)` rendered a permanently "Loading…" page with no visible console error |
+
+### Post-S4 — boot-into-the-Studio (2026-08-05; scoped by Bo: the harness stays the
+launcher, the Studio must POP UP or be OFFERED from the very start)
+
+| Piece | File(s) | Notes |
+|---|---|---|
+| SessionStart hook surfaces the Studio | `_tools/on_session_start.py` | on an ORDINARY start (never compact/resume recovery) on a configured machine: probe ports 8756–8776 for a live Studio (token-verified `/api/health`; fallback: the guard-403 body names studio.cmd) → **already running** = print the tokenized URL for the model to relay; **not running + `kit_env.studio.autolaunch`** = spawn `studio/server.py` fully detached (DETACHED_PROCESS + new process group + `close_fds` + DEVNULL stdin + `PYTHONUNBUFFERED` — the 70a8dc8 lesson; stdout→`_studio/autolaunch.log`; the server opens the browser itself) ; **deps missing / autolaunch off** = one-line offer. Never crashes; never blocks boot; recovery output stays pure |
+| `kit_env.studio` block | `_tools/kit_env.json`, `_tools/kit_env.template.json` | `{autolaunch: true, port: 8756}` in BOTH (selfcheck key-parity green); flows to fresh machines via `autoconfig.py` (which builds from the template) |
+| Zero-config launcher | `studio.cmd` | if `_tools/kit_env.json` is absent, runs `autoconfig.py` first — a fresh copy double-clicks straight into a configured Studio |
+| Boot-contract surfacing | `CLAUDE.md` §1 step 6 + §10 status format (`studio:` line), `START_HERE.md` §0 | the session relays the hook's `STUDIO:` block (or offers `studio.cmd` in one line) in every boot status report |
+| First-run onboarding | `_tools/on_session_start.py` `_print_first_run()` | the fresh-copy block now names the Studio path (`pip install -r requirements-studio.txt` → `studio.cmd`) |
+
+**Gate evidence (live, 2026-08-05):** `selfcheck.py` **PASS (0 fail, 0 warn)** incl. kit_env↔template
+key parity with the new block · hook startup test: printed the launching block, spawned detached,
+`/api/health` **200** with the per-launch token, browser opened itself · second startup: **already
+running** path relayed the tokenized URL · `source=compact` test: recovery block rendered with **zero
+STUDIO noise** · kill-and-relaunch: the server's `open: http://127.0.0.1:8756/?t=…` line lands in
+`_studio/autolaunch.log` (unbuffered child) and health returns 200.
+
+### S6 — the Conductor: the plain-language face (gate PASSED, 2026-08-05)
+
+**The thesis, executed:** the engine owns all truth and every mutation is one typed op behind an
+approval, so a newcomer face is a *projection + vocabulary* problem. S6 adds a second face over the
+SAME API and the SAME ops — no new write path, no new authority, the operator dashboard untouched at
+`/pro.html`.
+
+| Piece | File(s) | Notes |
+|---|---|---|
+| The Conductor SPA | `studio/web/conductor.js` (~880 lines), `studio/web/conductor.css` (~470) | zero-dep/zero-build/zero-CDN like the operator face. Views: bookshelf (cover-forward tiles, placeholder jackets, `_`-prefixed fixtures hidden, `testvoyage` badged "Example") · book hub (hero + ONE status line + ONE primary CTA computed from `plan`+hardstop+bridge+jobs; progress theater; plain attention cards; chapters; files grouped Ebook/Share/Print; chat) · reader (serif prose + TOC + per-chapter "Make this chapter better") · interview wizard (about/audience/length/material/formats → `POST /books` + uploads + run) · 3-pane welcome tour (localStorage) · celebration reveal on live completion |
+| The vocabulary layer | `conductor.js` `STR` + `stagePhrase`/`FMT`/`WRITERS` | every display string centralized (i18n-ready); engine keys → human phrases ("Writing \"Chapter 2\"", "Checking every page"); formats → plain labels; writers → plain names ("My Claude Code session (no key needed)"). Voice law applied to the UI itself: no em/en dashes in display strings |
+| Plain approval cards | `planCard()` | CONTENT ops render as "The plan" with ops described in plain words, the note quoted, "Afterwards your book files refresh and get re-checked automatically.", writer picker, Go ahead / Not now. Same proposals API, same approval chokepoint |
+| Progress theater | `theater()` | binds the SSE `job` log stream's engine event lines (`stage.done`, drafts, …) to a staged plain narrative + progress bar + step list; raw detail one toggle away ("Show the fine print") |
+| Entry swap | `index.html` (Conductor), `pro.html` (operator dashboard), `app.js` chrome | `/` is now the plain face; "Advanced view" ↔ "Simple view" cross-links carry the hash (deep links transfer) |
+| Design system | `conductor.css` | paper-first light + ink dark (`data-theme`, persisted, prefers-color-scheme initial), Georgia display/prose + system UI chrome, cover-jacket tiles with spine sheen, responsive to phone, `prefers-reduced-motion`, focus-visible |
+| Backend (additive only) | `projection.list_books` (+`cover_rel`,`subtitle`), `server.create_book` fallback → vendored `studio/reference_config.json` | the new-book path no longer 500s on a copy without `testvoyage` (portability fix); shelf covers ride the existing jailed `/file` route |
+| Mechanical vocabulary gate | `studio/selfcheck.py` | **the S6 invariant, enforced**: `node --check` on BOTH faces + a scan of `conductor.js` string literals that look like display text (contain a space) for engine jargon (stale/reconverge/hardstop/blast radius/nonce/proposal/backend/stage/gate/…); `jargon-ok` line marker exempts API-value literals. Plus: both HTML entries present, `reference_config.json` vendored |
+
+**Gate evidence (browser-driven live, 2026-08-05):**
+- `studio/selfcheck.py` **PASS** (17 checks incl. the new vocabulary gate, first try) · kit
+  `selfcheck.py` PASS (0 fail, 0 warn).
+- **Shelf:** renders 25+ visible books; fixtures (`_studio_smoke`, `_studio_chat`, `_enginetest`)
+  hidden; `testvoyage` last with the Example badge; welcome tour walked 3 panes and dismissed.
+- **Hub truth-catch:** `testvoyage` rendered "You changed something. The book can bring itself up to
+  date." — the engine's real staleness state, translated; its unadjudicated cover correctly surfaced
+  the "Take a look at your cover" card.
+- **Reader:** full serif prose render + TOC + improve box.
+- **The write path, round-tripped in plain language** (on the `stranger_sim` fixture): a note typed
+  into "Make this chapter better" → **"The plan"** card ("Rewrite \"Chapter One\"" + the note quoted
+  + the refresh line + writer picker) → writer set to "Placeholder text (just testing)" → **Go
+  ahead** → engine job ran → hub settled to **"Your book is ready."** — and the disk agrees:
+  `revision_notes/ch_01.md` carries the note + proposal id, the prior take archived append-only,
+  `ops.jsonl` + `CHANGELOG.md` cross-referenced (`revise_unit ch_01 archived=v1 note=113ch
+  proposal=p_20260805_100836_01 job=j_20260805_100903_001`). The mock writer reproduced identical
+  bytes, so the content-hash system correctly charged zero downstream rebuilds (the S2 determinism
+  truth-catch, resurfacing through the plain face).
+- **Zero jargon on any driven screen** (tree + page-text sweeps), now held by the mechanical gate.
+- **Operator face intact:** `/pro.html` renders the full Library (all 34 workspaces incl. fixtures),
+  tagged "S6 · advanced face", with the Simple-view cross-link.
+- *Not yet visually QA'd on a composited display* (the automation pane rendered no frames this
+  session); structure, behavior, and vocabulary are verified — aesthetic polish review is the first
+  minute of the next human look.
+
+### S7–S10 — setup, spend floors, 中文, and the loops (gates PASSED, 2026-08-05, same session as S6)
+
+| Piece | File(s) | Notes |
+|---|---|---|
+| **S7 · Setup** (`#/setup`) | `conductor.js viewSetup` | who-writes cards (plain names over the model seam), key presence + set-for-session + live **Try it** ping with latency, machine capability in plain words (doctor fetched NON-blocking after a 30 s cold-run wart was found and fixed), and the spending guard UI. Linked from the footer everywhere |
+| **S8 · The spend floor — E-6** | `_tools/model_client.py` | **floors in code, kit-wide**: `BOOKSMITH_TOKEN_BUDGET` (set from `kit_env.studio.token_budget` by the server at launch + on every settings save) makes a METERED call (anthropic/openai) refuse to start once the ledger meets the cap — a `ModelError` with the remedy in plain text, so the engine hard-stops resumably. mock/harness never blocked; env unset = byte-identical behavior. **Bonus find:** call-ledger numbering restarted per process and silently OVERWROTE `call_0001.json` onward on resume — fixed to continue after the ledger's max (append-only), which also makes both the spend meter and the cap accurate across restarts |
+| **S8 · Cost legibility** | `conductor.js spendLine`, settings `studio.price_*_per_mtok` | the hub speaks it plainly: *"Machine work so far: 8 calls, about 14 thousand words. Your guard stops paid writing at about 75 thousand words."* Dollars appear only when the operator sets real prices AND usage is exact — no fake precision |
+| **S9 · 中文** | `studio/web/i18n.js` (+ index.html script tag) | a full natural-Chinese overlay of every STR entry (including the function-valued templates); the merge happens before any derived table builds, so stage phrases, formats, writers, and groups all follow; footer toggle EN ↔ 中文; `node --check`'d by selfcheck |
+| **S10 · Cover chooser** | `ops.py _exec_restore_cover_take` (+ registry + validation), `conductor.js coverGallery` | a NEW CONTENT op, append-only in both directions (the engine's own preserve-aside idiom), **sha-honest provenance**: the restored art gets a fresh sidecar bound to its bytes, carrying the original method when a sha-matching sidecar is found (proven live: `method:"sdxl"` carried through) + `restored_from` lineage. The hub gallery shows every take; "Use this one" → plan card → approve → recomposite offered |
+| **S10 · Three takes** | server `book_ops` (multi-op plans via the same channel chat uses), `projection.unit_version_text` + `GET /units/{uid}/version`, `conductor.js` takes UI | "One take / Three takes" on the reader's improve box → ONE proposal holding 3 varied `revise_unit` ops → sequential apply (`ok, ok, ok` live; v2→v4 archived) → **Compare recent takes** renders competing takes side by side → "Keep this one" = the existing `revert_unit` op |
+| **S10 · Book passport** | `projection.passport_html`, `GET /api/books/{slug}/passport` | a self-contained shareable HTML receipts page (cover inlined base64, contents, checks, machine-work ledger); pure projection, writes nothing; 846 KB with cover, rendered live |
+| **S10 · Taste seed** | `ops.py _taste` | every explicit human pick (cover kept, take kept, cover verdict PASS) appends to `_studio/taste.jsonl` — the ROADMAP H2.4 taste model's first data, gathered for free |
+
+**Gate evidence (live, 2026-08-05):** budget-floor micro-suite **7/7** (mock unblocked under an
+exceeded cap · metered refusal fires · unset env = no check · under-cap passes · chars/4 fallback
+counts · append-only numbering holds) · **engine smoketest PASS (A–L) after BOTH model_client
+changes** · `restore_cover_take` round-trip on `stranger_sim`: CONTENT proposal → approved → prior
+art + sidecar preserved aside, fresh sha-bound sidecar with `method:"sdxl"` + lineage, taste line
+written · three-takes plan: `applied — ok, ok, ok`, drafts v2→v4 archived, version endpoint serves
+every take · passport 200 with inlined cover · setup page + guard round-trip driven in the browser
+(guard set → hub shows it → cleared) · full 中文 shelf render verified in the browser, EN ↔ 中文
+toggle both directions · kit selfcheck **PASS (0 fail, 0 warn)** incl. template parity with the new
+`studio` keys · studio selfcheck **PASS** (3 JS files + vocabulary gate).
 
 ## §2 · Gate evidence (verified live, 2026-08-04)
 

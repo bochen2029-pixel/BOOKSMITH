@@ -26,7 +26,15 @@ Each is checked against the production gates before the folder is surfaced — t
 ## The Studio — drive it from a browser 🖥
 
 A localhost web UI over the same deterministic engine, for when you would rather click than type
-into a coding harness. Run `studio.cmd`; it prints a tokenized `http://127.0.0.1:8756/…` and opens it.
+into a coding harness. Run `studio.cmd`; it prints a tokenized `http://127.0.0.1:8756/…` and opens it
+(first launch self-configures the machine, and with `kit_env.studio.autolaunch` on, every session in
+this folder opens or offers it automatically).
+
+It opens in the **Conductor** — a plain-language face: your bookshelf with real covers, one clear
+next action per book, a friendly progress view while it writes, a built-in reader with "make this
+chapter better", and your files grouped as Ebook / Read-and-share / Print. No pipeline vocabulary
+anywhere (a selfcheck gate enforces that). The full machinery lives one click away at **Advanced
+view** (`/pro.html`):
 
 ![BOOKSMITH Studio — the New Book wizard](docs/studio-new-book.png)
 

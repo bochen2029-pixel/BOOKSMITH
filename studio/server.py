@@ -146,6 +146,26 @@ def unit(slug: str, uid: str):
         raise _err(e)
 
 
+@app.get("/api/books/{slug}/units/{uid}/version")
+def unit_version(slug: str, uid: str, v: str = "current"):
+    """S10 take-picker: one archived (or current) take's full text."""
+    try:
+        return P.unit_version_text(slug, uid, v)
+    except ValueError as e:
+        raise _err(e)
+
+
+@app.get("/api/books/{slug}/passport")
+def passport(slug: str):
+    """S10: the shareable, self-contained receipts page for one book."""
+    try:
+        html = P.passport_html(slug)
+    except ValueError as e:
+        raise _err(e)
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(html)
+
+
 @app.get("/api/books/{slug}/units/{uid}/diff")
 def unit_diff(slug: str, uid: str, a: str = Query("v1"), b: str = Query("current")):
     try:
@@ -269,6 +289,13 @@ def job_cancel(jid: str):
 @app.post("/api/books/{slug}/ops")
 def book_ops(slug: str, payload: dict = Body(default={})):
     try:
+        # S10: a button surface may submit a multi-op PLAN (e.g. three takes of
+        # one chapter). Same channel the chat uses: every item validated, one
+        # proposal, one human approval. Single-op payloads behave as before.
+        if isinstance(payload.get("ops"), list):
+            prop = ops.submit_plan(slug, payload["ops"], {"kind": "button"},
+                                   summary=payload.get("summary") or None)
+            return {"proposal": prop}
         return ops.submit_op(slug, payload)
     except ops.OpError as e:
         raise HTTPException(400, str(e))
@@ -429,8 +456,13 @@ def create_book(payload: dict = Body(default={})):
         raise HTTPException(409, f"book_workspace/{slug} already exists")
     ref = P.WS_ROOT / "testvoyage" / "book_config.json"
     if not ref.is_file():
-        raise HTTPException(500, "reference config book_workspace/testvoyage/book_config.json "
-                                 "is missing; cannot derive defaults")
+        # Portability: a stranger's fresh copy may lack the reference workspace.
+        # A vendored snapshot of the same config ships with the Studio itself.
+        ref = Path(__file__).resolve().parent / "reference_config.json"
+    if not ref.is_file():
+        raise HTTPException(500, "no reference config found (book_workspace/testvoyage/"
+                                 "book_config.json or studio/reference_config.json); "
+                                 "cannot derive defaults")
     cfg = json.loads(ref.read_text(encoding="utf-8"))
     formats = [f for f in (payload.get("formats") or ["kindle", "epub"]) if isinstance(f, str)]
     if not formats:
@@ -490,7 +522,27 @@ def create_book(payload: dict = Body(default={})):
 _SETTINGS_WRITABLE = {"model": {"backend", "model", "base_url", "openai_base_url",
                                 "max_tokens", "temperature", "timeout_s"},
                       "vision": {"backend"},
-                      "cover_gen": {"comfyui_server", "checkpoints_dir", "default_checkpoint"}}
+                      "cover_gen": {"comfyui_server", "checkpoints_dir", "default_checkpoint"},
+                      # S7/S8: the Conductor's setup page — autolaunch, and the
+                      # E-6 spend floor (token budget) + optional display pricing
+                      "studio": {"autolaunch", "port", "token_budget",
+                                 "price_in_per_mtok", "price_out_per_mtok"}}
+
+
+def _sync_budget_env() -> None:
+    """E-6 wiring: kit_env.studio.token_budget becomes BOOKSMITH_TOKEN_BUDGET in
+    THIS process's env, which every spawned job (engine runs) and every
+    in-process model call (chat compiles, test pings) inherits. The floor itself
+    lives in model_client._check_budget — arithmetic, not discretion."""
+    try:
+        env = json.loads(_kit_env_path().read_text(encoding="utf-8"))
+        cap = (env.get("studio") or {}).get("token_budget")
+        if cap and int(cap) > 0:
+            os.environ["BOOKSMITH_TOKEN_BUDGET"] = str(int(cap))
+        else:
+            os.environ.pop("BOOKSMITH_TOKEN_BUDGET", None)
+    except Exception:
+        pass
 
 
 def _kit_env_path() -> Path:
@@ -510,6 +562,8 @@ def get_settings():
         "vision": {"backend": (env.get("vision") or {}).get("backend")},
         "cover_gen": {k: (env.get("cover_gen") or {}).get(k)
                       for k in _SETTINGS_WRITABLE["cover_gen"]},
+        "studio": {k: (env.get("studio") or {}).get(k)
+                   for k in _SETTINGS_WRITABLE["studio"]},
         "keys": {  # presence ONLY — a key is never read into a response
             key_env: bool(os.environ.get(key_env)),
             "ANTHROPIC_API_KEY": bool(os.environ.get("ANTHROPIC_API_KEY")),
@@ -541,6 +595,7 @@ def put_settings(payload: dict = Body(default={})):
     tmp = p.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(env, indent=2, ensure_ascii=False), encoding="utf-8")
     tmp.replace(p)
+    _sync_budget_env()      # a changed cap takes effect for the next call/job
     return {"ok": True, "changed": changed}
 
 
@@ -639,6 +694,7 @@ def main() -> int:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     (STATE_DIR / "token").write_text(TOKEN, encoding="utf-8")
     jobs.rehydrate()
+    _sync_budget_env()      # E-6: the spend floor rides every job + chat call
 
     url = f"http://127.0.0.1:{PORT}/?t={TOKEN}"
     print(f"\n  BOOKSMITH Studio {STUDIO_VERSION}")

@@ -80,15 +80,68 @@ class ModelClient:
         self.cfg = cfg
         self.backend = cfg.get("backend", "mock")
         self.log_dir = Path(log_dir) if log_dir else None
+        self._n = 0
         if self.log_dir:
             self.log_dir.mkdir(parents=True, exist_ok=True)
-        self._n = 0
+            # Append-only ledger: a resumed process continues numbering after
+            # what the ledger already holds instead of overwriting call_0001
+            # onward (silent overwrites under-counted spend and would have
+            # under-enforced the E-6 budget floor across restarts).
+            try:
+                ns = [int(p.stem.split("_")[1]) for p in self.log_dir.glob("call_*.json")]
+                self._n = max(ns) if ns else 0
+            except Exception:
+                self._n = 0
+
+    # -- E-6: the spend floor (conditional; absent env var = zero change) --
+    def _ledger_tokens(self) -> int:
+        """Sum the call ledger as it stands: exact tokens when logged (E-4),
+        chars/4 otherwise. This is the arithmetic the budget floor trusts."""
+        if not self.log_dir or not self.log_dir.is_dir():
+            return 0
+        total = 0
+        for p in self.log_dir.glob("call_*.json"):
+            try:
+                r = json.loads(p.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            it, ot = r.get("in_tokens"), r.get("out_tokens")
+            if it or ot:
+                total += int(it or 0) + int(ot or 0)
+            else:
+                total += (int(r.get("prompt_chars") or 0) + int(r.get("out_chars") or 0)) // 4
+        return total
+
+    def _check_budget(self):
+        """Floors in code: when BOOKSMITH_TOKEN_BUDGET is set, a METERED call
+        (anthropic/openai) may not start once this ledger's usage meets the cap.
+        The refusal is a ModelError, so the engine hard-stops with the remedy in
+        plain text and resumes cleanly after the cap is raised. mock/harness are
+        free and never blocked. Unset or non-positive budget = no check at all."""
+        raw = os.environ.get("BOOKSMITH_TOKEN_BUDGET")
+        if not raw or self.backend not in ("anthropic", "openai"):
+            return
+        try:
+            cap = int(str(raw).strip())
+        except ValueError:
+            return
+        if cap <= 0:
+            return
+        spent = self._ledger_tokens()
+        if spent >= cap:
+            raise ModelError(
+                f"token budget reached: ~{spent:,} tokens used of a {cap:,}-token cap "
+                f"for this ledger ({self.log_dir}). No further metered model calls "
+                "will start. Raise or clear the cap (Studio setup page, or the "
+                "BOOKSMITH_TOKEN_BUDGET env var / kit_env.studio.token_budget) and "
+                "re-run; the engine resumes where it stopped.")
 
     # -- the one public method: prompt in, text out -----------------------
     def complete(self, system: str, prompt: str, *,
                  max_tokens: Optional[int] = None,
                  temperature: Optional[float] = None,
                  stop: Optional[list] = None) -> str:
+        self._check_budget()
         mt = int(max_tokens or self.cfg.get("max_tokens", 8192))
         temp = self.cfg.get("temperature", 0.7) if temperature is None else temperature
         t0 = time.time()
