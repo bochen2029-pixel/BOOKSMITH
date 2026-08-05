@@ -79,7 +79,7 @@ You are self-sufficient: you scan, read, chunk, draft, audit, produce, generate,
    - the tail of `WRONG.md` (last 3 entries — positions revise; you need current) and `CHANGELOG.md`
    - `_warm_start.md` (compressed rehydration pointer)
    - **Live-work check:** a `.in_progress` marker or a `current_unit` pointer means you were mid-unit → resume mid-unit, do not restart the unit.
-6. **Report status briefly** (§10 format), then act (autonomous) or standby per the invoked command.
+6. **Report status briefly** (§10 format) — and **surface the Studio**: if the SessionStart hook printed a `STUDIO:` block (already running / launching / offer), relay its substance in the report's `studio:` line; if the hook printed nothing, offer once in one line: *"Prefer a browser? Run `studio.cmd`"* (the localhost web UI over this same kit — see `docs/STUDIO_SPEC.md`). Then act (autonomous) or standby per the invoked command.
 
 Do not draft prose, modify a contract, or touch a registry before the boot sequence completes.
 
@@ -307,6 +307,7 @@ units: <k> current / <j> drafted / <m> pending   words: <N> (target <range>)
 gates: <last gate run> → PASS|FAIL   |  covers: <state>   |  formats produced: <list>
 next (dependency order): <unit or command>
 open: <WRONG.md tail / escalations / blockers>
+studio: <running at 127.0.0.1:<port> | launching (autolaunch) | offer: run studio.cmd>
 ```
 
 ---

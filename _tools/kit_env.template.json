@@ -60,6 +60,15 @@
     "note": "REQUIRED only for the deterministic engine (engine.py), which calls the model as a PURE FUNCTION (model_client.py) for prose. backend: anthropic (Claude via the ANTHROPIC_API_KEY env var; best prose) | openai (any OpenAI-compatible /v1/chat/completions at openai_base_url, e.g. a local llama-server; sovereign/offline) | mock (deterministic, network-free; engine --dry-run only). Set your key: $env:ANTHROPIC_API_KEY (PowerShell) or export ANTHROPIC_API_KEY. The model is NEVER given tools. The interactive session-driven flow (CLAUDE.md) does not use this block; only the code-driven engine does."
   },
 
+  "studio": {
+    "_optional": "OPTIONAL — the localhost browser Studio (studio/server.py; deps: pip install -r requirements-studio.txt). autolaunch: when true, the SessionStart hook launches the Studio on an ordinary session start if one is not already running (detached; the server itself opens the browser at a tokenized 127.0.0.1 URL) and the boot status report relays the URL; when false, boot only OFFERS `studio.cmd` in one line. port: the first port tried (the server scans +20 on collision). token_budget: the E-6 spend floor — a hard per-ledger cap (tokens) on METERED model calls (anthropic/openai), enforced in model_client itself; null/0 = no cap; free backends (mock/harness) are never blocked. price_*_per_mtok: optional display pricing for the Conductor's spend line. The Studio binds loopback only and is token-gated per launch.",
+    "autolaunch": true,
+    "port": 8756,
+    "token_budget": null,
+    "price_in_per_mtok": null,
+    "price_out_per_mtok": null
+  },
+
   "organs": {
     "_optional": "OPTIONAL accelerators from the reference machine's personal toolkit — safe to leave empty. Every caller has a portable fallback: _tools/resize_image_safe.py replaces imguard; the VENDORED _tools/estimate_tokens.py (tiktoken, or chars/4) replaces the chunker sizer; _tools/fetch_weights.py replaces the personal fetcher for model downloads; your harness's own file/search tools replace chunker and everything.",
     "imguard": "",

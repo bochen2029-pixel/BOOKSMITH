@@ -8,6 +8,7 @@ You are booting a fresh session inside the BOOKSMITH kit — a portable, self-co
 
 ## 0 — Environment
 - **First run on this machine?** Run `python _tools/doctor.py` (and point the human at `INSTALL.md`). The doctor prints the capability tier: **Tier 1** = Windows + Microsoft Word → the full print pipeline; **Tier 2** = no Word → EPUB, Kindle DOCX, digital-from-existing-PDF, cover compositing + verification, with print PDFs deferred to a Word machine.
+- **The browser Studio.** If the session-start hook printed a `STUDIO:` block (already running / launching), relay that URL to the human in your first reply. Otherwise offer it in one line: run `studio.cmd` — the localhost web UI over this same kit (first launch self-configures via `autoconfig.py`; auto-launch at boot is governed by `kit_env.studio.autolaunch`).
 - On Windows, use PowerShell syntax for shell commands (Bash eats backslash paths). On macOS/Linux use the native shell — knowing Tier-1 print requires Windows + Word.
 - Machine paths live ONLY in `_tools/kit_env.json` (copy `_tools/kit_env.template.json` → `kit_env.json` if it doesn't exist). Never hard-code a machine path; never assume another machine's tools exist.
 - The `organs` block in kit_env names OPTIONAL accelerators. When absent, use the portable fallbacks: `_tools/resize_image_safe.py` before viewing ANY image (never read an image >2000px raw); your harness's own search/read tools for file discovery; read large files in slices — **never blind-read a file >8K tokens**.

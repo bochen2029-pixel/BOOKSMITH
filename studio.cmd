@@ -6,6 +6,12 @@ setlocal
 cd /d "%~dp0"
 set "PYTHONUTF8=1"
 set "PYTHONIOENCODING=utf-8"
+rem Zero-config first run: a fresh copy has no kit_env.json yet -- probe this
+rem machine and write one (keyless defaults) before starting the Studio.
+if not exist "_tools\kit_env.json" (
+  echo [first run] no _tools\kit_env.json yet - configuring this machine via autoconfig...
+  python _tools\autoconfig.py
+)
 python studio\server.py %*
 if errorlevel 1 (
   echo.

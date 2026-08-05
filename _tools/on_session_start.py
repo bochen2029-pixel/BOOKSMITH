@@ -106,6 +106,10 @@ def _print_first_run():
         "  2. Preflight capabilities + tier:  python %s" % (tools / "doctor.py"),
         "  3. Read START_HERE.md and follow it.",
         "",
+        "Prefer a BROWSER? The Studio (localhost web UI over this same kit):",
+        "     pip install -r requirements-studio.txt    then run: studio.cmd",
+        "  (first launch runs step 1 for you; a tokenized URL opens itself).",
+        "",
         "To start a book: drop a gist + source docs into intake/ and say `init` --",
         "or just say hi and walk the operator through it. Greet them, offer to run",
         "step 1, and help them begin. Full flow: INSTALL.md / CLAUDE.md / docs/ENGINE.md.",
@@ -116,6 +120,153 @@ def _print_first_run():
     except Exception:
         pass
     sys.stdout.write("\n".join(out) + "\n")
+
+
+# ---------------------------------------------------------------------------
+# Boot-into-the-Studio (2026-08-05). On an ORDINARY session start (never during
+# a compaction/resume recovery), surface the localhost browser Studio: relay it
+# if it is already running; launch it detached when kit_env.studio.autolaunch
+# is true (the server opens the browser itself at a tokenized URL); otherwise
+# print a one-line offer. The model relays the STUDIO line in its status report
+# (CLAUDE.md §1 step 6). Never crash; never block boot.
+
+def _kit_root():
+    return Path(__file__).resolve().parent.parent
+
+
+def _studio_cfg():
+    """Read kit_env.studio; an absent block means offer-only defaults."""
+    try:
+        env = json.loads((Path(__file__).resolve().parent / "kit_env.json")
+                         .read_text(encoding="utf-8"))
+        s = env.get("studio") or {}
+        return {"autolaunch": bool(s.get("autolaunch", False)),
+                "port": int(s.get("port", 8756))}
+    except Exception:
+        return {"autolaunch": False, "port": 8756}
+
+
+def _studio_token():
+    try:
+        t = (_kit_root() / "_studio" / "token").read_text(encoding="utf-8").strip()
+        return t or None
+    except Exception:
+        return None
+
+
+def _studio_alive(port0, token):
+    """Return the live Studio's port, else None. Definitive probe: /api/health
+    with the per-launch token (the server rewrites _studio/token at every
+    launch, so the file always matches the live server). Fallback sniff: the
+    guard's token-403 body names studio.cmd. Non-listening loopback ports fail
+    instantly, so the scan is fast."""
+    import urllib.request
+    import urllib.error
+    for p in range(port0, port0 + 21):
+        req = urllib.request.Request("http://127.0.0.1:%d/api/health" % p)
+        if token:
+            req.add_header("X-Studio-Token", token)
+        try:
+            with urllib.request.urlopen(req, timeout=0.8) as r:
+                if '"ok"' in r.read(2048).decode("utf-8", "replace"):
+                    return p
+        except urllib.error.HTTPError as e:
+            try:
+                body = e.read(2048).decode("utf-8", "replace")
+            except Exception:
+                body = ""
+            if "studio" in body.lower():
+                return p           # token-gated 403 from the Studio's own guard
+        except Exception:
+            continue
+    return None
+
+
+def _studio_deps_ok():
+    import importlib.util
+    try:
+        return all(importlib.util.find_spec(m) is not None
+                   for m in ("fastapi", "uvicorn"))
+    except Exception:
+        return False
+
+
+def _launch_studio_detached(port):
+    """Spawn studio/server.py fully detached so it survives this hook and the
+    session. stdin=DEVNULL + close_fds + redirected stdout per the detached-
+    launch lesson (cover_gen close_fds fix, 70a8dc8): a capturing caller must
+    never wedge on an inherited pipe. The server prints its tokenized URL to
+    the log and opens the browser itself."""
+    import subprocess
+    from datetime import datetime
+    kit = _kit_root()
+    server = kit / "studio" / "server.py"
+    if not server.exists():
+        return False
+    logdir = kit / "_studio"
+    logdir.mkdir(exist_ok=True)
+    log = open(logdir / "autolaunch.log", "a", encoding="utf-8", errors="replace")
+    log.write("\n--- autolaunch %s ---\n" % datetime.now().isoformat(timespec="seconds"))
+    log.flush()
+    env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8",
+               PYTHONUNBUFFERED="1")   # else the child block-buffers its URL line
+    argv = [sys.executable, str(server), "--port", str(port)]
+    kw = dict(cwd=str(kit), stdin=subprocess.DEVNULL, stdout=log, stderr=log,
+              close_fds=True, env=env)
+    if os.name == "nt":
+        DETACHED_PROCESS = 0x00000008
+        CREATE_NEW_PROCESS_GROUP = 0x00000200
+        subprocess.Popen(argv,
+                         creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
+                         **kw)
+    else:
+        subprocess.Popen(argv, start_new_session=True, **kw)
+    log.close()          # the child holds its own duplicated handle
+    return True
+
+
+def _print_studio_line():
+    """Emit the STUDIO block for the model to relay in its status report."""
+    kit = _kit_root()
+    if not (kit / "studio" / "server.py").exists():
+        return
+    cfg = _studio_cfg()
+    token = _studio_token()
+    port = _studio_alive(cfg["port"], token)
+    lines = []
+    if port:
+        url = "http://127.0.0.1:%d/" % port + (("?t=" + token) if token else "")
+        lines = [
+            "STUDIO: already running at %s" % url,
+            "        Relay this URL to the operator in your status report (their",
+            "        browser session from the original launch is cookie-authorized).",
+        ]
+    elif cfg["autolaunch"] and _studio_deps_ok():
+        if _launch_studio_detached(cfg["port"]):
+            lines = [
+                "STUDIO: launching now (kit_env.studio.autolaunch=true). The browser",
+                "        opens itself at a tokenized 127.0.0.1 URL in a few seconds.",
+                "        If it does not: run studio.cmd. URL lands in",
+                "        _studio/autolaunch.log; token in _studio/token. Tell the operator.",
+            ]
+    elif cfg["autolaunch"]:
+        lines = [
+            "STUDIO: autolaunch is on but fastapi/uvicorn are not installed.",
+            "        Offer the operator: pip install -r requirements-studio.txt,",
+            "        then run studio.cmd (the localhost browser UI over this kit).",
+        ]
+    else:
+        lines = [
+            'STUDIO: not running. Offer the operator, in one line: "Prefer a',
+            '        browser? Run studio.cmd" (the localhost web UI over this kit).',
+        ]
+    if not lines:
+        return
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+    sys.stdout.write("\n".join(lines) + "\n")
 
 
 def main():
@@ -137,11 +288,21 @@ def main():
         flag_exists = False
     # Only force recovery on compaction/resume, or when a precompact flag is set.
     trigger = (source in ("compact", "resume")) or flag_exists
+    ordinary = (not trigger) and source in ("startup", "clear", "")
+    kit_env = Path(__file__).resolve().parent / "kit_env.json"
+
+    # Boot-into-the-Studio: ordinary starts on a CONFIGURED machine surface the
+    # browser Studio (launch/relay/offer). Recovery boots stay pure; fresh
+    # copies get the Studio pointer inside the first-run block instead.
+    if ordinary and kit_env.exists():
+        try:
+            _print_studio_line()
+        except Exception:
+            pass
 
     # First-run onboarding: a fresh copy (never configured) with NO in-flight book
     # and an ordinary startup (not a compaction/resume). Non-disruptive to recovery.
     if not inflight and not trigger:
-        kit_env = Path(__file__).resolve().parent / "kit_env.json"
         if not kit_env.exists() and source in ("startup", "clear", ""):
             _print_first_run()
         return 0
