@@ -1,0 +1,10 @@
+{
+  "_comment": "S5 binding sidecar (STUDIO_SPEC Appendix B): how the Studio Shell PRESENTS this domain. Additive and optional — the engine never reads this file. panels: book-only surfaces (formats matrix, cover studio) stay off for a course. artifact_labels: display names for produce targets. ops_enabled: the op subset that makes sense here (cover/format ops are book machinery); names must exist in studio/ops.py's catalog — selfcheck enforces.",
+  "panels": { "formats_matrix": false, "cover_studio": false },
+  "artifact_labels": {
+    "course_md": "Course (Markdown)",
+    "course_json": "Course (JSON)"
+  },
+  "ops_enabled": ["run_stage", "revise_unit", "revert_unit", "verify_all", "fulfill_bridge"],
+  "unit_detail_extra_files": []
+}

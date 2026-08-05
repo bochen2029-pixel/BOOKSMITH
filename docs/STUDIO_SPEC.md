@@ -843,6 +843,13 @@ Shell/Binding insight turned inward: *a face is data over the same contract*.
 - **Non-goals inherited whole:** not an editor, not multi-user, not a KDP uploader, and never a
   second writer of book state.
 
+**S5 executed (same day, after S6–S10; reality in STUDIO_BUILD_LOG §1):** the §10 Shell/Binding
+seam held — `domains/course/studio.json` + a generic `binding_of()` projection rendered the course
+domain end-to-end with **zero domain-conditionals in Shell code**, and that falsifier is now a
+standing selfcheck (any future domain-name literal in `studio/` fails the build). Op-surface
+narrowing (`ops_enabled`) is enforced at the ops chokepoint, so buttons, chat, and raw API inherit
+it identically.
+
 **S7–S10 additions (same day; reality in STUDIO_BUILD_LOG §1):** a `#/setup` page (writer choice /
 keys / capability / spending guard) · **E-6, the spend floor** in `model_client.py`
 (`BOOKSMITH_TOKEN_BUDGET` ← `kit_env.studio.token_budget`: metered calls refuse past the cap —

@@ -321,8 +321,10 @@ const WRITERS = [
   ["mock", STR.wMock],
 ];
 
-/* engine stage keys -> what a person is told (unit titles filled at render) */
-function stagePhrase(key, unitsById, noun) {
+/* engine stage keys -> what a person is told (unit titles filled at render).
+   S5: non-book produce targets take their display name from the domain
+   BINDING's artifact labels (data), never from a domain name in code. */
+function stagePhrase(key, unitsById, noun, binding) {
   if (key === "precheck") return STR.phPrecheck;
   if (key === "ingest") return STR.phIngest;
   if (key === "seed") return STR.phSeed;
@@ -338,8 +340,10 @@ function stagePhrase(key, unitsById, noun) {
     return STR.phWriting(label);
   }
   if (key.startsWith("produce:")) {
-    const f = FMT[key.slice(8)];
-    return STR.phBuilding(f ? f.what : STR.aFileW);
+    const t = key.slice(8);
+    const lbl = binding && binding.artifact_labels && binding.artifact_labels[t];
+    const f = FMT[t];
+    return STR.phBuilding(lbl || (f ? f.what : STR.aFileW));
   }
   return STR.phWorking;
 }
@@ -855,7 +859,7 @@ async function viewBook(slug) {
           : cta ? h("button", { class: "cta big", onclick: cta[1] }, cta[0] === STR.ctaRead ? icon("book") : icon("spark"), cta[0]) : null,
         allDone && !active ? h("a", { class: "ghost", href: "#files" }, icon("down"), STR.ctaFiles) : null,
         allDone && !active ? null : (started && !active ? h("a", { class: "ghost", href: `#/b/${slug}/read` }, icon("book"), STR.ctaRead) : null)),
-      active ? theater(slug, entries, unitsById, noun, active) : null)));
+      active ? theater(slug, entries, unitsById, noun, active, d.binding) : null)));
 
   /* attention: snag */
   if (d.hardstop && !active) {
@@ -952,7 +956,7 @@ async function viewBook(slug) {
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* ---------- progress theater ---------- */
-function theater(slug, entries, unitsById, noun, activeJob) {
+function theater(slug, entries, unitsById, noun, activeJob, binding) {
   const total = Math.max(entries.length, 1);
   let doneCount = entries.filter(e => e.satisfied).length;
   let currentKey = null;
@@ -972,7 +976,7 @@ function theater(slug, entries, unitsById, noun, activeJob) {
       const cls = stt === "done" ? "done" : (e.key === currentKey ? "now" : "");
       const mk = stt === "done" ? "✓" : (e.key === currentKey ? "•" : "·");
       return h("div", { class: "step " + cls }, h("span", { class: "mk" }, mk),
-        h("span", null, stagePhrase(e.key, unitsById, noun)));
+        h("span", null, stagePhrase(e.key, unitsById, noun, binding)));
     }));
   }
   paintSteps();
@@ -989,7 +993,7 @@ function theater(slug, entries, unitsById, noun, activeJob) {
       const k = "draft:" + obj.unit;
       if (states.has(k)) currentKey = k;
     }
-    if (currentKey) now.querySelector(".phrase").textContent = stagePhrase(currentKey, unitsById, noun);
+    if (currentKey) now.querySelector(".phrase").textContent = stagePhrase(currentKey, unitsById, noun, binding);
     else if (doneCount >= total) now.querySelector(".phrase").textContent = STR.celeb;
     now.querySelector(".count").textContent = STR.stepOf(Math.min(doneCount + 1, total), total);
     fill.style.width = Math.round(100 * Math.min(doneCount, total) / total) + "%";

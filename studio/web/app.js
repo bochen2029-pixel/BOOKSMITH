@@ -207,6 +207,8 @@ async function viewBook(slug) {
 
   const nodes = [];
   nodes.push(h("div", { class: "crumb" }, h("a", { href: "#/" }, "Library"), " / ", slug));
+  /* S5: panels come from the domain BINDING (data), never from a domain name */
+  const pan = (d.binding && d.binding.panels) || { formats_matrix: true, cover_studio: true };
   nodes.push(h("div", { class: "bookhead" },
     h("h1", null, d.title),
     h("span", { class: "by" }, d.author ? "by " + d.author : ""),
@@ -214,8 +216,8 @@ async function viewBook(slug) {
     ...(d.formats || []).map(f => h("span", { class: "chip" }, f)),
     h("a", { class: "chip brass", href: `#/b/${slug}/chat` }, "💬 Chat"),
     h("a", { class: "chip", href: `#/b/${slug}/intake` }, "📥 Intake"),
-    h("a", { class: "chip", href: `#/b/${slug}/formats` }, "✅ Formats/QA"),
-    h("a", { class: "chip", href: `#/b/${slug}/cover` }, "🎨 Cover"),
+    pan.formats_matrix ? h("a", { class: "chip", href: `#/b/${slug}/formats` }, "✅ Formats/QA") : null,
+    pan.cover_studio ? h("a", { class: "chip", href: `#/b/${slug}/cover` }, "🎨 Cover") : null,
     h("span", { class: "chip right", title: "model calls: engine prose + chat compiles" },
       `${spend.calls} calls · ${spend.exact ? "" : "~"}${fmtTok(spend.tokens ?? spend.est_tokens)} tok`)));
 
@@ -264,7 +266,7 @@ async function viewBook(slug) {
             ` ${lastJob.id}`) : null),
     active ? null : h("div", { class: "runbar", style: "margin-top:.5rem" },
       h("span", { class: "muted" }, "safe ops:"),
-      ...(d.formats || []).map(f => h("button", { class: "btn",
+      ...(pan.formats_matrix ? (d.formats || []) : []).map(f => h("button", { class: "btn",
         onclick: () => safeOp({ op: "rebuild_format", format: f }) }, `⟳ produce:${f}`)),
       h("button", { class: "btn", onclick: () => safeOp({ op: "verify_all" }) }, "⟳ verify")),
     h("div", { class: "muted", style: "margin-top:.5rem" },

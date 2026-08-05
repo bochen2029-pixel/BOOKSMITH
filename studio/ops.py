@@ -545,6 +545,13 @@ def validate_item(ws: Path, item: dict) -> dict:
     spec = OPS.get(op_id)
     if not spec:
         raise OpError(f"unknown op: {op_id!r} (catalog: {', '.join(OPS)})")
+    # S5: a non-book domain's binding may narrow the op surface (data-driven —
+    # domains/<d>/studio.json ops_enabled). Book = full catalog.
+    b = P.binding_of(_cfg(ws))
+    allowed = b.get("ops_enabled")
+    if allowed is not None and op_id not in allowed:
+        raise OpError(f"{op_id} is not available for a {b['domain']} project "
+                      f"(available: {', '.join(allowed)})")
     params = dict(item.get("params") or {})
     if op_id in ("revise_unit", "revert_unit", "fulfill_bridge"):
         uid = str(params.get("uid") or "")

@@ -174,11 +174,40 @@ def list_books() -> list[dict]:
     return out
 
 
+def binding_of(cfg: dict) -> dict:
+    """S5: the Shell learns a domain entirely from DATA (SPEC §10) — nouns and
+    no_cover from domains/<d>/domain.json, presentation extras from the
+    optional domains/<d>/studio.json (panels, artifact labels, op subset).
+    The book domain is the built-in default. No domain name is ever
+    special-cased in Shell code; studio/selfcheck.py holds that falsifier."""
+    d = str(cfg.get("domain") or "book").strip() or "book"
+    out = {"domain": d, "unit_noun": None, "no_cover": False, "bible_label": None,
+           "panels": {"formats_matrix": True, "cover_studio": True},
+           "artifact_labels": {}, "ops_enabled": None}
+    if d == "book":
+        return out
+    spec = _read_json(KIT / "domains" / d / "domain.json") or {}
+    out["unit_noun"] = spec.get("unit_noun")
+    out["no_cover"] = bool(spec.get("no_cover"))
+    out["bible_label"] = spec.get("bible_label")
+    st = _read_json(KIT / "domains" / d / "studio.json") or {}
+    panels = st.get("panels") or {}
+    # non-book default: book-only panels OFF unless the sidecar turns one on
+    out["panels"] = {"formats_matrix": bool(panels.get("formats_matrix", False)),
+                     "cover_studio": bool(panels.get("cover_studio", False))}
+    if isinstance(st.get("artifact_labels"), dict):
+        out["artifact_labels"] = {str(k): str(v) for k, v in st["artifact_labels"].items()}
+    if isinstance(st.get("ops_enabled"), list):
+        out["ops_enabled"] = [str(x) for x in st["ops_enabled"]]
+    return out
+
+
 def book_detail(slug: str) -> dict:
     ws = resolve_slug(slug)
     cfg = _read_json(ws / "book_config.json") or {}
     voice = cfg.get("voice") or {}
     authorship = cfg.get("authorship") or {}
+    binding = binding_of(cfg)
     return {
         "slug": slug,
         "title": cfg.get("title") or slug,
@@ -186,9 +215,10 @@ def book_detail(slug: str) -> dict:
         "author": cfg.get("author") or "",
         "genre": cfg.get("genre") or "",
         "domain": cfg.get("domain", "book"),
+        "binding": binding,
         "is_fiction": bool(cfg.get("is_fiction")),
         "formats": cfg.get("formats") or [],
-        "unit_noun": voice.get("unit_noun") or "chapter",
+        "unit_noun": binding.get("unit_noun") or voice.get("unit_noun") or "chapter",
         "no_em_dashes": voice.get("no_em_dashes"),
         "blacklist_n": len(voice.get("blacklist") or []),
         "authorship_default": authorship.get("default_class", "C"),

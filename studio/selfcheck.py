@@ -91,6 +91,38 @@ try:
     check(not no_pred, "every op declares exec + predict", ", ".join(no_pred))
     bad_risk = [k for k, v in ops.OPS.items() if v.get("risk") not in ("SAFE", "CONTENT")]
     check(not bad_risk, "every op declares a known risk class", ", ".join(bad_risk))
+
+    # S5: the Shell learns domains from DATA. Two mechanical holds:
+    # (1) every domains/*/studio.json parses and names only real ops;
+    # (2) THE FALSIFIER — no non-book domain name may appear in Shell source
+    #     (server/projection/ops/chat/jobs or the web faces). If a domain needs
+    #     a conditional in code, the Shell/Binding seam is misdrawn (SPEC §10).
+    import json as _json
+    dom_root = HERE.parent / "domains"
+    nonbook = []
+    for dd in sorted(p for p in dom_root.iterdir() if p.is_dir()) if dom_root.is_dir() else []:
+        if dd.name != "book":
+            nonbook.append(dd.name)
+        sj = dd / "studio.json"
+        if sj.is_file():
+            try:
+                st = _json.loads(sj.read_text(encoding="utf-8"))
+                bad = [o for o in (st.get("ops_enabled") or []) if o not in ops.OPS]
+                check(not bad, f"domains/{dd.name}/studio.json ops all exist in the catalog",
+                      ", ".join(bad))
+            except Exception as e:                                # noqa: BLE001
+                check(False, f"domains/{dd.name}/studio.json parses", str(e))
+    shell_files = [p for p in HERE.glob("*.py") if p.name != "selfcheck.py"] \
+        + sorted((HERE / "web").glob("*.js"))
+    leaks = []
+    for name in nonbook:
+        import re as _re
+        pat = _re.compile(r"\b" + _re.escape(name) + r"\b")
+        for p in shell_files:
+            if pat.search(p.read_text(encoding="utf-8", errors="replace")):
+                leaks.append(f"{p.name} names '{name}'")
+    check(not leaks, "S5 falsifier: no non-book domain name in any Shell source",
+          " | ".join(leaks))
 except Exception as e:                                            # noqa: BLE001
     check(False, "ops/chat import", f"{type(e).__name__}: {e}")
 

@@ -4,10 +4,10 @@
 VERIFIED, in the house BUILD_STATE idiom: where this log contradicts the spec, reality wins and the
 spec gets amended, not the other way around.*
 
-**Updated:** 2026-08-05 · **Phase:** **S6 COMPLETE — the Conductor (plain-language face) gate
-PASSED**, on top of S4 (S0–S4 passed 2026-08-04) · S5 (second binding: `domains/course/studio.json`,
-the reusability falsifier) still not started — S6 was pulled forward on the operator's priority
-(self-service browser UX for the average person).
+**Updated:** 2026-08-05 · **Phase:** **S0–S10 ALL COMPLETE — the spec's phase plan is fully
+executed.** S5 (the reusability falsifier) passed LAST, after S6–S10 were pulled forward on the
+operator's priority; its gate is now a PERMANENT selfcheck (no non-book domain name may appear in
+any Shell source).
 
 ---
 
@@ -151,6 +151,34 @@ every take · passport 200 with inlined cover · setup page + guard round-trip d
 (guard set → hub shows it → cleared) · full 中文 shelf render verified in the browser, EN ↔ 中文
 toggle both directions · kit selfcheck **PASS (0 fail, 0 warn)** incl. template parity with the new
 `studio` keys · studio selfcheck **PASS** (3 JS files + vocabulary gate).
+
+### S5 — the second binding: the reusability falsifier (gate PASSED, 2026-08-05)
+
+The spec's decisive question: is the Shell one tool, or a platform? Answered with data + a gate
+that can never be un-passed:
+
+| Piece | File(s) | Notes |
+|---|---|---|
+| The binding sidecar | `domains/course/studio.json` | panels (formats matrix + cover studio OFF), artifact display labels, the op subset (`run_stage, revise_unit, revert_unit, verify_all, fulfill_bridge` — cover/format machinery is book-only) |
+| The Shell learns bindings (once, generically) | `projection.binding_of()` (+ `book_detail.binding`, unit_noun override) | nouns + `no_cover` from `domain.json`; presentation extras from `studio.json`; book = built-in default. NO domain name appears in the code |
+| Op-surface narrowing, server-enforced | `ops.validate_item` | a binding's `ops_enabled` narrows the catalog at the single chokepoint — buttons, chat, and raw API all inherit it |
+| Both faces follow the data | `app.js` (Formats/Cover chips + format buttons keyed off `binding.panels`), `conductor.js` (`stagePhrase` takes binding artifact labels for produce stages) | the Conductor needed almost nothing: cover cards/gallery already keyed off artifact existence |
+| **The falsifier, made permanent** | `studio/selfcheck.py` | (1) every `domains/*/studio.json` parses and names only real ops; (2) **no non-book domain name may appear in any Shell source** (`studio/*.py` + `web/*.js`) — a future course-conditional in code FAILS selfcheck |
+| The living proof | `book_workspace/course_demo/` | "Make Your First Book" — 4 lessons, 2 modules, `domain:"course"` |
+
+**Gate evidence (live, 2026-08-05):** the demo course ran to convergence **from the Studio** (mock
+writer): 10/10 stages satisfied (`precheck → draft:l_01..l_04 → integrate → produce:course_md +
+course_json → verify → emit` — no assemble, no cover), `COURSE.md` + `course.json` + MANIFEST
+emitted · **Conductor** renders it natively: "Lessons", no cover surface anywhere, files listed,
+plan card works · **operator face**: Formats/QA + Cover chips gone, safe-ops reduced to verify,
+"LESSONS" table, correct stage rail · `reroll_cover` on the course **refused server-side** with a
+plain message naming the available subset; `revise_unit` on a lesson proposed normally (then
+rejected — recorded, nothing mutated) · **selfcheck falsifier PASS: zero occurrences of any
+non-book domain name in Shell source** · both selfchecks PASS (kit 0 fail/0 warn).
+**Observed + accepted:** the blast-radius predictor names book stages (`assemble`) on course
+proposals — the spec's sanctioned conservative over-prediction (the drift alarm fires only on
+under-prediction). **Known softness:** a few Conductor strings say "book" generically on non-book
+domains ("Your book is ready") — a strings-level refinement for a later pass, not a seam issue.
 
 ## §2 · Gate evidence (verified live, 2026-08-04)
 
