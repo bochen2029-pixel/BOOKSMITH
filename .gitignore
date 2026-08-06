@@ -106,3 +106,38 @@ _tools/chunker/_*_chunks/
 intake/*
 !intake/README_DROP_ZONE.md
 _intake_archive/
+
+# --- private strategy docs (2026-08-05): live business strategy, registered-domain
+#     and account details; never ships to the public repo. Off-repo mirror:
+#     C:\Users\user\.claude\projects\C--BOOKSMITH\CLOUD_HORIZON.backup.md ---
+docs/CLOUD_HORIZON.md
+docs/CLOUD_HORIZON*
+
+# --- private / strategy / non-kit artifacts (2026-08-06): never in the public tree.
+#     Session prompts, sitreps, prep folders, private-book art, chat exports, and
+#     family/replica-project material stay local; the kit itself is the public thing. ---
+SITREP_*.md
+*_INIT_PROMPT.md
+_EXECUTION_SESSION_PROMPT*
+_FEEDBACK_INTAKE_*
+_QC_*
+_audit_*/
+_roundtable_*/
+_governed_practice_prep/
+_last_mile_prep/
+_openworker_prep/
+_notebooklm_*/
+_cover_candidates_*/
+docs/claude_chat_export_*
+YOU_STAY_ONE_PERSON_*.md
+DRDJ_*
+THE_CROSSING_INIT_PROMPT.md
+START_THE_CROSSING.cmd
+bootstrap_and_awaken*.md
+book_workspace.zip
+hyperframes-main/
+hyperframes-main.zip
+openworker-main/
+openworker-main.zip
+_tools/cover_compose_drdj.py
+*TEMPsmoke_ws_path.txt
