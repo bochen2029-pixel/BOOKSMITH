@@ -1129,21 +1129,39 @@ class Engine:
         # --- 1. SOURCE ART (hard-stop if unresolvable) ---
         art = self.ws / "cover_art" / f"{self.slug}_src.png"
         art_src = self._cover_source_art(art)
-        # --- 2. TYPOGRAPHY AUTO-LAYOUT: calm title band, panel-frame fraction ---
-        title_y = self._cover_layout_frac(art)
-        # --- 3. COMPOSITE the ebook front cover; REQUIRED when an ebook ships
-        #     (epub embeds it; a missing cover must fail here, not downstream).
-        #     Print wraps (spine/pages) stay in the produce/interactive flow. ---
+        # --- 2/3. EBOOK COVER; REQUIRED when an ebook ships (epub embeds it;
+        #     a missing cover must fail here, not downstream). Print wraps
+        #     (spine/pages) stay in the produce/interactive flow.
+        #     A COMPOSED bespoke/supplied cover (cover.art.composed: true)
+        #     already carries its own typography from its own compositor:
+        #     typesetting over it would double the title, so the art converts
+        #     to the ebook cover directly and GATE-6 still adjudicates it. ---
         composited = []
         fmts = self.cfg.get("formats", [])
         cover_jpg = self.ws / "outputs" / "kindle" / f"{self.slug}_KINDLE_cover.jpg"
         vinfo = "n/a"
+        title_y = None
+        composed = bool(((self.cfg.get("cover", {}) or {}).get("art", {}) or {}).get("composed")) \
+            and _cover_art_method(self.cfg) in ("bespoke", "supplied")
         if "kindle" in fmts or "epub" in fmts:
-            rcc, oc, ec = run(self._composite_kindle_cmd(title_y))
-            if rcc != 0 or not cover_jpg.exists():
-                raise HardStop("cover", f"ebook cover composite failed (rc={rcc}): "
-                               f"{(oc + ec).strip()[-300:]}")
-            composited.append("kindle")
+            if composed:
+                try:
+                    from PIL import Image
+                    cover_jpg.parent.mkdir(parents=True, exist_ok=True)
+                    im = Image.open(art).convert("RGB")
+                    th = 2560
+                    im.resize((round(im.width * th / im.height), th),
+                              Image.LANCZOS).save(cover_jpg, "JPEG", quality=95)
+                except Exception as e:
+                    raise HardStop("cover", f"composed-cover conversion failed: {e}")
+                composited.append("kindle (composed art, direct)")
+            else:
+                title_y = self._cover_layout_frac(art)
+                rcc, oc, ec = run(self._composite_kindle_cmd(title_y))
+                if rcc != 0 or not cover_jpg.exists():
+                    raise HardStop("cover", f"ebook cover composite failed (rc={rcc}): "
+                                   f"{(oc + ec).strip()[-300:]}")
+                composited.append("kindle")
             # --- 4. GATE-6 PERCEPTUAL: FAIL -> bounded SDXL re-roll, then hard-stop.
             #     PENDING/SKIP (no vision backend) is logged, never a silent pass-
             #     as-success of a FAILING verdict. ---

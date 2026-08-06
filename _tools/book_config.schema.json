@@ -199,6 +199,11 @@
               "type": "string",
               "description": "Optional free-text rationale for the chosen `method` (why this book's cover is bespoke/supplied/etc). Documentation only; never read by the toolchain."
             },
+            "composed": {
+              "type": "boolean",
+              "default": false,
+              "description": "The source art at cover_art/<slug>_src.png IS the finished front cover: its own compositor already baked title/author typography (bespoke/supplied only). engine.py stage_cover then converts it to the ebook cover DIRECTLY instead of compositing typography over it (which would double the title). GATE-6 perceptual adjudication still runs. Added 2026-08-06 when YOU STAY ONE PERSON's fully-typeset o2 cover met the generic composite path."
+            },
             "checkpoint": {
               "type": "string",
               "default": "sd_xl_base_1.0.safetensors",
