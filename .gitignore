@@ -112,6 +112,7 @@ _intake_archive/
 #     C:\Users\user\.claude\projects\C--BOOKSMITH\CLOUD_HORIZON.backup.md ---
 docs/CLOUD_HORIZON.md
 docs/CLOUD_HORIZON*
+docs/CLOUD_ONESHOT*
 
 # --- private / strategy / non-kit artifacts (2026-08-06): never in the public tree.
 #     Session prompts, sitreps, prep folders, private-book art, chat exports, and
