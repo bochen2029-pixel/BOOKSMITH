@@ -178,9 +178,16 @@ def ensure_interior_pdf(cfg, ws: str) -> str:
         os.path.join(pb_dir, f"{slug}.docx"),
     )
     if not docx:
-        raise FileNotFoundError(
-            f"No interior PDF or DOCX found in {pb_dir}. Produce the "
-            f"kdp_paperback format first.")
+        # Ebook-only workspace (no print format configured): the digital reading
+        # copy renders from the KINDLE interior instead - reflowable styling, but
+        # a complete, honest PDF of the book (cloud one-shot tickets, 2026-08-13).
+        kindle_docx = os.path.join(ws, "outputs", "kindle", f"{slug}_KINDLE.docx")
+        if os.path.exists(kindle_docx):
+            docx = kindle_docx
+        else:
+            raise FileNotFoundError(
+                f"No interior PDF or DOCX found in {pb_dir} (and no kindle DOCX "
+                f"fallback). Produce the kdp_paperback or kindle format first.")
 
     out_pdf = os.path.join(pb_dir, f"{slug}_KDP_PAPERBACK.pdf")
     import docx_to_pdf as _docx_to_pdf  # lazy: Word COM (or Tier-2 LibreOffice), Windows-first
