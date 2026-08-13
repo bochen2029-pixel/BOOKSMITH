@@ -233,7 +233,7 @@ class H(BaseHTTPRequestHandler):
             st["ledger"] = ledger(ticket)
             st["outline_ready"] = (ws(ticket) / "_outline.json").exists()
             outs = []
-            for pat in ("outputs/kindle/*", "outputs/epub/*"):
+            for pat in ("outputs/digital/*", "outputs/kindle/*", "outputs/epub/*"):
                 outs += [str(p.relative_to(ws(ticket))).replace("\\", "/")
                          for p in ws(ticket).glob(pat) if p.is_file()]
             st["outputs"] = sorted(outs)
