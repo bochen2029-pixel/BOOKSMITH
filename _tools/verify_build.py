@@ -1545,7 +1545,12 @@ def run_checks(cfg: dict, config_path: Path, root: Path, fmt: str,
                 [sys.executable, str(SCRIPT_DIR / "kdp_precheck.py"),
                  "--config", str(config_path), "--format", fmt, "--json"],
                 capture_output=True, text=True, timeout=600)
-            r = json.loads(proc.stdout)
+            # Parse from the first '{': newer PyMuPDF prints a fitz-deprecation
+            # warning into stdout ahead of the JSON (caught live in the Linux
+            # container - Windows' older wheel is silent, so it never bit here).
+            out = proc.stdout or ""
+            brace = out.find("{")
+            r = json.loads(out[brace:] if brace >= 0 else out)
             fails = [c["name"] for c in r["checks"] if not c["pass"]]
             warns = [c["name"] for c in r["checks"] if c.get("warn")]
             detail = (f"{len(r['checks'])} checks; " +
