@@ -40,9 +40,15 @@ export default {
         return new Response("unauthorized\n", { status: 401 });
       }
     }
-    // instance name doubles as an image-generation pin: bump it when a new image
-    // must replace a still-warm instance (a warm DO keeps its old container).
-    const container = getContainer(env.BOOKSMITH_P0 as never, "runner-a10");
+    // Per-ticket isolation: each BR-XXXXXX ticket gets its own container instance
+    // (own filesystem, own engine queue, scale-to-zero). Non-ticket paths (proof
+    // jobs) ride a shared instance whose name doubles as the image-generation pin:
+    // bump it when a new image must replace a still-warm instance (a warm DO
+    // keeps its old container).
+    const url = new URL(request.url);
+    const m = /^\/t\/(BR-[0-9A-Z]{6})(\/|$)/.exec(url.pathname);
+    const name = m ? `ticket-${m[1]}-a10b` : "runner-a10b";
+    const container = getContainer(env.BOOKSMITH_P0 as never, name);
     return container.fetch(request);
   },
 };
