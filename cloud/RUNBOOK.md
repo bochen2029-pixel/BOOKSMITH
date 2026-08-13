@@ -87,3 +87,25 @@ wsl -d Ubuntu-24.04 -u root --exec bash -c 'rm -rf /root/booksmith-p0/src && mkd
 Mid-build container eviction loses the workspace (R2 snapshot of full workspace = later; downloads
 durable after item 2). One build at a time per ticket (fine). Refunds manual in Stripe dashboard.
 Rotate the booksmith_DEMO DeepSeek key (it appeared in chat) — replace runner secret when convenient.
+
+## 6 · Session-continuation notes (2026-08-13, storefront finish in flight)
+- **Lesson 12:** `build_digital_pdf` requires a PRINT interior by design; ebook-only tickets now
+  fall back to rendering the KINDLE DOCX via soffice (commit on main). Digital PDF = honest
+  reading copy, reflowable styling.
+- DONE this pass: a10 image (libreoffice-writer + digital_pdf format), per-ticket container
+  instances (name ticket-<id>-a10, max_instances 6), site worker gained sendMail (EMAIL binding)
+  + pager (NTFY_TOPIC secret) + archiveOutputs->R2 on ready + R2-first /api/download, R2 bucket
+  bookraising-books + BOOKS/EMAIL bindings, homepage hero rewritten ("Raise my book - $5 founder
+  build", PDF-first deliverables, rights line, returning link).
+- REMAINING: gate test green (in flight) -> push a10 + delete app + deploy runner -> deploy site
+  worker -> secrets on SITE worker: OWNER_EMAIL (chen@finaltheoryofeverything.org), NTFY_TOPIC
+  (generate; Bo subscribes ntfy.sh/<topic> on phone) -> Email Sending may need a one-time zone
+  enable in the dash (code fail-opens if not) -> stranger-sim ticket incl. PDF download from R2
+  -> Bo's real $5. raise.html: add PDF label mapping for *_DIGITAL.pdf in renderReady (tiny).
+
+- **DELTA (final minutes of the session): the failing digital check is NAMED** —
+  `digital_pdf_structure: page2 MediaBox 595.3x841.9pt (A4) != expected 432x648 (6x9)`.
+  Cause: the kindle-DOCX fallback renders via soffice at A4. FIX DESIGN (step 1 of HOW TO
+  PROCEED): in build_digital_pdf, after ensure_interior_pdf, if interior pages are not
+  432x648, re-fit each page onto a 432x648 canvas via fitz show_pdf_page (vector, aspect-fit,
+  the pdf_replica_fit pattern, ~15 lines). Keep the gate as-is; never relax it.
