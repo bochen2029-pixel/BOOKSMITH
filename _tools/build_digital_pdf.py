@@ -197,6 +197,39 @@ def ensure_interior_pdf(cfg, ws: str) -> str:
     return out_pdf
 
 
+def refit_interior_to_trim(interior_pdf: str, out_dir: str) -> str:
+    """Re-fit interior pages onto the exact 6x9 trim when the renderer produced
+    another size: the ebook-only kindle-DOCX fallback renders via soffice at A4
+    (Linux) or Word at Letter, and the digital_pdf_structure gate demands
+    432x648 pt on every page. Vector re-fit via show_pdf_page (the
+    pdf_replica_fit pattern): aspect-fit, centered, never cropped, never
+    rasterized. Interiors already at trim pass through untouched."""
+    src = fitz.open(interior_pdf)
+    try:
+        if all(abs(p.rect.width - PAGE_W_PTS) <= 0.5 and
+               abs(p.rect.height - PAGE_H_PTS) <= 0.5 for p in src):
+            return interior_pdf
+        src_w, src_h = src[0].rect.width, src[0].rect.height
+        fd, refit_pdf = tempfile.mkstemp(suffix="_refit.pdf", dir=out_dir)
+        os.close(fd)
+        out = fitz.open()
+        for p in src:
+            scale = min(PAGE_W_PTS / p.rect.width, PAGE_H_PTS / p.rect.height)
+            w, h = p.rect.width * scale, p.rect.height * scale
+            x0 = (PAGE_W_PTS - w) / 2.0
+            y0 = (PAGE_H_PTS - h) / 2.0
+            page = out.new_page(width=PAGE_W_PTS, height=PAGE_H_PTS)
+            page.show_pdf_page(fitz.Rect(x0, y0, x0 + w, y0 + h), src, p.number)
+        out.save(refit_pdf, deflate=True, garbage=4)
+        out.close()
+        print(f"  Re-fit interior {src_w:.1f}x{src_h:.1f}pt -> "
+              f"{PAGE_W_PTS:.0f}x{PAGE_H_PTS:.0f}pt ({src.page_count} pages)",
+              file=sys.stderr)
+        return refit_pdf
+    finally:
+        src.close()
+
+
 def resolve_covers(cfg, ws: str):
     """Return (front_source_image, back_source_image) as PIL Images."""
     slug = cfg["slug"]
@@ -258,6 +291,10 @@ def build(config_path, workspace_arg):
     # 1. Interior PDF (render from DOCX via Word COM if needed).
     interior_pdf = ensure_interior_pdf(cfg, ws)
 
+    # 1b. Conform to trim (RUNBOOK lesson 13): the kindle-DOCX fallback renders
+    #     at A4/Letter; the structure gate stays exact, the interior bends to it.
+    fitted_pdf = refit_interior_to_trim(interior_pdf, out_dir)
+
     # 2. Strip print-only blanks + header ghosts into a temp PDF.
     #    keep_covers=1 (NOT the default 2, NOT 0): the strip runs on the
     #    cover-LESS interior (covers are prepended below), so page 1 is the real
@@ -266,7 +303,7 @@ def build(config_path, workspace_arg):
     #    the true blank verso. keep_covers=2 would preserve that blank verso.
     fd, stripped_pdf = tempfile.mkstemp(suffix="_stripped.pdf", dir=out_dir)
     os.close(fd)
-    strip_result = _strip.strip_blank_pages(interior_pdf, stripped_pdf, keep_covers=1)
+    strip_result = _strip.strip_blank_pages(fitted_pdf, stripped_pdf, keep_covers=1)
 
     # 3. Build the two exact-MediaBox cover pages.
     front_img, back_img, cover_rgb, front_src, back_src = resolve_covers(cfg, ws)
@@ -288,7 +325,10 @@ def build(config_path, workspace_arg):
         writer.write(f)
 
     # 5. Cleanup temps.
-    for tmp in (stripped_pdf, cover_pdf):
+    temps = [stripped_pdf, cover_pdf]
+    if fitted_pdf != interior_pdf:
+        temps.append(fitted_pdf)
+    for tmp in temps:
         try:
             os.remove(tmp)
         except OSError:
