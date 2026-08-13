@@ -87,6 +87,19 @@ wsl -d Ubuntu-24.04 -u root --exec bash -c 'rm -rf /root/booksmith-p0/src && mkd
 Mid-build container eviction loses the workspace (R2 snapshot of full workspace = later; downloads
 durable after item 2). One build at a time per ticket (fine). Refunds manual in Stripe dashboard.
 Rotate the booksmith_DEMO DeepSeek key (it appeared in chat) — replace runner secret when convenient.
+Additions (2026-08-13, session C, far-end-confirmed): cover vision gate = SKIP in-container
+(consciously accepted for the alpha; MVP spec demoted the perceptual gate to best-effort because
+hypergen + deterministic compositing shrinks the surface; the ~50-line vision_verify
+--backend claude-api adapter is the clean post-launch item). Concurrency = 5 customer builds
+(max_instances 6 minus the shared proof instance); the 6th now gets a friendly 503 from
+/api/commit instead of raw platform text. Unit-count band under-enforced: bands S=8/M=12/L=16
+units — shim normalize forces words-per-unit but NOT unit count; next image lap should truncate
+units to the band N after seed (deterministic; alpha floor caps cost regardless). hypergen mood
+derives from genre → consecutive nonfiction tickets get similar earthy palettes (cosmetic).
+`wrangler r2 bucket info` object_count lags reality — verify objects with `r2 object get`, never
+the metric. Email ready-mail fail-opens until the one-time Email Sending zone enable + orders@
+sender setup in the dash (2-min Bo step). Stripe live webhook endpoint registration in the Stripe
+dashboard is UNVERIFIED (confirm-on-return is the primary paid-path and works without it).
 
 ## 6 · Session-continuation notes (2026-08-13, storefront finish in flight)
 - **Lesson 12:** `build_digital_pdf` requires a PRINT interior by design; ebook-only tickets now
@@ -103,6 +116,32 @@ Rotate the booksmith_DEMO DeepSeek key (it appeared in chat) — replace runner 
   enable in the dash (code fail-opens if not) -> stranger-sim ticket incl. PDF download from R2
   -> Bo's real $5. raise.html: add PDF label mapping for *_DIGITAL.pdf in renderReady (tiny).
 
+- **SESSION C CLOSE (2026-08-13 ~13:20 CT): storefront LIVE, stranger-sim PASSED.** Deployed:
+  runner on :a10b (shim a10b, per-ticket instances ticket-<id>-a10b, digital re-fit fix in-image),
+  site worker with R2 archival + EMAIL binding + ntfy pager + $5 hero (version f9aa972a). Sim
+  BR-SIM901: brief → 12-unit outline → 12 chapters gated → 3 formats verified rc 0 → ready →
+  R2 archive 5/5 → PDF(61pp all 432x648)/EPUB/DOCX downloaded; R2 direct-get byte-identical to
+  /api/download. Remaining HUMAN steps: Bo subscribes ntfy.sh/bookraising-pRGanwH6wHwuhvCR;
+  one-time Email Sending zone enable + orders@ sender; eyeball Stripe live webhook registration;
+  then the real $5. After launch: rotate DeepSeek key + mint fresh DEMO/DEV tokens (re-put
+  secrets AND rewrite dotfiles together per lesson 14).
+- **Lesson 14 (session C):** deployed secrets vs local dotfiles drifted (or the `.dev_key`
+  var-name trap: it defines DEVK=, not DEV_KEY= — sourcing it wrong sends an empty bearer that
+  looks exactly like drift). Rule: the dotfiles are the truth; at any lap that touches auth,
+  re-`wrangler secret put` from the files via `printf '%s' "$(tr -d ' \r\n' < file)"` (bash, never
+  PowerShell echo) and only then debug. DEMO_TOKEN + RUNNER_TOKEN must always be the same value.
+- **Lesson 15 (session C):** `env.BOOKS.put(key, r.body)` with a two-Worker-hop stream throws
+  (unknown length) and the old bare `catch {}` ate it — the bucket stayed empty while downloads
+  worked via runner-fallback, i.e. the durability promise was silently broken. Fix: buffer small
+  artifacts (`await r.arrayBuffer()`), surface the result IN-BAND (`s.archive` on /api/status),
+  page on any failure (throw or !r.ok). Corollary: worker deploys propagate lazily — a poll fired
+  seconds after `wrangler deploy` can execute the OLD version; trust the in-band receipt, never
+  the deploy timestamp. And `wrangler tail` buffers when piped — in-band beats tail for proofs.
+- **Lesson 16 (far-end warning, now standing rule):** with per-ticket instance names,
+  `wrangler containers delete` kills EVERY live customer build mid-flight. The delete-and-redeploy
+  recipe was safe when instances were disposable; from now on swap images only when
+  `wrangler containers list` shows no live ticket instances (deploy-modify-in-place + a new
+  instance-name suffix already forces fresh pulls without any delete).
 - **Lesson 13 (named at end of session B, FIXED session C 2026-08-13):** `digital_pdf_structure`
   failed on ebook-only tickets — the kindle-DOCX fallback renders via soffice at A4
   (595.3x841.9 pt; Word would render it Letter), and the gate demands exact 432x648 on every
