@@ -42,7 +42,7 @@ export default {
     }
     // instance name doubles as an image-generation pin: bump it when a new image
     // must replace a still-warm instance (a warm DO keeps its old container).
-    const container = getContainer(env.BOOKSMITH_P0 as never, "runner-a8");
+    const container = getContainer(env.BOOKSMITH_P0 as never, "runner-a9");
     return container.fetch(request);
   },
 };

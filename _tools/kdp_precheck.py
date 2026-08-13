@@ -247,7 +247,11 @@ def kindle_checks(kdir: Path):
 def run(config_path: Path, fmt: str):
     cfg = json.loads(config_path.read_text(encoding="utf-8"))
     root = config_path.parent
-    trim_w, trim_h = cfg["trim"]["w"], cfg["trim"]["h"]
+    # ebook-only configs carry no trim block (schema default 6x9); the kindle
+    # path never uses it, but the hard index crashed the whole precheck (caught
+    # live: cloud Session B, minimal ticket config).
+    trim = cfg.get("trim") or {}
+    trim_w, trim_h = trim.get("w", 6.0), trim.get("h", 9.0)
     paper = cfg.get("paper", "white")
     checks = []
     if fmt == "kindle":
