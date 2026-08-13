@@ -580,7 +580,7 @@ class Engine:
             return self._fallback_seed_plan(brief)
         data = self._extract_json(raw)
         if not isinstance(data, dict) or not isinstance(data.get("units"), list) or not data["units"]:
-            self.log("seed.unparseable_plan", out_chars=len(raw))
+            self.log("seed.unparseable_plan", out_chars=len(raw), head=raw[:160])
             return self._fallback_seed_plan(brief)
         data["units"] = self._slugify_units(data["units"])
         if not data["units"]:

@@ -31,6 +31,7 @@ import hashlib
 import json
 import os
 import re
+import sys
 import time
 import urllib.error
 import urllib.request
@@ -70,6 +71,17 @@ def load_model_cfg(kit_env: dict | None) -> dict:
     if env.get("BOOKSMITH_MODEL_BASE_URL"):
         cfg["base_url"] = env["BOOKSMITH_MODEL_BASE_URL"]
         cfg["openai_base_url"] = env["BOOKSMITH_MODEL_BASE_URL"]
+    if env.get("BOOKSMITH_MODEL_EXTRA_BODY"):
+        # Provider-specific request fields for the openai backend, as JSON — e.g.
+        # DeepSeek V4 defaults to thinking mode (reasoning burns max_tokens and
+        # truncates the visible answer): '{"thinking": {"type": "disabled"}}'.
+        try:
+            eb = json.loads(env["BOOKSMITH_MODEL_EXTRA_BODY"])
+            if isinstance(eb, dict):
+                cfg["extra_body"] = eb
+        except Exception:
+            print("[model] warning: BOOKSMITH_MODEL_EXTRA_BODY is not valid JSON; ignored",
+                  file=sys.stderr)
     return cfg
 
 
@@ -237,6 +249,10 @@ class ModelClient:
         }
         if stop:
             body["stop"] = stop
+        extra = self.cfg.get("extra_body")
+        if isinstance(extra, dict):
+            for k, v in extra.items():
+                body.setdefault(k, v)
         url = base + ("/chat/completions" if not base.endswith("/chat/completions") else "")
         resp = self._http_json(url, headers, body)
         u = resp.get("usage") or {}
