@@ -1,0 +1,20 @@
+# BOOKSMITH P0 demo — Worker + Container on Cloudflare (account via CLOUDFLARE_ACCOUNT_ID env).
+# Deploy:  npx wrangler deploy   (image must already be pushed: see cloud/README.md)
+name = "booksmith-p0-demo"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+workers_dev = true
+
+[[containers]]
+class_name = "BooksmithP0"
+image = "registry.cloudflare.com/e13b1f08e91348c714d04252a43e3a74/booksmith-cf:p0"
+max_instances = 1
+instance_type = "basic"
+
+[[durable_objects.bindings]]
+name = "BOOKSMITH_P0"
+class_name = "BooksmithP0"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["BooksmithP0"]

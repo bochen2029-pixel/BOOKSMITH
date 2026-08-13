@@ -114,6 +114,11 @@ docs/CLOUD_HORIZON.md
 docs/CLOUD_HORIZON*
 docs/CLOUD_ONESHOT*
 
+# --- cloud worker local state: deps, wrangler cache, and the demo bearer token ---
+cloud/worker/node_modules/
+cloud/worker/.wrangler/
+cloud/worker/.demo_token
+
 # --- private / strategy / non-kit artifacts (2026-08-06): never in the public tree.
 #     Session prompts, sitreps, prep folders, private-book art, chat exports, and
 #     family/replica-project material stay local; the kit itself is the public thing. ---

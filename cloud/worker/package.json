@@ -1,0 +1,10 @@
+{
+  "name": "booksmith-p0-demo",
+  "private": true,
+  "type": "module",
+  "description": "P0 demo Worker: drives the BOOKSMITH engine container's fixed proof jobs on Cloudflare Containers.",
+  "dependencies": {
+    "@cloudflare/containers": "^0.3.7",
+    "wrangler": "^4.122.0"
+  }
+}

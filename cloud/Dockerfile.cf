@@ -1,0 +1,8 @@
+# BOOKSMITH P0 demo image for Cloudflare Containers: the proven P0 image + the
+# fixed-job HTTP shim a Worker can drive. Build cloud/Dockerfile as booksmith-p0
+# first (see cloud/README.md), then:
+#   docker build -t booksmith-cf:p0 -f cloud/Dockerfile.cf <staged-tree>
+FROM booksmith-p0
+COPY cloud/shim.py /kit/cloud/shim.py
+EXPOSE 8080
+CMD ["python", "/kit/cloud/shim.py"]
