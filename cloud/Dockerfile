@@ -29,6 +29,7 @@ ENV PYTHONUTF8=1 \
 # node (interior DOCX generators + selfcheck's JS parse gate). bookworm ships node 18.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends nodejs npm \
+       libreoffice-writer fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /kit

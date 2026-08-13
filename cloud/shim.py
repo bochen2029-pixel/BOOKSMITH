@@ -180,7 +180,7 @@ class H(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/":
             return self._json(200, {"ok": True, "service": "booksmith-runner",
-                                    "shim": "a9", "python": sys.version.split()[0]})
+                                    "shim": "a10", "python": sys.version.split()[0]})
         if path == "/status":
             return self._status(None)
         t, sub = self._ticket()
@@ -265,7 +265,7 @@ class H(BaseHTTPRequestHandler):
             audience = str(b.get("audience") or "")[:1000]
             cfg = {"title": title, "author": author, "slug": slug(t),
                    "genre": ("fiction" if b.get("is_fiction") else "nonfiction"),
-                   "is_fiction": bool(b.get("is_fiction")), "formats": ["kindle", "epub"],
+                   "is_fiction": bool(b.get("is_fiction")), "formats": ["kindle", "epub", "digital_pdf"],
                    "min_pages": 1, "cover": {"art": {"method": "hypergen"}}}
             (w / "book_config.json").write_text(json.dumps(cfg, indent=2), "utf-8")
             brief = (f"# {title}\n\n{about}\n\nWho it is for: {audience}\n\n"
