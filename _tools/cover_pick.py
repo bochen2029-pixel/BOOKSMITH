@@ -119,6 +119,12 @@ def main(argv=None):
     w, h = (int(x) for x in args.size.lower().split("x"))
 
     catalog = load_catalog()
+    # Only entries whose IMAGE actually exists on this machine are candidates: the
+    # manifest is tracked but the rendered images ship separately (gitignored), so
+    # a clean clone / container would otherwise auto-pick a phantom and hard-fail
+    # while the always-renderable hypergen floor sat unused (caught live, cloud
+    # Session A 2026-08-13).
+    catalog = [e for e in catalog if (ROOT / "cover_catalog" / e.get("file", "")).is_file()]
     ranked = sorted(catalog, key=lambda e: -score_entry(e, kw, mood))[:3]
 
     print(f"book: {slug} | mood: {mood} | palette: {palette}")

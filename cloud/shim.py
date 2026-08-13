@@ -48,11 +48,21 @@ def engine(ticket: str, *extra: str) -> int:
 
 
 def normalize_classes(ticket: str) -> None:
-    """One-shot rule (gap G-M1): no human is present to fill Class A/B units."""
-    p = ws(ticket) / "book_config.json"
+    """One-shot rules: (G-M1) no human fills Class A/B; and the LENGTH BAND is the
+    product's promise — the plan model may shrink per-unit targets (it guessed 150w
+    live), so target_words is forced back to the band's figure deterministically."""
+    w = ws(ticket)
+    p = w / "book_config.json"
     cfg = json.loads(p.read_text("utf-8"))
+    wpu = 0
+    try:
+        wpu = int(json.loads((w / "_band.json").read_text("utf-8")).get("wpu", 0))
+    except Exception:  # noqa: BLE001
+        pass
     for u in cfg.get("units", []):
         u["class"] = "C"
+        if wpu:
+            u["target_words"] = wpu
     cfg.setdefault("authorship", {})["default_class"] = "C"
     cfg["authorship"]["per_chapter_overrides"] = {}
     p.write_text(json.dumps(cfg, indent=2), "utf-8")
@@ -66,7 +76,11 @@ def outline_json(ticket: str) -> dict:
     if seed.exists():
         txt = seed.read_text("utf-8", errors="replace")
         m = re.search(r"## §1[^\n]*\n(.*?)(?=\n## §|\Z)", txt, re.S)
-        intent = (m.group(1).strip() if m else txt[:600]).strip()[:900]
+        raw = (m.group(1) if m else txt[:1200])
+        # keep prose lines only: drop headings, italic template instructions, tables
+        keep = [ln.strip() for ln in raw.splitlines()
+                if ln.strip() and not ln.strip().startswith(("#", "*", "|", "{{"))]
+        intent = " ".join(keep).strip()[:900]
     return {"title": cfg.get("title"), "author": cfg.get("author"), "intent": intent,
             "units": [{"id": u.get("id"), "title": u.get("title"),
                        "target_words": u.get("target_words")} for u in cfg.get("units", [])]}
@@ -166,7 +180,7 @@ class H(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/":
             return self._json(200, {"ok": True, "service": "booksmith-runner",
-                                    "shim": "a4", "python": sys.version.split()[0]})
+                                    "shim": "a6", "python": sys.version.split()[0]})
         if path == "/status":
             return self._status(None)
         t, sub = self._ticket()
@@ -257,6 +271,7 @@ class H(BaseHTTPRequestHandler):
             brief = (f"# {title}\n\n{about}\n\nWho it is for: {audience}\n\n"
                      f"chapters: {n_units}\nwords: {wpu}\n")
             (w / "brief.md").write_text(brief, "utf-8")
+            (w / "_band.json").write_text(json.dumps({"wpu": wpu}), "utf-8")
             return self._json(200, {"ok": True, "units": n_units, "words_per_unit": wpu})
 
         if sub == "/file":

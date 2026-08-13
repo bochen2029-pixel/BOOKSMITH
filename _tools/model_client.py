@@ -189,7 +189,8 @@ class ModelClient:
         dt = time.time() - t0
         self._log(system, prompt, text, dt, err)
         if err is not None or not text:
-            raise ModelError(f"backend={self.backend} failed after {retries} tries: {err}")
+            reason = err if err is not None else "empty completion (provider returned no text)"
+            raise ModelError(f"backend={self.backend} failed: {reason}")
         return text
 
     # -- backends ---------------------------------------------------------
