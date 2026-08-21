@@ -185,3 +185,68 @@ dashboard is UNVERIFIED (confirm-on-return is the primary paid-path and works wi
   (aspect-fit, centered, the pdf_replica_fit pattern); 6x9 interiors pass through byte-untouched
   so every print-format book is unaffected. The gate was NOT relaxed. Micro-proof: synthetic A4
   3pp -> exact 432x648 with text intact + trim passthrough asserted. Full proof: lt4 lap on a10b.
+
+- **IMAGE LAP a11 → a11b → a11c (2026-08-21, runner NOW on :a11c, worker version 0405c17d):**
+  the four QC-queued items closed, plus one found live. **a11:** shim busy-gates on `/init` +
+  `/file` (409 `{"error":"busy"}` while any job runs — QC #4), runner auth FAIL-CLOSED
+  (missing DEMO_TOKEN → 503 "locked", never open — QC M2), outline intent scrubbed AT SOURCE
+  (mid-line `{{TOKENS}}` stripped; the worker-side scrub in apiOutlineGet stays as
+  belt+suspenders), upload short-read guard (received != Content-Length → 400 + connection
+  close, no partial file — QC L10). **a11b — found preparing the lane: the shim never spoke
+  PUT.** worker.js apiIntake uploads with `method:"PUT"`; BaseHTTPRequestHandler answers
+  unknown verbs 501 (HTML) — every real customer intake upload was dead on arrival since the
+  first deploy, invisible because NO sim ever uploaded a file. `do_PUT` now routes
+  `/t/<id>/file` into the same `_file_put` as the POST compat path. **Lesson 21: a sim lane
+  must exercise every verb the site actually sends — a green lane that skips a path proves
+  nothing about that path.** **a11c:** the live lane showed the a11 scrub kills tokens but
+  seed §1 is template-SHAPED (empty-slot fragments "Success means the reader .", bullet
+  labels "- **Sentence rhythm:**" survive line filters) — intent is customer-facing, so it
+  now prefers the customer's own brief text (prose-clean by construction), scrubbed-seed
+  fallback only (also drops `-`/digit-prefixed lines). Proven by unit tests + in-image probe
+  battery (14/14: marker, PUT/POST upload, PUT non-file 404, short-read 400 + no partial
+  file, busy 409 on init/file during a live job); `{"shim":"a11c"}` verified in-band
+  post-rollout.
+- **Lane BR-A11B01 (a11b, S band, WITH an intake upload this time):** marker `{"shim":"a11b"}`
+  in-band → brief → intake `field_notes.txt` stored 152 bytes THROUGH the site (PUT front
+  door live; a10b answered 501 here) → outline 8 units, intent token-free → busy proofs
+  mid-outline (direct POST /init and PUT /file both `{"error":"busy","job":"outline"}`) →
+  commit → build **rc 0, 19/19 stages** (~12 min wall incl. the intake ingest), ledger 10
+  calls / 26,140 in / 14,998 out tokens (~$0.02) → **archive 5/5 err null** (lesson-15
+  receipt) → status served `source:"r2"` → all 5 artifacts downloaded via /api/download:
+  **digital PDF 33 pp, every page exactly 432.0x648.0** + EPUB + KINDLE.docx + cover.
+  Fail-closed auth verified by review + dry-run compile only (a live test would mean
+  deleting the production secret — not done). Dev rows BR-A11B01 left in D1 like the sims.
+- **Lesson 19 (wrangler containers push now 401s → native push recipe):** `npx wrangler
+  containers push --path-to-docker docker-wsl.exe` dies at registry login (daemon: 401 on
+  /v2/) even though the credentials API mints 201 (wrangler 4.122; bridge stdin path
+  suspected, not root-caused). PROVEN workaround, all inside WSL in ONE bash -c (staged
+  scripts die — see lesson 22): grep `oauth_token` from `.wrangler/config/default.toml`,
+  POST `accounts/<acct>/containers/registries/registry.cloudflare.com/credentials` body
+  `{"expiration_minutes":15,"permissions":["push","pull"]}`, pipe the returned password via
+  `printf '%s'` into `docker login registry.cloudflare.com --username <u> --password-stdin`,
+  then `docker tag booksmith-cf:aN registry.cloudflare.com/<acct>/booksmith-cf:aN` +
+  `docker push` (pushed digest must equal the local image id). Two freshness rules: the
+  stored OAuth access token goes stale in ~15-30 min — run any wrangler command (whoami)
+  immediately before the mint; the minted registry credential lives 15 min — push right away.
+- **Lesson 20 (in-place image swap semantics — the delete recipe stays retired):**
+  `wrangler deploy` with a changed [containers] image = worker-version upload + app ROLLOUT.
+  (a) `wrangler deployments list` prints OLDEST-first — read the tail. (b) in
+  `containers info`, `configuration.image` + `active_rollout_id` flip only when the rollout
+  COMPLETES; `health.instances.starting` shows the replacement waves; ~10-15 quiet minutes
+  for 6 idle instances. (c) THE RACE: any request to the NEW instance-name suffix while the
+  rollout is still active provisions the fresh DO from the OLD config — the new name answers
+  the OLD shim and pins there (bit this lap: runner-a11 answered a10b for its whole life; the
+  actual a11 code first ran as :a11b under runner-a11b). Rule: after deploy, send ZERO runner
+  traffic until `containers info` shows the new image + rollout null; only then the first
+  in-band marker poll. Lesson-16 quiet-window held: 0 in-flight tickets at every deploy, no
+  `containers delete` used.
+- **Lesson 22 (Windows↔WSL lap plumbing):** WSL `/tmp` does not survive between wsl.exe
+  invocations reliably (VM recycle wipes staged scripts silently — a missing-file stderr
+  piped into a grep looks like an empty result; the a11c push ran once with NO login that
+  way). Inline multi-step WSL work in one `bash -c`, or re-stage from /mnt/c every call.
+  And in Git Bash, `$(... | python -c "print(...)")` on Windows emits \r line ends —
+  filenames built from it get CR-tainted and NTFS refuses them; pipe through `tr -d '\r'`.
+- Also this lap: session-C ntfy topic name redacted at first public commit (an
+  unauthenticated ntfy topic IS the pager secret); M3 gitignore fix committed
+  (.dev_key / .test_cookies / _receipts/); cloud QC/PLAN/DESIGN records +
+  cloud/worker/package-lock.json now tracked. QC items #4, M2, L10 + intent-leak: CLOSED.
