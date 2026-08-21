@@ -21,6 +21,7 @@ WSROOT = KIT / "book_workspace"
 TICKET_RE = re.compile(r"^BR-[0-9A-Z]{6}$")
 LENGTH_BANDS = {"S": (8, 1200), "M": (12, 1500), "L": (16, 1800)}
 MAX_UPLOAD = 60 * 1024 * 1024
+TEMPLATE_TOKEN_RE = re.compile(r"\{\{[^{}\n]*\}\}")
 
 PROOF_JOBS = {
     "smoketest": [sys.executable, "_tools/engine_smoketest.py"],
@@ -77,10 +78,22 @@ def outline_json(ticket: str) -> dict:
         txt = seed.read_text("utf-8", errors="replace")
         m = re.search(r"## §1[^\n]*\n(.*?)(?=\n## §|\Z)", txt, re.S)
         raw = (m.group(1) if m else txt[:1200])
-        # keep prose lines only: drop headings, italic template instructions, tables
+        # keep prose lines only: drop headings, italic template instructions,
+        # tables, blockquotes; then scrub {{TOKENS}} wherever they sit — the
+        # seed model can echo template placeholders MID-LINE (seen live,
+        # BR-QC0816), and a customer must never read one.
         keep = [ln.strip() for ln in raw.splitlines()
-                if ln.strip() and not ln.strip().startswith(("#", "*", "|", "{{"))]
-        intent = " ".join(keep).strip()[:900]
+                if ln.strip() and not ln.strip().startswith(("#", "*", "|", ">", "{{"))]
+        intent = TEMPLATE_TOKEN_RE.sub(" ", " ".join(keep))
+        intent = re.sub(r"\s{2,}", " ", intent).strip()[:900]
+    if not intent:
+        # nothing usable in the seed -> the customer's own brief is the intent
+        brief = w / "brief.md"
+        if brief.exists():
+            btxt = brief.read_text("utf-8", errors="replace")
+            m = re.search(r"^#[^\n]*\n(.*?)(?=\nWho it is for:|\nchapters:|\Z)", btxt, re.S)
+            if m:
+                intent = re.sub(r"\s+", " ", m.group(1)).strip()[:900]
     return {"title": cfg.get("title"), "author": cfg.get("author"), "intent": intent,
             "units": [{"id": u.get("id"), "title": u.get("title"),
                        "target_words": u.get("target_words")} for u in cfg.get("units", [])]}
@@ -180,7 +193,7 @@ class H(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/":
             return self._json(200, {"ok": True, "service": "booksmith-runner",
-                                    "shim": "a10b", "python": sys.version.split()[0]})
+                                    "shim": "a11", "python": sys.version.split()[0]})
         if path == "/status":
             return self._status(None)
         t, sub = self._ticket()
@@ -256,6 +269,12 @@ class H(BaseHTTPRequestHandler):
 
         if sub == "/init":
             b = self._body_json()
+            with LOCK:
+                busy, job = STATE["running"], STATE["job"]
+            if busy:
+                # a running engine owns the workspace: a re-POSTed brief must not
+                # rewrite book_config.json under it (QC 2026-08-16 #4)
+                return self._json(409, {"error": "busy", "job": job})
             n_units, wpu = LENGTH_BANDS.get(str(b.get("length", "M")).upper(), LENGTH_BANDS["M"])
             w = ws(t)
             (w / "intake").mkdir(parents=True, exist_ok=True)
@@ -275,6 +294,13 @@ class H(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "units": n_units, "words_per_unit": wpu})
 
         if sub == "/file":
+            with LOCK:
+                busy, job = STATE["running"], STATE["job"]
+            if busy:
+                # same workspace-ownership rule as /init; body is unread here,
+                # so the connection must close or keep-alive desyncs
+                self.close_connection = True
+                return self._json(409, {"error": "busy", "job": job})
             q = self.path.split("?", 1)[1] if "?" in self.path else ""
             rel = ""
             for kv in q.split("&"):
@@ -283,12 +309,12 @@ class H(BaseHTTPRequestHandler):
                     rel = unquote(kv[5:])
             name = Path(rel).name  # basename only; uploads land flat in intake/
             if not name or ".." in rel or not rel.startswith("intake/"):
+                self.close_connection = True
                 return self._json(400, {"error": "path must be intake/<name>"})
             n = int(self.headers.get("content-length") or 0)
             if n <= 0 or n > MAX_UPLOAD:
+                self.close_connection = True
                 return self._json(413, {"error": "file too large"})
-            dest = ws(t) / "intake" / name
-            dest.parent.mkdir(parents=True, exist_ok=True)
             remaining, chunks = n, []
             while remaining > 0:
                 c = self.rfile.read(min(1 << 20, remaining))
@@ -296,6 +322,13 @@ class H(BaseHTTPRequestHandler):
                     break
                 chunks.append(c)
                 remaining -= len(c)
+            if remaining:
+                # short read (QC L10): a truncated body must never become an
+                # intake file, and the dead socket must not be reused
+                self.close_connection = True
+                return self._json(400, {"error": f"short read: got {n - remaining} of {n} bytes"})
+            dest = ws(t) / "intake" / name
+            dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(b"".join(chunks))
             return self._json(200, {"ok": True, "stored": f"intake/{name}", "bytes": n})
 

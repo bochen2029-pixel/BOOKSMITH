@@ -34,11 +34,14 @@ interface Env {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (env.DEMO_TOKEN) {
-      const auth = request.headers.get("authorization") || "";
-      if (auth !== `Bearer ${env.DEMO_TOKEN}`) {
-        return new Response("unauthorized\n", { status: 401 });
-      }
+    // Fail CLOSED: a missing DEMO_TOKEN (deleted / fat-fingered secret) locks
+    // the runner instead of opening it to anyone (QC 2026-08-16 M2).
+    if (!env.DEMO_TOKEN) {
+      return new Response("locked\n", { status: 503 });
+    }
+    const auth = request.headers.get("authorization") || "";
+    if (auth !== `Bearer ${env.DEMO_TOKEN}`) {
+      return new Response("unauthorized\n", { status: 401 });
     }
     // Per-ticket isolation: each BR-XXXXXX ticket gets its own container instance
     // (own filesystem, own engine queue, scale-to-zero). Non-ticket paths (proof
@@ -47,7 +50,7 @@ export default {
     // keeps its old container).
     const url = new URL(request.url);
     const m = /^\/t\/(BR-[0-9A-Z]{6})(\/|$)/.exec(url.pathname);
-    const name = m ? `ticket-${m[1]}-a10b` : "runner-a10b";
+    const name = m ? `ticket-${m[1]}-a11` : "runner-a11";
     const container = getContainer(env.BOOKSMITH_P0 as never, name);
     return container.fetch(request);
   },
