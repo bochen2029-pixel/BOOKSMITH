@@ -50,7 +50,7 @@ export default {
     // keeps its old container).
     const url = new URL(request.url);
     const m = /^\/t\/(BR-[0-9A-Z]{6})(\/|$)/.exec(url.pathname);
-    const name = m ? `ticket-${m[1]}-a11` : "runner-a11";
+    const name = m ? `ticket-${m[1]}-a11b` : "runner-a11b";
     const container = getContainer(env.BOOKSMITH_P0 as never, name);
     return container.fetch(request);
   },

@@ -193,7 +193,7 @@ class H(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/":
             return self._json(200, {"ok": True, "service": "booksmith-runner",
-                                    "shim": "a11", "python": sys.version.split()[0]})
+                                    "shim": "a11b", "python": sys.version.split()[0]})
         if path == "/status":
             return self._status(None)
         t, sub = self._ticket()
@@ -294,43 +294,7 @@ class H(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "units": n_units, "words_per_unit": wpu})
 
         if sub == "/file":
-            with LOCK:
-                busy, job = STATE["running"], STATE["job"]
-            if busy:
-                # same workspace-ownership rule as /init; body is unread here,
-                # so the connection must close or keep-alive desyncs
-                self.close_connection = True
-                return self._json(409, {"error": "busy", "job": job})
-            q = self.path.split("?", 1)[1] if "?" in self.path else ""
-            rel = ""
-            for kv in q.split("&"):
-                if kv.startswith("path="):
-                    from urllib.parse import unquote
-                    rel = unquote(kv[5:])
-            name = Path(rel).name  # basename only; uploads land flat in intake/
-            if not name or ".." in rel or not rel.startswith("intake/"):
-                self.close_connection = True
-                return self._json(400, {"error": "path must be intake/<name>"})
-            n = int(self.headers.get("content-length") or 0)
-            if n <= 0 or n > MAX_UPLOAD:
-                self.close_connection = True
-                return self._json(413, {"error": "file too large"})
-            remaining, chunks = n, []
-            while remaining > 0:
-                c = self.rfile.read(min(1 << 20, remaining))
-                if not c:
-                    break
-                chunks.append(c)
-                remaining -= len(c)
-            if remaining:
-                # short read (QC L10): a truncated body must never become an
-                # intake file, and the dead socket must not be reused
-                self.close_connection = True
-                return self._json(400, {"error": f"short read: got {n - remaining} of {n} bytes"})
-            dest = ws(t) / "intake" / name
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(b"".join(chunks))
-            return self._json(200, {"ok": True, "stored": f"intake/{name}", "bytes": n})
+            return self._file_put(t)
 
         if sub == "/outline":
             b = self._body_json()
@@ -362,6 +326,58 @@ class H(BaseHTTPRequestHandler):
             return self._json(202, {"started": "build"})
 
         return self._json(404, {"error": "not found"})
+
+    # ------------------------------------------------------------------ PUT
+    def do_PUT(self):
+        # The site worker uploads intake files with PUT (worker.js apiIntake).
+        # Through a10b the shim knew only GET/POST, so BaseHTTPRequestHandler
+        # answered 501 — and no sim ever uploaded a file, so it was never
+        # caught. POST /file stays for the existing receipt drivers; both
+        # verbs share _file_put. Closed-verb doctrine: PUT is valid for
+        # /t/<ticket>/file and nothing else.
+        t, sub = self._ticket()
+        if t and sub == "/file":
+            return self._file_put(t)
+        return self._json(404, {"error": "not found"})
+
+    def _file_put(self, t):
+        with LOCK:
+            busy, job = STATE["running"], STATE["job"]
+        if busy:
+            # a running engine owns the workspace (QC 2026-08-16 #4); body is
+            # unread here, so the connection must close or keep-alive desyncs
+            self.close_connection = True
+            return self._json(409, {"error": "busy", "job": job})
+        q = self.path.split("?", 1)[1] if "?" in self.path else ""
+        rel = ""
+        for kv in q.split("&"):
+            if kv.startswith("path="):
+                from urllib.parse import unquote
+                rel = unquote(kv[5:])
+        name = Path(rel).name  # basename only; uploads land flat in intake/
+        if not name or ".." in rel or not rel.startswith("intake/"):
+            self.close_connection = True
+            return self._json(400, {"error": "path must be intake/<name>"})
+        n = int(self.headers.get("content-length") or 0)
+        if n <= 0 or n > MAX_UPLOAD:
+            self.close_connection = True
+            return self._json(413, {"error": "file too large"})
+        remaining, chunks = n, []
+        while remaining > 0:
+            c = self.rfile.read(min(1 << 20, remaining))
+            if not c:
+                break
+            chunks.append(c)
+            remaining -= len(c)
+        if remaining:
+            # short read (QC L10): a truncated body must never become an
+            # intake file, and the dead socket must not be reused
+            self.close_connection = True
+            return self._json(400, {"error": f"short read: got {n - remaining} of {n} bytes"})
+        dest = ws(t) / "intake" / name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(b"".join(chunks))
+        return self._json(200, {"ok": True, "stored": f"intake/{name}", "bytes": n})
 
 
 if __name__ == "__main__":
