@@ -121,7 +121,8 @@ dashboard is UNVERIFIED (confirm-on-return is the primary paid-path and works wi
   site worker with R2 archival + EMAIL binding + ntfy pager + $5 hero (version f9aa972a). Sim
   BR-SIM901: brief → 12-unit outline → 12 chapters gated → 3 formats verified rc 0 → ready →
   R2 archive 5/5 → PDF(61pp all 432x648)/EPUB/DOCX downloaded; R2 direct-get byte-identical to
-  /api/download. Remaining HUMAN steps: Bo subscribes ntfy.sh/bookraising-pRGanwH6wHwuhvCR;
+  /api/download. Remaining HUMAN steps: Bo subscribes ntfy.sh/<NTFY_TOPIC value> (topic name
+  redacted at first public commit — an unauthenticated ntfy topic IS the pager secret);
   one-time Email Sending zone enable + orders@ sender; eyeball Stripe live webhook registration;
   then the real $5. After launch: rotate DeepSeek key + mint fresh DEMO/DEV tokens (re-put
   secrets AND rewrite dotfiles together per lesson 14).
@@ -142,6 +143,40 @@ dashboard is UNVERIFIED (confirm-on-return is the primary paid-path and works wi
   recipe was safe when instances were disposable; from now on swap images only when
   `wrangler containers list` shows no live ticket instances (deploy-modify-in-place + a new
   instance-name suffix already forces fresh pulls without any delete).
+- **RE-ENTRY PHASE 1 LIVE (2026-08-21, site worker `abe3e6dc`):** magic-link sign-in shipped per
+  `cloud/DESIGN_reentry_revisions.md` §3.3.1; plan+results `cloud/PLAN_REENTRY_PHASE1_2026-08-21.md`.
+  New: D1 `login_tokens` (30-min single-use, sha256-only) + `POST /api/auth/{request,redeem,logout}`;
+  redeem = atomic one-winner → re-mints `br_sess` for the newest ticket under `orders.email`
+  (tickets JOIN orders — no schema migration); raise.html no-session view gained "email me a
+  sign-in link" + `?login=` landing (token stripped via replaceState); coupon redeem now captures
+  an OPTIONAL email into `orders.email` (free users become recoverable). Live battery V1-V11 ALL
+  PASS (redeem/reuse/garbage/expired/logout/regression). `/api/auth/request` answers an honest 502
+  until the Email-Sending zone enable — the token row is already purged+minted correctly, so the
+  flow goes fully live with ZERO code change the moment the zone + orders@ sender are enabled.
+  Adopted defaults (Bo may veto): coupon email optional; most-recent-ticket on redeem (picker =
+  Phase 2); sign-in folded into /raise; no recovery link for the alpha. Dev artifact BR-AUTH01
+  (auth test lane) left in D1 like the sims.
+- **Lesson 18 (2026-08-21):** `wrangler d1 execute --remote --file` fails `Authentication error
+  [code: 10000]` on this OAuth token — the D1 *import* API wants a scope the token lacks; the
+  query path is fine. Ship D1 deltas as `--command` (or re-login if a bulk import is ever needed).
+- **QC PASS + FIX DEPLOY (2026-08-17, site worker `90723bd7`):** full-loop QC
+  (`cloud/QC_STOREFRONT_2026-08-16.md`; plan+results `cloud/PLAN_QC_FIX_2026-08-16.md`).
+  Fixed+verified live: H2 homepage reflected-XSS via `?order=`; H1 ready-listing death after
+  container eviction (status now serves `ready` from R2, `source:"r2"`, never wakes the
+  container — proven on BR-SIM901 3 days cold); M1 stage gates + note-less-reroll counting
+  (closes the free-rebuild loop); L6 one-winner ready flip; outline `{{TEMPLATE}}` scrub;
+  M3 gitignore for `.dev_key`/`.test_cookies`/`_receipts`. Fresh sim BR-QC0816: rc 0 in 365 s,
+  archive 5/5, ~$0.02, PDF 31 pp all exactly 432×648 pt. Queued for image lap a11: shim
+  busy-gates on `/init`+`/file` PUT, fail-closed runner auth when DEMO_TOKEN unset, proper
+  intent extraction, upload short-read guard. OPEN QUESTION: in-container `authorial_act`
+  FAILed (66h/66f) yet the build proceeded to ready — confirm advisory-by-design in the MVP
+  spec or make it blocking.
+- **Lesson 17 (2026-08-17):** the deployed DEV_KEY is the dotfile's ENTIRE content INCLUDING
+  its `DEVK=` prefix — the lesson-14 printf recipe strips whitespace only, so the prefix is
+  part of the secret. Parsing out the "value" after `=` sends the wrong key and 403s exactly
+  like drift. THE FILE BYTES ARE THE SECRET. (Also: stale-isolate deploy propagation bit a
+  post-deploy negative test — a 200 from the OLD version seconds after deploy, 409 one minute
+  later. Retry negatives; trust in-band version markers, never the deploy timestamp.)
 - **Lesson 13 (named at end of session B, FIXED session C 2026-08-13):** `digital_pdf_structure`
   failed on ebook-only tickets — the kindle-DOCX fallback renders via soffice at A4
   (595.3x841.9 pt; Word would render it Letter), and the gate demands exact 432x648 on every

@@ -113,11 +113,18 @@ _intake_archive/
 docs/CLOUD_HORIZON.md
 docs/CLOUD_HORIZON*
 docs/CLOUD_ONESHOT*
+docs/CLOUD_MODES*
 
-# --- cloud worker local state: deps, wrangler cache, and the demo bearer token ---
+# --- cloud worker local state: deps, wrangler cache, and the local secret
+#     dotfiles (lesson 14: these files ARE the deployed-secret truth; the lap
+#     says "commit + push", so every one of them must be ignored here) ---
 cloud/worker/node_modules/
 cloud/worker/.wrangler/
 cloud/worker/.demo_token
+cloud/worker/.dev_key
+cloud/worker/.test_cookies
+# live-run receipts (test artifacts + QC records; local evidence, never shipped)
+cloud/_receipts/
 
 # --- private / strategy / non-kit artifacts (2026-08-06): never in the public tree.
 #     Session prompts, sitreps, prep folders, private-book art, chat exports, and
