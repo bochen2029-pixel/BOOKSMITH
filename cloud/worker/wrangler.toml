@@ -7,7 +7,7 @@ workers_dev = true
 
 [[containers]]
 class_name = "BooksmithP0"
-image = "registry.cloudflare.com/e13b1f08e91348c714d04252a43e3a74/booksmith-cf:a11b"
+image = "registry.cloudflare.com/e13b1f08e91348c714d04252a43e3a74/booksmith-cf:a11c"
 max_instances = 6
 instance_type = "basic"
 

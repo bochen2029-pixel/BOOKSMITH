@@ -72,28 +72,34 @@ def normalize_classes(ticket: str) -> None:
 def outline_json(ticket: str) -> dict:
     w = ws(ticket)
     cfg = json.loads((w / "book_config.json").read_text("utf-8"))
+    # The intent blurb is CUSTOMER-FACING (raise.html outline review). The
+    # customer's own brief is the only text guaranteed prose-clean; the
+    # architected seed §1 is template-shaped, and slot fragments like
+    # "Success means the reader ." / "- **Sentence rhythm:**" survive any
+    # line filter (seen live, BR-A11B01). Brief first; seed only as fallback.
     intent = ""
-    seed = w / "seed.md"
-    if seed.exists():
-        txt = seed.read_text("utf-8", errors="replace")
-        m = re.search(r"## §1[^\n]*\n(.*?)(?=\n## §|\Z)", txt, re.S)
-        raw = (m.group(1) if m else txt[:1200])
-        # keep prose lines only: drop headings, italic template instructions,
-        # tables, blockquotes; then scrub {{TOKENS}} wherever they sit — the
-        # seed model can echo template placeholders MID-LINE (seen live,
-        # BR-QC0816), and a customer must never read one.
-        keep = [ln.strip() for ln in raw.splitlines()
-                if ln.strip() and not ln.strip().startswith(("#", "*", "|", ">", "{{"))]
-        intent = TEMPLATE_TOKEN_RE.sub(" ", " ".join(keep))
-        intent = re.sub(r"\s{2,}", " ", intent).strip()[:900]
+    brief = w / "brief.md"
+    if brief.exists():
+        btxt = brief.read_text("utf-8", errors="replace")
+        m = re.search(r"^#[^\n]*\n(.*?)(?=\nWho it is for:|\nchapters:|\Z)", btxt, re.S)
+        if m:
+            intent = re.sub(r"\s+", " ", m.group(1)).strip()[:900]
     if not intent:
-        # nothing usable in the seed -> the customer's own brief is the intent
-        brief = w / "brief.md"
-        if brief.exists():
-            btxt = brief.read_text("utf-8", errors="replace")
-            m = re.search(r"^#[^\n]*\n(.*?)(?=\nWho it is for:|\nchapters:|\Z)", btxt, re.S)
-            if m:
-                intent = re.sub(r"\s+", " ", m.group(1)).strip()[:900]
+        seed = w / "seed.md"
+        if seed.exists():
+            txt = seed.read_text("utf-8", errors="replace")
+            m = re.search(r"## §1[^\n]*\n(.*?)(?=\n## §|\Z)", txt, re.S)
+            raw = (m.group(1) if m else txt[:1200])
+            # prose lines only: drop headings, template bullets/labels, tables,
+            # blockquotes, numbered slot lists; then scrub {{TOKENS}} wherever
+            # they sit — the seed model echoes placeholders MID-LINE too
+            # (seen live, BR-QC0816).
+            keep = [ln.strip() for ln in raw.splitlines()
+                    if ln.strip() and not ln.strip().startswith(
+                        ("#", "*", "|", ">", "-", "{{",
+                         "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"))]
+            intent = TEMPLATE_TOKEN_RE.sub(" ", " ".join(keep))
+            intent = re.sub(r"\s{2,}", " ", intent).strip()[:900]
     return {"title": cfg.get("title"), "author": cfg.get("author"), "intent": intent,
             "units": [{"id": u.get("id"), "title": u.get("title"),
                        "target_words": u.get("target_words")} for u in cfg.get("units", [])]}
@@ -193,7 +199,7 @@ class H(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/":
             return self._json(200, {"ok": True, "service": "booksmith-runner",
-                                    "shim": "a11b", "python": sys.version.split()[0]})
+                                    "shim": "a11c", "python": sys.version.split()[0]})
         if path == "/status":
             return self._status(None)
         t, sub = self._ticket()
