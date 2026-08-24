@@ -212,6 +212,39 @@ dashboard is UNVERIFIED (confirm-on-return is the primary paid-path and works wi
   Deploys: runner 9ae8870e (image :a12, per-ticket suffix -a12, optional CF_AI_TOKEN /
   ANTHROPIC_API_KEY pass-throughs for workers-ai FLUX covers + claude-api vision), site 15dc9f2c.
   Battery: see the entry below this one when it lands.
+- **H0 BATTERY RUN 1 (2026-08-24, ticket BR-9UH2BV, a12): 16/18 PASS — the loop is real, and the
+  two FAILs bought lesson 23.** Fresh dev ticket → 8-unit outline 31 s → full build 5.5 min →
+  workspace archive 53/53 → chapter fetched (8,453 chars) → **manual edit saved** (v1 versions +
+  base, ledger row actor=human +2 lines, incremental re-archive 5 stored/52 sha-skipped) → free
+  rebuild rc 0 (23 s, no model tokens) → **AI revise rc 0** (56 s incl. the model call; counter 1/3;
+  ai ledger row with before/after shas + the note; human flag preserved on ch_01). FAIL 1
+  (`ledger-human`) = battery-script artifact only: a ONE-row JSONL parses as a single JSON object
+  and PowerShell auto-objectifies it — the row itself was verified perfect by direct fetch. FAIL 2
+  was REAL: the marker reached `current`, masters v2/v3, and the kindle DOCX, but **not the digital
+  PDF** — see lesson 23. Fix lap a12b (commit a3ac8c3) rebuilt/pushed/deployed same session
+  (runner 8d635b68, site fc041fd0); retest record follows this entry.
+- **H0 RETEST (2026-08-24, a12b, BR-9UH2BV): 7/7 PASS — the lap closes green.** Runner on :a12b
+  (worker 8d635b68, site fc041fd0). The retest ran against a COLD container by construction (the
+  -a12b instance suffix starts empty), so `rebuild-start` taking 14 s IS the receipt for
+  `rehydrateIfCold` — the full workspace restored from R2 before the verb ran: **the eviction path
+  is now live-proven**, not just designed. Then: rebuild rc 0 in 69 s cold → **the customer's
+  hand-written line present in the container's digital PDF** (lesson-23 fix a: fresh interior
+  re-render) → **and in the R2-first site download** (fix b: unconditional archive puts) → human
+  flag + revision counter intact (human=ch_01, used=1). H0's shipped surface as of this entry:
+  manual editing (free, attributed), per-unit AI revise (3 free), free rebuild, durable full-
+  workspace archive + rehydrate, Tavus seams (fields only), workers-ai FLUX + claude-api vision
+  wired but DORMANT until their secrets exist (CF_AI_TOKEN / ANTHROPIC_API_KEY on the runner —
+  optional, config-gated). Dev rows BR-9UH2BV left in D1 like the sims. Still-owed human steps
+  unchanged: Email-Sending zone enable + orders@ sender; Stripe live-webhook eyeball.
+- **Lesson 23 (the existence-cache class — bind it everywhere):** an "exists → skip" cache is only
+  correct for immutable artifacts; the moment ANY verb can regenerate a key in place, the test must
+  be "FRESH → skip" (mtime/sha), or the first rebuild serves build-#1 bytes forever. It bit TWICE
+  in one lap, in both halves of the stack: (a) `build_digital_pdf.ensure_interior_pdf` returned any
+  existing paperback PDF — which, in the ebook-only fallback, is its OWN build-#1 soffice render of
+  the kindle DOCX (fix: reuse only when the PDF mtime ≥ the source DOCX mtime); (b) the worker's
+  `archiveOutputs` head-skipped existing R2 keys, so revised artifacts never re-archived and the
+  R2-first download stayed stale after the container slept (fix: unconditional puts). Audit any
+  future cache with one question: *what regenerates this, and does the skip see it?*
 
 - **IMAGE LAP a11 → a11b → a11c (2026-08-21, runner NOW on :a11c, worker version 0405c17d):**
   the four QC-queued items closed, plus one found live. **a11:** shim busy-gates on `/init` +
