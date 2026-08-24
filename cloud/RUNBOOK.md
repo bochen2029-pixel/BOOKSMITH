@@ -186,6 +186,33 @@ dashboard is UNVERIFIED (confirm-on-return is the primary paid-path and works wi
   so every print-format book is unaffected. The gate was NOT relaxed. Micro-proof: synthetic A4
   3pp -> exact 432x648 with text intact + trim passthrough asserted. Full proof: lt4 lap on a10b.
 
+- **H0 LAP a12 (2026-08-24, in flight this entry): manual editing + per-unit AI revise + full-workspace
+  archive land end-to-end** (plan `cloud/PLAN_H0_2026-08-24.md`; kit commit ca45938). **Shim a12:**
+  `GET/PUT /t/<id>/unit/<uid>` (the human's editor, via `_tools/manual_edit.py` — H1 locked, photo
+  lines protected, append-only versions, authorship-ledger row actor=human) · `POST /revise`
+  {unit_id, note} (E-2 note append → `--only draft:<uid> --force-stage` → `--from integrate`; ai
+  ledger row) · `POST /rebuild` (`--from integrate` only — FREE, no model) · `GET /manifest`
+  (rel+sha256 of every workspace file) · `POST /rehydrate?path=` (restore into a cold container) ·
+  `/file` GET widened to any workspace path (jail unchanged). **THE CASCADE FENCE (bind it):** after
+  any human edit, a BARE engine pass would redraft downstream units (prior-prose input hash) — every
+  post-ready verb is a targeted invocation, never bare. **Worker:** `/api/book` `/api/unit` (GET+PUT)
+  `/api/revise` (3 free per ticket, D1 `tickets.revisions`) `/api/rebuild`; full-workspace R2 archive
+  (sha-skipped via customMetadata) on ready + after saves/revises; `rehydrateIfCold` before post-ready
+  verbs; ready-listing scoped to `outputs/` (the workspace archive would otherwise render as
+  downloads); revise/rebuild failures return the ticket to READY (previous book intact — stalled stays
+  reserved for a first build). **raise.html:** chapter list + on-screen editor ("Save my edit" — free,
+  attributed "edited by you") + per-chapter "Rewrite it for me" + "Rebuild my files — free".
+  **TAVUS SEAMS (design only, Bo 2026-08-24):** `tickets.intake_mode` (T1 onboarding) ·
+  `note_source` on /api/revise (T2 voice revision) · `SUPPORT_MODE` at the stalled path (T3 support
+  escalation before the owner). NO Tavus integration — carve-outs only. **NO connector/scanner**
+  (privacy/legal hold; uploads stay user-initiated). **Lint law D2:** units whose latest ledger actor
+  is human print HUMAN-EDIT ADVISORY and never gate (a dash a human typed is their voice); an AI
+  re-draft re-arms the gate. Local proofs: 11/11 H0 battery, smoketest A–L, selfcheck 0-fail, image
+  grep + in-image py_compile (lesson 10). D1: `revisions` + `intake_mode` columns applied --remote.
+  Deploys: runner 9ae8870e (image :a12, per-ticket suffix -a12, optional CF_AI_TOKEN /
+  ANTHROPIC_API_KEY pass-throughs for workers-ai FLUX covers + claude-api vision), site 15dc9f2c.
+  Battery: see the entry below this one when it lands.
+
 - **IMAGE LAP a11 → a11b → a11c (2026-08-21, runner NOW on :a11c, worker version 0405c17d):**
   the four QC-queued items closed, plus one found live. **a11:** shim busy-gates on `/init` +
   `/file` (409 `{"error":"busy"}` while any job runs — QC #4), runner auth FAIL-CLOSED

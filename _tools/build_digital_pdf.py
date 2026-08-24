@@ -169,8 +169,6 @@ def ensure_interior_pdf(cfg, ws: str) -> str:
         os.path.join(pb_dir, f"{slug}_KDP.pdf"),
         os.path.join(pb_dir, f"{slug}.pdf"),
     )
-    if existing_pdf:
-        return existing_pdf
 
     docx = first_existing(
         os.path.join(pb_dir, f"{slug}_KDP_PAPERBACK.docx"),
@@ -184,10 +182,20 @@ def ensure_interior_pdf(cfg, ws: str) -> str:
         kindle_docx = os.path.join(ws, "outputs", "kindle", f"{slug}_KINDLE.docx")
         if os.path.exists(kindle_docx):
             docx = kindle_docx
-        else:
+        elif not existing_pdf:
             raise FileNotFoundError(
                 f"No interior PDF or DOCX found in {pb_dir} (and no kindle DOCX "
                 f"fallback). Produce the kdp_paperback or kindle format first.")
+
+    # FRESHNESS, not existence (H0 lap a12b, 2026-08-24): the cached interior is
+    # reusable only if it is at least as new as the DOCX it would be rendered
+    # from. The first cloud REBUILD after a manual edit regenerated the kindle
+    # DOCX but this function returned the build-#1 render of it - the customer's
+    # edit reached every artifact EXCEPT the headline PDF. Same defect class as
+    # the worker's archive head-skip: "exists -> skip" must be "fresh -> skip".
+    if existing_pdf and (not docx
+                         or os.path.getmtime(existing_pdf) >= os.path.getmtime(docx)):
+        return existing_pdf
 
     out_pdf = os.path.join(pb_dir, f"{slug}_KDP_PAPERBACK.pdf")
     import docx_to_pdf as _docx_to_pdf  # lazy: Word COM (or Tier-2 LibreOffice), Windows-first
