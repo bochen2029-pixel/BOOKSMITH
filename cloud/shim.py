@@ -12,11 +12,12 @@ Model + spend config arrive as container ENV (set by the Worker's Container clas
   BOOKSMITH_TOKEN_BUDGET  <- the ALPHA FLOOR (hard E-6 stop inside model_client).
 """
 from __future__ import annotations
-import json, re, shutil, subprocess, sys, threading, time
+import hashlib, json, re, shutil, subprocess, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 KIT = Path("/kit")
+sys.path.insert(0, str(KIT / "_tools"))
 WSROOT = KIT / "book_workspace"
 TICKET_RE = re.compile(r"^BR-[0-9A-Z]{6}$")
 LENGTH_BANDS = {"S": (8, 1200), "M": (12, 1500), "L": (16, 1800)}
@@ -126,6 +127,50 @@ def job_build(ticket: str) -> None:
         STATE.update(running=False, rc=rc)
 
 
+def _ledger_row(ticket: str, uid: str, actor: str, verb: str,
+                before: str, after: str, note: str = "") -> None:
+    try:
+        from authorship_ledger import append_row
+        append_row(ws(ticket), uid, actor, verb, before, after, note)
+    except Exception as e:  # noqa: BLE001 — attribution must never kill a build
+        with open(OUT, "ab") as f:
+            f.write(f"\n[shim] ledger append failed (non-fatal): {e}\n".encode())
+
+
+def job_revise(ticket: str, uid: str, note: str) -> None:
+    """H0 L1 (PLAN_H0 §3): AI re-roll of ONE unit, then the targeted suffix.
+
+    THE CASCADE FENCE: after any human edit, a bare engine pass would see the
+    prior-prose input hash changed and redraft DOWNSTREAM units over their
+    current text. So revise is exactly two targeted invocations — never bare:
+      1) --only draft:<uid> --force-stage   (E-2 note honored; gates + 3 tries)
+      2) --from integrate                    (lint -> assemble -> produce -> verify)
+    """
+    w = ws(ticket)
+    cur = w / "manuscript" / "current" / f"{uid}_current.md"
+    before = cur.read_text("utf-8") if cur.exists() else ""
+    notes = w / "revision_notes"
+    notes.mkdir(parents=True, exist_ok=True)
+    with open(notes / f"{uid}.md", "a", encoding="utf-8") as f:
+        f.write(f"\n- {note}\n")
+    rc = engine(ticket, "--only", f"draft:{uid}", "--force-stage")
+    if rc == 0:
+        after = cur.read_text("utf-8") if cur.exists() else ""
+        _ledger_row(ticket, uid, "ai", "revise", before, after, note[:200])
+        rc = engine(ticket, "--from", "integrate")
+    with LOCK:
+        STATE.update(running=False, rc=rc)
+
+
+def job_rebuild(ticket: str) -> None:
+    """H0 manual-edit rebuild: production suffix only, no drafting, no model
+    tokens — the customer's own hands are always free. Same cascade fence as
+    job_revise: NEVER a bare engine pass (it would redraft over human edits)."""
+    rc = engine(ticket, "--from", "integrate")
+    with LOCK:
+        STATE.update(running=False, rc=rc)
+
+
 def job_proof(job: str) -> None:
     with open(OUT, "wb") as f:
         rc = subprocess.Popen(PROOF_JOBS[job], stdout=f, stderr=subprocess.STDOUT,
@@ -199,7 +244,7 @@ class H(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/":
             return self._json(200, {"ok": True, "service": "booksmith-runner",
-                                    "shim": "a11c", "python": sys.version.split()[0]})
+                                    "shim": "a12", "python": sys.version.split()[0]})
         if path == "/status":
             return self._status(None)
         t, sub = self._ticket()
@@ -218,7 +263,11 @@ class H(BaseHTTPRequestHandler):
                     if kv.startswith("path="):
                         from urllib.parse import unquote
                         rel = unquote(kv[5:])
-                if not (rel.startswith("outputs/") or rel.startswith("cover_art/")) or ".." in rel:
+                # a12: /file now serves ANY workspace-relative file (the
+                # manifest-driven FULL-workspace archive, H0 §3 C1 — through
+                # a11c only outputs/ + cover_art/ were readable). The
+                # traversal jail below is unchanged and still authoritative.
+                if ".." in rel or rel.startswith(("/", "\\")) or not rel:
                     return self._json(400, {"error": "path not allowed"})
                 p = (ws(t) / rel).resolve()
                 if not str(p).startswith(str(ws(t).resolve())) or not p.is_file():
@@ -231,6 +280,41 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(data)
                 return
+            m = re.match(r"^/unit/([a-z0-9_]{1,64})$", sub)
+            if m:
+                # H0 manual editing (a12): the chapter body for the web editor,
+                # via the ONE implementation (_tools/manual_edit.py get).
+                r = subprocess.run(
+                    [sys.executable, "_tools/manual_edit.py", "get",
+                     "--config", str(ws(t) / "book_config.json"), "--unit", m.group(1)],
+                    capture_output=True, text=True, encoding="utf-8", cwd=str(KIT))
+                try:
+                    return self._json(200 if r.returncode == 0 else 409,
+                                      json.loads(r.stdout))
+                except json.JSONDecodeError:
+                    return self._json(500, {"error": "unit get failed",
+                                            "detail": (r.stdout + r.stderr)[-300:]})
+            if sub == "/manifest":
+                # a12: rel path + size + sha256 for every workspace file — the
+                # worker archives the WHOLE workspace from this (H0 §3 C1).
+                root = ws(t).resolve()
+                if not root.exists():
+                    return self._json(404, {"error": "no workspace"})
+                items = []
+                for p in sorted(root.rglob("*")):
+                    if not p.is_file() or p.name.startswith("."):
+                        continue
+                    rel = str(p.relative_to(root)).replace("\\", "/")
+                    try:
+                        digest = hashlib.sha256(p.read_bytes()).hexdigest()
+                    except OSError:
+                        continue
+                    items.append({"path": rel, "bytes": p.stat().st_size,
+                                  "sha256": digest})
+                    if len(items) >= 4000:
+                        break
+                return self._json(200, {"ok": True, "count": len(items),
+                                        "files": items})
         return self._json(404, {"error": "not found"})
 
     def _status(self, ticket):
@@ -331,6 +415,38 @@ class H(BaseHTTPRequestHandler):
                 return self._json(409, {"error": "busy", "job": STATE["job"]})
             return self._json(202, {"started": "build"})
 
+        if sub == "/revise":
+            # H0 L1 (a12): AI re-roll of ONE named unit. Metering/counting is
+            # the WORKER's job; the shim only refuses nonsense + enforces the
+            # cascade fence inside job_revise.
+            b = self._body_json()
+            uid = str(b.get("unit_id") or "").strip()
+            note = str(b.get("note") or "").strip()[:2000]
+            if not re.match(r"^[a-z0-9_]{1,64}$", uid):
+                return self._json(400, {"error": "bad unit_id"})
+            if not note:
+                return self._json(400, {"error": "a revision note is required"})
+            cur = ws(t) / "manuscript" / "current" / f"{uid}_current.md"
+            if not cur.exists():
+                return self._json(404, {"error": f"no such chapter: {uid}"})
+            if not start("revise", t, lambda: job_revise(t, uid, note)):
+                return self._json(409, {"error": "busy", "job": STATE["job"]})
+            return self._json(202, {"started": "revise", "unit": uid})
+
+        if sub == "/rebuild":
+            # H0 manual-edit rebuild (a12): free (no model), targeted suffix.
+            if not (ws(t) / "manuscript" / "current").exists():
+                return self._json(409, {"error": "nothing to rebuild"})
+            if not start("rebuild", t, lambda: job_rebuild(t)):
+                return self._json(409, {"error": "busy", "job": STATE["job"]})
+            return self._json(202, {"started": "rebuild"})
+
+        if sub == "/rehydrate":
+            # a12: the worker restores an archived workspace file into a cold
+            # container before a revise/rebuild (H0 §3 C1). Any workspace-
+            # relative path; same jail + short-read discipline as /file PUT.
+            return self._workspace_put(t)
+
         return self._json(404, {"error": "not found"})
 
     # ------------------------------------------------------------------ PUT
@@ -339,12 +455,96 @@ class H(BaseHTTPRequestHandler):
         # Through a10b the shim knew only GET/POST, so BaseHTTPRequestHandler
         # answered 501 — and no sim ever uploaded a file, so it was never
         # caught. POST /file stays for the existing receipt drivers; both
-        # verbs share _file_put. Closed-verb doctrine: PUT is valid for
-        # /t/<ticket>/file and nothing else.
+        # verbs share _file_put. Closed-verb doctrine (a12): PUT is valid for
+        # /t/<ticket>/file and /t/<ticket>/unit/<uid> — nothing else.
         t, sub = self._ticket()
         if t and sub == "/file":
             return self._file_put(t)
+        if t and sub:
+            m = re.match(r"^/unit/([a-z0-9_]{1,64})$", sub)
+            if m:
+                return self._unit_put(t, m.group(1))
         return self._json(404, {"error": "not found"})
+
+    def _read_exact(self, cap: int):
+        """Read exactly content-length bytes (short-read guarded, QC L10).
+        Returns bytes, or None after answering the error itself."""
+        n = int(self.headers.get("content-length") or 0)
+        if n <= 0 or n > cap:
+            self.close_connection = True
+            self._json(413, {"error": "body missing or too large"})
+            return None
+        remaining, chunks = n, []
+        while remaining > 0:
+            c = self.rfile.read(min(1 << 20, remaining))
+            if not c:
+                break
+            chunks.append(c)
+            remaining -= len(c)
+        if remaining:
+            self.close_connection = True
+            self._json(400, {"error": f"short read: got {n - remaining} of {n} bytes"})
+            return None
+        return b"".join(chunks)
+
+    def _unit_put(self, t, uid: str):
+        # H0 manual editing (a12): the human's save. Body = the chapter body
+        # (markdown, NO H1 — the title is locked). All laws live in
+        # _tools/manual_edit.py; the shim is transport + busy-gate only.
+        with LOCK:
+            busy, job = STATE["running"], STATE["job"]
+        if busy:
+            self.close_connection = True
+            return self._json(409, {"error": "busy", "job": job})
+        data = self._read_exact(2 * 1024 * 1024)
+        if data is None:
+            return
+        tmp = Path(f"/tmp/unit_put_{slug(t)}_{uid}.md")
+        tmp.write_bytes(data)
+        r = subprocess.run(
+            [sys.executable, "_tools/manual_edit.py", "put",
+             "--config", str(ws(t) / "book_config.json"), "--unit", uid,
+             "--body-file", str(tmp), "--verb", "web-edit"],
+            capture_output=True, text=True, encoding="utf-8", cwd=str(KIT))
+        tmp.unlink(missing_ok=True)
+        try:
+            return self._json(200 if r.returncode == 0 else 409, json.loads(r.stdout))
+        except json.JSONDecodeError:
+            return self._json(500, {"error": "unit save failed",
+                                    "detail": (r.stdout + r.stderr)[-300:]})
+
+    def _workspace_put(self, t):
+        # a12 rehydrate: restore ONE archived file to any workspace-relative
+        # path (the worker drives this from the R2 manifest on a cold start).
+        with LOCK:
+            busy, job = STATE["running"], STATE["job"]
+        if busy:
+            self.close_connection = True
+            return self._json(409, {"error": "busy", "job": job})
+        q = self.path.split("?", 1)[1] if "?" in self.path else ""
+        rel = ""
+        for kv in q.split("&"):
+            if kv.startswith("path="):
+                from urllib.parse import unquote
+                rel = unquote(kv[5:])
+        if not rel or ".." in rel or rel.startswith(("/", "\\")):
+            self.close_connection = True
+            return self._json(400, {"error": "path must be workspace-relative"})
+        dest = (ws(t) / rel)
+        try:
+            resolved = dest.resolve()
+        except OSError:
+            return self._json(400, {"error": "bad path"})
+        root = ws(t).resolve()
+        if not str(resolved).startswith(str(root)):
+            self.close_connection = True
+            return self._json(400, {"error": "path escapes the workspace"})
+        data = self._read_exact(MAX_UPLOAD)
+        if data is None:
+            return
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(data)
+        return self._json(200, {"ok": True, "restored": rel, "bytes": len(data)})
 
     def _file_put(self, t):
         with LOCK:

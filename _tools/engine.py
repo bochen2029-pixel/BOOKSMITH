@@ -1052,6 +1052,28 @@ class Engine:
                 f"AI-generated; refusing to auto-generate over a {method} design. "
                 f"Produce the art with its {method} compositor (docs/cover_pipeline.md) "
                 f"or place the intended art at {art}, then re-run.")
+        if method == "workers_ai_flux":
+            # H0 (PLAN_H0 §3 A4): the cloud's text-to-image lane. Same reuse
+            # discipline as SDXL; NO silent fallback — a declared generative
+            # method that cannot generate is a loud stop (§20.3), never a
+            # quiet hypergen downgrade wearing the wrong provenance.
+            reuse, why = _may_reuse_art(art, self.cfg, force=getattr(self, "force_cover", False))
+            if art.exists() and reuse:
+                return f"pre-existing cover_art/ ({why})"
+            if art.exists():
+                keep = art.with_name(f"{art.stem}_superseded_"
+                                     f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+                                     f"{art.suffix}")
+                os.replace(art, keep)
+                self.log("cover.art_superseded", reason=why, preserved=keep.name)
+            rc, o, e = run([sys.executable, str(TOOLS / "cover_gen_workers_ai.py"),
+                            "--config", str(self.config_path), "--out", str(art)])
+            if rc == 0 and art.exists():
+                return "workers-ai FLUX"
+            raise HardStop("cover",
+                           f"workers-ai FLUX generation failed (rc={rc}); no silent "
+                           f"fallback for a declared generative method: "
+                           f"{(o + e).strip()[-300:]}")
         reuse, why = _may_reuse_art(art, self.cfg, force=getattr(self, "force_cover", False))
         if art.exists():
             if reuse:
@@ -1169,13 +1191,20 @@ class Engine:
             budget = int(((self.cfg.get("cover", {}) or {}).get("art", {}) or {})
                          .get("reroll_budget", 6))
             rerolls = 0
-            while verdict == "FAIL" and art_src == "bespoke SDXL" and rerolls < budget:
+            _regen = {
+                "bespoke SDXL": lambda s: [sys.executable, str(TOOLS / "cover_gen.py"),
+                                           "--config", str(self.config_path),
+                                           "--seed", s, "--out", str(art)],
+                "workers-ai FLUX": lambda s: [sys.executable,
+                                              str(TOOLS / "cover_gen_workers_ai.py"),
+                                              "--config", str(self.config_path),
+                                              "--seed", s, "--out", str(art)],
+            }
+            while verdict == "FAIL" and art_src in _regen and rerolls < budget:
                 rerolls += 1
                 self.log("cover.reroll", n=rerolls, detail=vdetail[:160])
                 seed = str(int.from_bytes(os.urandom(4), "big"))
-                rc, o, e = run([sys.executable, str(TOOLS / "cover_gen.py"),
-                                "--config", str(self.config_path), "--seed", seed,
-                                "--out", str(art)])
+                rc, o, e = run(_regen[art_src](seed))
                 if rc != 0:
                     break
                 title_y = self._cover_layout_frac(art)

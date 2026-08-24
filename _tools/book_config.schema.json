@@ -4,25 +4,64 @@
   "title": "BOOKSMITH per-book config",
   "description": "The single per-book config object that parameterizes the entire BOOKSMITH toolchain. It externalizes every knob currently hard-coded across the clone scripts (title/trim/paper/margins/spine/formats/cover/metadata/authorship/voice). Downstream builders read ONLY this object plus the version-pinned manuscript. Defaults encode the proven values from the research corpus (6x9, Georgia, mirror-margin injection, KDP hardcover +0.348 board-add, Mixam 0.80 bleed, etc.).",
   "type": "object",
-  "required": ["title", "author", "slug", "is_fiction", "formats"],
+  "required": [
+    "title",
+    "author",
+    "slug",
+    "is_fiction",
+    "formats"
+  ],
   "additionalProperties": false,
   "properties": {
-    "title": { "type": "string", "description": "Book title as printed on the cover + front matter." },
-    "subtitle": { "type": "string", "description": "Optional subtitle. Keep 'Book 1' OUT of the subtitle (Amazon compilation-detector signal)." },
-    "author": { "type": "string", "description": "Author name as printed (e.g. 'Bo Chen')." },
-    "slug": { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "Filesystem-safe identifier. Drives book_workspace/<slug>/ and all output filenames." },
-    "genre": { "type": "string", "description": "Free-text genre/register label (e.g. 'literary fiction', 'AI-career nonfiction'). (orchestrator/agent-consumed; not read by the build toolchain)." },
-    "is_fiction": { "type": "boolean", "description": "Selects the fiction copyright disclaimer + fiction_refs handling; false enables the LaTeX->Unicode math path." },
-    "language": { "type": "string", "default": "en", "description": "BCP-47 language tag for EPUB dc:language + xml:lang (read by build_epub.py). Defaults to 'en'." },
-    "math": { "type": "boolean", "description": "Explicit math-book flag for the residual-LaTeX gate (verify_build.py). Defaults to (is_fiction == false) when absent; set true to force the check for a fiction book with equations, or false to silence it for a $-bearing nonfiction book." },
-    "domain": { "type": "string", "default": "book", "description": "Production domain. Default 'book' = the full nine-format book pipeline (this schema). A non-book domain (e.g. 'course') is declared in domains/<name>/domain.json and drives the deterministic engine's stages + producers + verifier; such a config is validated by its domain, not this schema. A book config may omit this or set 'book'." },
+    "title": {
+      "type": "string",
+      "description": "Book title as printed on the cover + front matter."
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Optional subtitle. Keep 'Book 1' OUT of the subtitle (Amazon compilation-detector signal)."
+    },
+    "author": {
+      "type": "string",
+      "description": "Author name as printed (e.g. 'Bo Chen')."
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Filesystem-safe identifier. Drives book_workspace/<slug>/ and all output filenames."
+    },
+    "genre": {
+      "type": "string",
+      "description": "Free-text genre/register label (e.g. 'literary fiction', 'AI-career nonfiction'). (orchestrator/agent-consumed; not read by the build toolchain)."
+    },
+    "is_fiction": {
+      "type": "boolean",
+      "description": "Selects the fiction copyright disclaimer + fiction_refs handling; false enables the LaTeX->Unicode math path."
+    },
+    "language": {
+      "type": "string",
+      "default": "en",
+      "description": "BCP-47 language tag for EPUB dc:language + xml:lang (read by build_epub.py). Defaults to 'en'."
+    },
+    "math": {
+      "type": "boolean",
+      "description": "Explicit math-book flag for the residual-LaTeX gate (verify_build.py). Defaults to (is_fiction == false) when absent; set true to force the check for a fiction book with equations, or false to silence it for a $-bearing nonfiction book."
+    },
+    "domain": {
+      "type": "string",
+      "default": "book",
+      "description": "Production domain. Default 'book' = the full nine-format book pipeline (this schema). A non-book domain (e.g. 'course') is declared in domains/<name>/domain.json and drives the deterministic engine's stages + producers + verifier; such a config is validated by its domain, not this schema. A book config may omit this or set 'book'."
+    },
     "integration_mode": {
       "type": "string",
-      "enum": ["synthesis", "anthology", "reforge"],
+      "enum": [
+        "synthesis",
+        "anthology",
+        "reforge"
+      ],
       "default": "synthesis",
       "description": "How multiple intake sources become ONE book. synthesis (default): re-derive from first principles — the core stays the core, satellites DISSOLVE in; recombination is not synthesis. anthology: parts intentionally stay distinct. reforge: an existing manuscript reborn, re-synthesized strictly better in the author's register. Asked once at intake when a core + satellites exist; never silently assumed. (orchestrator/agent-consumed; not read by the build toolchain)."
     },
-
     "min_pages": {
       "type": "integer",
       "default": 75,
@@ -33,136 +72,329 @@
       "default": false,
       "description": "Kindle/reflowable ebooks: whether to inject a manual CONTENTS page + TableOfContents field. Default FALSE — Amazon builds navigation from the Heading-1 structure, so a manual TOC is redundant and some upload paths render it broken/blank. Kindle NEVER carries page numbers regardless. See LESSONS_LEDGER §16.4."
     },
-
     "units": {
       "type": "array",
       "description": "Canonical ORDERED unit list — the single source of unit order for assemble_manuscript.py, init_contracts.py, check_part_pages.py, and the generators. Preferred over authorship.per_chapter_overrides key order.",
       "items": {
         "type": "object",
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string", "description": "Filesystem-safe unit id, e.g. 'part_1' or 'ch_01'." },
-          "title": { "type": "string", "description": "Display heading, e.g. 'Part I - The Dissolution'." },
-          "class": { "type": "string", "enum": ["A", "B", "C"], "description": "Optional per-unit authorship class override (else authorship.default_class)." },
-          "target_words": { "type": "integer", "minimum": 1, "description": "Optional per-unit word target; the deterministic engine (engine.py) drafts to ~this length and gates within 0.6-1.6x. Defaults to 1500 if omitted." }
+          "id": {
+            "type": "string",
+            "description": "Filesystem-safe unit id, e.g. 'part_1' or 'ch_01'."
+          },
+          "title": {
+            "type": "string",
+            "description": "Display heading, e.g. 'Part I - The Dissolution'."
+          },
+          "class": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C"
+            ],
+            "description": "Optional per-unit authorship class override (else authorship.default_class)."
+          },
+          "target_words": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Optional per-unit word target; the deterministic engine (engine.py) drafts to ~this length and gates within 0.6-1.6x. Defaults to 1500 if omitted."
+          }
         }
       }
     },
-    "dedication": { "type": "string", "description": "Optional dedication text, rendered on its own centered recto page." },
+    "dedication": {
+      "type": "string",
+      "description": "Optional dedication text, rendered on its own centered recto page."
+    },
     "epigraph": {
-      "type": "object", "additionalProperties": false,
-      "properties": { "text": { "type": "string" }, "attribution": { "type": "string" } },
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "attribution": {
+          "type": "string"
+        }
+      },
       "description": "Optional epigraph (quote + attribution) on its own centered page."
     },
-    "readers_note": { "type": "string", "description": "Optional reader's note / preface front-matter text." },
-    "about_the_author": { "type": "string", "description": "Optional extended About-the-Author back matter (Kindle + print); falls back to a factual one-liner if absent." },
-
+    "readers_note": {
+      "type": "string",
+      "description": "Optional reader's note / preface front-matter text."
+    },
+    "about_the_author": {
+      "type": "string",
+      "description": "Optional extended About-the-Author back matter (Kindle + print); falls back to a factual one-liner if absent."
+    },
     "trim": {
       "type": "object",
       "description": "Physical trim size in inches. 6x9 is the house default across every shipped book.",
       "additionalProperties": false,
       "properties": {
-        "w": { "type": "number", "default": 6 },
-        "h": { "type": "number", "default": 9 }
+        "w": {
+          "type": "number",
+          "default": 6
+        },
+        "h": {
+          "type": "number",
+          "default": 9
+        }
       },
-      "default": { "w": 6, "h": 9 }
+      "default": {
+        "w": 6,
+        "h": 9
+      }
     },
-
     "paper": {
       "type": "string",
-      "enum": ["cream", "white"],
+      "enum": [
+        "cream",
+        "white"
+      ],
       "default": "cream",
       "description": "cream = literary/premium (spine per_page 0.0025); white = tech register (0.002252). Note: KDP hardcover only offers white."
     },
     "blurb_paper": {
       "type": "string",
-      "enum": ["standard_trade_bw_matte_paper", "economy_trade_matte_paper", "standard_trade_matte_paper"],
+      "enum": [
+        "standard_trade_bw_matte_paper",
+        "economy_trade_matte_paper",
+        "standard_trade_matte_paper"
+      ],
       "default": "standard_trade_bw_matte_paper",
       "description": "Blurb trade paper (drives the blurb spine/cover lookup in print_presets.json). standard_trade_bw = the B&W text-book default; standard_trade = color paper."
     },
     "finish": {
       "type": "string",
-      "enum": ["matte", "gloss"],
+      "enum": [
+        "matte",
+        "gloss"
+      ],
       "default": "matte",
       "description": "Cover finish. Matte is the literary house default. (orchestrator/agent-consumed; not read by the build toolchain)."
     },
-
     "formats": {
       "type": "array",
       "description": "Which upload-ready formats to produce. Literary/premium ships all 5; tech register drops mixam_hardcover. (orchestrator/agent-consumed; not read by the build toolchain).",
-      "items": { "type": "string", "enum": ["kindle", "kdp_paperback", "kdp_hardcover", "mixam_hardcover", "digital_pdf", "epub", "mixam_paperback", "blurb_paperback", "blurb_hardcover"] },
+      "items": {
+        "type": "string",
+        "enum": [
+          "kindle",
+          "kdp_paperback",
+          "kdp_hardcover",
+          "mixam_hardcover",
+          "digital_pdf",
+          "epub",
+          "mixam_paperback",
+          "blurb_paperback",
+          "blurb_hardcover"
+        ]
+      },
       "uniqueItems": true,
       "minItems": 1,
-      "default": ["kindle", "kdp_paperback", "kdp_hardcover", "mixam_hardcover", "digital_pdf"]
+      "default": [
+        "kindle",
+        "kdp_paperback",
+        "kdp_hardcover",
+        "mixam_hardcover",
+        "digital_pdf"
+      ]
     },
-
     "interior": {
       "type": "object",
       "description": "Interior typography + margin geometry. Values in inches unless noted. Defaults are the proven KDP-tight set; the Mixam profile overrides margins to the looser binding-comfort set at build time.",
       "additionalProperties": false,
       "properties": {
-        "body_font": { "type": "string", "default": "Georgia", "description": "Body font. Georgia chosen for universal system availability; not embedded." },
-        "body_pt": { "type": "number", "default": 12, "description": "Body point size (12 for novellas/premium; 11 for denser nonfiction)." },
-        "leading": { "type": "number", "default": 340, "description": "Line spacing in DXA/twips, 'atLeast' rule (340 ~= 1.4x at 12pt; 320 ~= 1.35x at 11pt)." },
-        "first_line_indent": { "type": "number", "default": 360, "description": "First-line indent in DXA (360 ~= 0.25in)." },
-        "gutter_in": { "type": "number", "default": 0.75, "description": "Spine-side (inside) margin. 0.75in absorbs justified trailing-space + italic side-bearing overshoot KDP flags; exceeds KDP's 0.625in min. Mixam profile uses 0.875in." },
-        "outside_in": { "type": "number", "default": 0.5, "description": "Outside margin. Mixam profile uses 0.625in." },
-        "top_in": { "type": "number", "default": 0.5, "description": "Top margin. Mixam profile uses 0.625in." },
-        "bottom_in": { "type": "number", "default": 0.625, "description": "Bottom margin. Mixam profile uses 0.75in." },
-        "body_color": { "type": "string", "default": "1A1A1A", "description": "Print body hex (Kindle uses 000000)." },
-        "ornament_glyph": { "type": "string", "default": "✦", "description": "Section-break / part ornament (U+2726 four-pointed star), rendered in the ornament_font." },
-        "ornament_font": { "type": "string", "default": "Segoe UI Symbol", "description": "Font used to render ornament_glyph in the generators. Segoe UI Symbol ships with Windows and carries the U+2726 star; change only if your box lacks it." },
-        "code_font": { "type": "string", "default": "Consolas", "description": "Monospace font for inline `backtick` code runs in the generators. Consolas is the Windows default." },
-        "math_font": { "type": "string", "default": "Cambria Math", "description": "Font tagged on LaTeX->Unicode math runs in the generators. Cambria Math is the Windows default; latex_to_unicode.js emits glyphs this font renders well." },
-        "include_toc": { "type": "boolean", "default": true, "description": "PRINT interiors: build a CONTENTS/TOC page. Default true. TOC entries MUST be title-case at normal tracking with a right-tab dot leader — NEVER wide-tracked ALL-CAPS (they wrap and collide with the leaders, garbling the Contents page). See LESSONS_LEDGER §16.3." },
-        "page_number_align": { "type": "string", "enum": ["center", "outer"], "default": "center", "description": "Footer page-number placement. House style = center (bottom-center on every page). 'outer' = recto-right / verso-left (the old default). See LESSONS_LEDGER §16.2." },
+        "body_font": {
+          "type": "string",
+          "default": "Georgia",
+          "description": "Body font. Georgia chosen for universal system availability; not embedded."
+        },
+        "body_pt": {
+          "type": "number",
+          "default": 12,
+          "description": "Body point size (12 for novellas/premium; 11 for denser nonfiction)."
+        },
+        "leading": {
+          "type": "number",
+          "default": 340,
+          "description": "Line spacing in DXA/twips, 'atLeast' rule (340 ~= 1.4x at 12pt; 320 ~= 1.35x at 11pt)."
+        },
+        "first_line_indent": {
+          "type": "number",
+          "default": 360,
+          "description": "First-line indent in DXA (360 ~= 0.25in)."
+        },
+        "gutter_in": {
+          "type": "number",
+          "default": 0.75,
+          "description": "Spine-side (inside) margin. 0.75in absorbs justified trailing-space + italic side-bearing overshoot KDP flags; exceeds KDP's 0.625in min. Mixam profile uses 0.875in."
+        },
+        "outside_in": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Outside margin. Mixam profile uses 0.625in."
+        },
+        "top_in": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Top margin. Mixam profile uses 0.625in."
+        },
+        "bottom_in": {
+          "type": "number",
+          "default": 0.625,
+          "description": "Bottom margin. Mixam profile uses 0.75in."
+        },
+        "body_color": {
+          "type": "string",
+          "default": "1A1A1A",
+          "description": "Print body hex (Kindle uses 000000)."
+        },
+        "ornament_glyph": {
+          "type": "string",
+          "default": "✦",
+          "description": "Section-break / part ornament (U+2726 four-pointed star), rendered in the ornament_font."
+        },
+        "ornament_font": {
+          "type": "string",
+          "default": "Segoe UI Symbol",
+          "description": "Font used to render ornament_glyph in the generators. Segoe UI Symbol ships with Windows and carries the U+2726 star; change only if your box lacks it."
+        },
+        "code_font": {
+          "type": "string",
+          "default": "Consolas",
+          "description": "Monospace font for inline `backtick` code runs in the generators. Consolas is the Windows default."
+        },
+        "math_font": {
+          "type": "string",
+          "default": "Cambria Math",
+          "description": "Font tagged on LaTeX->Unicode math runs in the generators. Cambria Math is the Windows default; latex_to_unicode.js emits glyphs this font renders well."
+        },
+        "include_toc": {
+          "type": "boolean",
+          "default": true,
+          "description": "PRINT interiors: build a CONTENTS/TOC page. Default true. TOC entries MUST be title-case at normal tracking with a right-tab dot leader — NEVER wide-tracked ALL-CAPS (they wrap and collide with the leaders, garbling the Contents page). See LESSONS_LEDGER §16.3."
+        },
+        "page_number_align": {
+          "type": "string",
+          "enum": [
+            "center",
+            "outer"
+          ],
+          "default": "center",
+          "description": "Footer page-number placement. House style = center (bottom-center on every page). 'outer' = recto-right / verso-left (the old default). See LESSONS_LEDGER §16.2."
+        },
         "chapter_art": {
           "type": "object",
           "additionalProperties": false,
           "description": "OPTIONAL chapter-opener illustrations, convention over configuration: when the dir exists and holds <unit_id>.png files, the generators (print DOCX, Kindle DOCX, EPUB) inject each image directly after its unit heading. Absent dir or file = silent no-op; manuscript markdown is never marked up. Ids bind to unit headings by position (the EPUB count gate protects the binding).",
           "properties": {
-            "enabled": { "type": "boolean", "default": true, "description": "Master switch. Even when true, art is injected only for units whose <unit_id>.png exists." },
-            "dir": { "type": "string", "default": "cover_art/illustrations/live", "description": "Workspace-relative folder holding one <unit_id>.png per illustrated unit." },
-            "width_in": { "type": "number", "default": 4.0, "description": "Rendered width in inches in the print interior (height follows the image aspect). Kindle/EPUB reflow responsively." }
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Master switch. Even when true, art is injected only for units whose <unit_id>.png exists."
+            },
+            "dir": {
+              "type": "string",
+              "default": "cover_art/illustrations/live",
+              "description": "Workspace-relative folder holding one <unit_id>.png per illustrated unit."
+            },
+            "width_in": {
+              "type": "number",
+              "default": 4.0,
+              "description": "Rendered width in inches in the print interior (height follows the image aspect). Kindle/EPUB reflow responsively."
+            }
           },
           "default": {}
+        },
+        "body_font_latin": {
+          "type": "string",
+          "description": "Optional Latin-script face paired with a CJK body_font. When set, generators emit split rFonts: ascii/hAnsi=this face, eastAsia/cs=body_font. Use for CJK editions so Latin names, numerals and quoted English render in a proper Latin serif."
         }
       },
       "default": {}
     },
-
     "front_matter": {
       "type": "array",
       "description": "Ordered ceremonial front-matter sequence. Each entry becomes its own one-page section (required for vAlign injection). Recto elements land on odd pages; blank versos are auto-inserted.",
       "items": {
         "type": "object",
-        "required": ["type"],
+        "required": [
+          "type"
+        ],
         "additionalProperties": false,
         "properties": {
-          "type": { "type": "string", "enum": ["half_title", "blank", "title", "copyright", "dedication", "epigraph", "contents", "readers_note"] },
-          "valign": { "type": "string", "enum": ["top", "center", "bottom"], "description": "Injected <w:vAlign>. half_title/title=center, copyright=bottom, body=top." }
+          "type": {
+            "type": "string",
+            "enum": [
+              "half_title",
+              "blank",
+              "title",
+              "copyright",
+              "dedication",
+              "epigraph",
+              "contents",
+              "readers_note"
+            ]
+          },
+          "valign": {
+            "type": "string",
+            "enum": [
+              "top",
+              "center",
+              "bottom"
+            ],
+            "description": "Injected <w:vAlign>. half_title/title=center, copyright=bottom, body=top."
+          }
         }
       },
       "default": [
-        { "type": "half_title", "valign": "center" },
-        { "type": "blank" },
-        { "type": "title", "valign": "center" },
-        { "type": "copyright", "valign": "bottom" },
-        { "type": "dedication", "valign": "center" },
-        { "type": "blank" },
-        { "type": "epigraph", "valign": "center" },
-        { "type": "blank" }
+        {
+          "type": "half_title",
+          "valign": "center"
+        },
+        {
+          "type": "blank"
+        },
+        {
+          "type": "title",
+          "valign": "center"
+        },
+        {
+          "type": "copyright",
+          "valign": "bottom"
+        },
+        {
+          "type": "dedication",
+          "valign": "center"
+        },
+        {
+          "type": "blank"
+        },
+        {
+          "type": "epigraph",
+          "valign": "center"
+        },
+        {
+          "type": "blank"
+        }
       ]
     },
-
     "recto_strategy": {
       "type": "string",
-      "enum": ["odd_page_sections", "blank_verso_cascade"],
+      "enum": [
+        "odd_page_sections",
+        "blank_verso_cascade"
+      ],
       "default": "odd_page_sections",
       "description": "odd_page_sections = per-chapter SectionType.ODD_PAGE + trailing EVEN_PAGE blank (robust, preferred). blank_verso_cascade = legacy brittle single-blank-before-part-II trick (avoid)."
     },
-
     "cover": {
       "type": "object",
       "description": "Cover typography + palette + AI-art generation params. Rule: NO title/author text baked into the AI art; typography composited afterward.",
@@ -180,11 +412,26 @@
         "palette": {
           "type": "object",
           "description": "Hex colors (no #) driving composite typography + overlays.",
-          "additionalProperties": { "type": "string" },
-          "default": { "navy": "0D1B2A", "cream": "F4EFE0", "gold": "C9A760", "umber": "1E160F" }
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {
+            "navy": "0D1B2A",
+            "cream": "F4EFE0",
+            "gold": "C9A760",
+            "umber": "1E160F"
+          }
         },
-        "title_tracking_em": { "type": "number", "default": 0.05, "description": "Per-glyph title letter-tracking in em." },
-        "author_tracking_em": { "type": "number", "default": 0.18, "description": "Wide small-caps author tracking in em." },
+        "title_tracking_em": {
+          "type": "number",
+          "default": 0.05,
+          "description": "Per-glyph title letter-tracking in em."
+        },
+        "author_tracking_em": {
+          "type": "number",
+          "default": 0.18,
+          "description": "Wide small-caps author tracking in em."
+        },
         "art": {
           "type": "object",
           "description": "AI cover-art generation config (cover_gen.py -> ComfyUI via hermes skill).",
@@ -192,8 +439,16 @@
           "properties": {
             "method": {
               "type": "string",
-              "enum": ["sdxl", "flux", "hypergen", "catalog", "supplied", "bespoke"],
-              "description": "How the cover art is INTENDED to be produced. Read by verify_build.py's cover_art_provenance gate (2026-07-31). Omit (or set sdxl/flux) when the art should be AI-generated: the gate then FAILS CLOSED unless a cover_art/*.provenance.json proves generation actually happened. Set 'bespoke' (a per-book compositor), 'supplied' (author-provided art), 'catalog', or 'hypergen' to declare deliberately non-generated art and satisfy the gate by declaration. History: cover_gen.py could only launch ComfyUI via comfy-cli, which was not on PATH, so four shipped books silently fell back to hypergen placeholders where the config specified SDXL - and nothing failed, because hypergen's art is good enough to pass the perceptual rubric meant to catch placeholders. Intent is now bound to recorded provenance, not to how the output looks."
+              "enum": [
+                "sdxl",
+                "flux",
+                "workers_ai_flux",
+                "hypergen",
+                "catalog",
+                "supplied",
+                "bespoke"
+              ],
+              "description": "How the cover art is INTENDED to be produced. Read by verify_build.py's cover_art_provenance gate (2026-07-31). Omit (or set sdxl/flux/workers_ai_flux - the cloud's API text-to-image lane, 2026-08-24) when the art should be AI-generated: the gate then FAILS CLOSED unless a cover_art/*.provenance.json proves generation actually happened. Set 'bespoke' (a per-book compositor), 'supplied' (author-provided art), 'catalog', or 'hypergen' to declare deliberately non-generated art and satisfy the gate by declaration. History: cover_gen.py could only launch ComfyUI via comfy-cli, which was not on PATH, so four shipped books silently fell back to hypergen placeholders where the config specified SDXL - and nothing failed, because hypergen's art is good enough to pass the perceptual rubric meant to catch placeholders. Intent is now bound to recorded provenance, not to how the output looks."
             },
             "_method_note": {
               "type": "string",
@@ -218,10 +473,24 @@
               "type": "string",
               "description": "The Book-Bible-derived art prompt seed (genre, mood, palette, motifs, period-accuracy rules). NEVER include title/author text."
             },
-            "negative_prompt": { "type": "string", "default": "text, watermark, letters, title, signature, frame, border" },
-            "steps": { "type": "integer", "default": 30 },
-            "seed": { "type": "integer", "default": -1, "description": "-1 = randomize. run_batch.py sweeps seeds for variants." },
-            "reroll_budget": { "type": "integer", "default": 6, "description": "Max re-rolls before the cover loop hard-stops to the human. (orchestrator/agent-consumed; not read by the build toolchain)." }
+            "negative_prompt": {
+              "type": "string",
+              "default": "text, watermark, letters, title, signature, frame, border"
+            },
+            "steps": {
+              "type": "integer",
+              "default": 30
+            },
+            "seed": {
+              "type": "integer",
+              "default": -1,
+              "description": "-1 = randomize. run_batch.py sweeps seeds for variants."
+            },
+            "reroll_budget": {
+              "type": "integer",
+              "default": 6,
+              "description": "Max re-rolls before the cover loop hard-stops to the human. (orchestrator/agent-consumed; not read by the build toolchain)."
+            }
           },
           "default": {}
         },
@@ -230,22 +499,55 @@
           "description": "Bottom-right ISBN barcode keep-out on the back panel. KDP auto-overlays its barcode here; reserve nothing, just keep it clear (do NOT bake a box).",
           "additionalProperties": false,
           "properties": {
-            "w_in": { "type": "number", "default": 2.25 },
-            "h_in": { "type": "number", "default": 1.5 },
-            "corner": { "type": "string", "enum": ["bottom_right", "bottom_left"], "default": "bottom_right" }
+            "w_in": {
+              "type": "number",
+              "default": 2.25
+            },
+            "h_in": {
+              "type": "number",
+              "default": 1.5
+            },
+            "corner": {
+              "type": "string",
+              "enum": [
+                "bottom_right",
+                "bottom_left"
+              ],
+              "default": "bottom_right"
+            }
           },
-          "default": { "w_in": 2.25, "h_in": 1.5, "corner": "bottom_right" }
+          "default": {
+            "w_in": 2.25,
+            "h_in": 1.5,
+            "corner": "bottom_right"
+          }
         },
         "center_icon": {
           "type": "object",
           "description": "Optional emblem centered on EVERY front cover (print wraps + kindle), between the title block and the subtitle block. Alpha-masked; native colors kept unless `ink` is set (then the alpha becomes a solid-ink stencil); a soft cream under-glow lifts it off textured art unless glow:false. Trademark note: shipping another party's mark on a cover is an IP-counsel item on the upload checklist.",
           "additionalProperties": false,
           "properties": {
-            "path": { "type": "string", "description": "Workspace-relative image path (PNG with alpha preferred)." },
-            "width_in": { "type": "number", "default": 2.4 },
-            "center_y_frac": { "type": "number", "default": 0.47, "description": "Vertical center as a fraction of front-panel height (clamped below the title block)." },
-            "ink": { "type": "string", "description": "Optional hex ink (no #): render the icon's alpha as this solid color instead of its native colors." },
-            "glow": { "type": "boolean", "default": true }
+            "path": {
+              "type": "string",
+              "description": "Workspace-relative image path (PNG with alpha preferred)."
+            },
+            "width_in": {
+              "type": "number",
+              "default": 2.4
+            },
+            "center_y_frac": {
+              "type": "number",
+              "default": 0.47,
+              "description": "Vertical center as a fraction of front-panel height (clamped below the title block)."
+            },
+            "ink": {
+              "type": "string",
+              "description": "Optional hex ink (no #): render the icon's alpha as this solid color instead of its native colors."
+            },
+            "glow": {
+              "type": "boolean",
+              "default": true
+            }
           }
         },
         "ebook_logo": {
@@ -253,104 +555,277 @@
           "description": "Optional emblem composited onto EBOOK front covers only (the kindle + digital profiles; print wraps untouched). The source's dark pixels become tinted ink on the cover field (alpha = darkness), so B&W line art reads as cover-native ink rather than a pasted white plate. Trademark note: shipping another party's mark on a cover is an IP-counsel item on the upload checklist.",
           "additionalProperties": false,
           "properties": {
-            "path": { "type": "string", "description": "Workspace-relative source image (PNG/JPG; dark-on-light line art works best)." },
-            "width_in": { "type": "number", "default": 1.5 },
-            "center_y_frac": { "type": "number", "default": 0.76, "description": "Vertical center of the emblem as a fraction of trim height." },
-            "ink": { "type": "string", "description": "Hex ink color, no #. Defaults to the compositor's body ink." }
+            "path": {
+              "type": "string",
+              "description": "Workspace-relative source image (PNG/JPG; dark-on-light line art works best)."
+            },
+            "width_in": {
+              "type": "number",
+              "default": 1.5
+            },
+            "center_y_frac": {
+              "type": "number",
+              "default": 0.76,
+              "description": "Vertical center of the emblem as a fraction of trim height."
+            },
+            "ink": {
+              "type": "string",
+              "description": "Hex ink color, no #. Defaults to the compositor's body ink."
+            }
           }
         }
       },
       "default": {}
     },
-
     "spine": {
       "type": "object",
       "description": "Spine-width math constants. spine_in = pages * per_page_paper + board_add. pages is a SINGLE re-derived variable read from the generated PDF (never hard-coded in three places). Always calibrate against the KDP Print Previewer / Mixam job calculator.",
       "additionalProperties": false,
       "properties": {
-        "per_page_cream": { "type": "number", "default": 0.0025, "description": "Cream paper per-page spine multiplier." },
-        "per_page_white": { "type": "number", "default": 0.002252, "description": "White paper per-page spine multiplier." },
-        "kdp_hardcover_board_add": { "type": "number", "default": 0.348, "description": "KDP hardcover case-board+endpaper add (2026 spec, empirically verified against a Previewer rejection; legacy 0.302 caused v1 rejections). Some white-paper books calibrated to 0.241-0.246." },
-        "mixam_board_add": { "type": "number", "default": 0.110, "description": "Mixam board add is NON-constant (0.160@204pp -> 0.110@548pp). Reverse-derive from Mixam's job calculator; this is a starting estimate only." },
-        "kdp_hardcover_turn_in_in": { "type": "number", "default": 0.708, "description": "KDP hardcover case-wrap turn-in on all 4 sides (NOT bleed). Uploading a 0.125in-bleed paperback wrap to a hardcover listing is rejected." },
-        "kdp_hardcover_height_in": { "type": "number", "default": 10.417, "description": "Hardcover wrap height hardcoded to 10.417 (arithmetic gives 10.416; KDP's 4-decimal validator expects 10.417)." },
-        "kdp_bleed_in": { "type": "number", "default": 0.125, "description": "KDP paperback single-wrap bleed all sides." },
-        "mixam_bleed_in": { "type": "number", "default": 0.80, "description": "Mixam cover bleed all sides (unusually thick - paper wraps case boards)." },
-        "calibrate_against_previewer": { "type": "boolean", "default": true, "description": "On dimension rejection, reverse-derive the board-add from the Previewer's stated expected wrap width rather than trusting a formula." },
-        "spine_override_in": { "type": "number", "description": "Escape hatch: a Previewer/Mixam-stated EXACT spine width (inches) that bypasses the formula entirely. Set after a dimension rejection reveals the real number; composite_cover.py then uses it verbatim." }
+        "per_page_cream": {
+          "type": "number",
+          "default": 0.0025,
+          "description": "Cream paper per-page spine multiplier."
+        },
+        "per_page_white": {
+          "type": "number",
+          "default": 0.002252,
+          "description": "White paper per-page spine multiplier."
+        },
+        "kdp_hardcover_board_add": {
+          "type": "number",
+          "default": 0.348,
+          "description": "KDP hardcover case-board+endpaper add (2026 spec, empirically verified against a Previewer rejection; legacy 0.302 caused v1 rejections). Some white-paper books calibrated to 0.241-0.246."
+        },
+        "mixam_board_add": {
+          "type": "number",
+          "default": 0.11,
+          "description": "Mixam board add is NON-constant (0.160@204pp -> 0.110@548pp). Reverse-derive from Mixam's job calculator; this is a starting estimate only."
+        },
+        "kdp_hardcover_turn_in_in": {
+          "type": "number",
+          "default": 0.708,
+          "description": "KDP hardcover case-wrap turn-in on all 4 sides (NOT bleed). Uploading a 0.125in-bleed paperback wrap to a hardcover listing is rejected."
+        },
+        "kdp_hardcover_height_in": {
+          "type": "number",
+          "default": 10.417,
+          "description": "Hardcover wrap height hardcoded to 10.417 (arithmetic gives 10.416; KDP's 4-decimal validator expects 10.417)."
+        },
+        "kdp_bleed_in": {
+          "type": "number",
+          "default": 0.125,
+          "description": "KDP paperback single-wrap bleed all sides."
+        },
+        "mixam_bleed_in": {
+          "type": "number",
+          "default": 0.8,
+          "description": "Mixam cover bleed all sides (unusually thick - paper wraps case boards)."
+        },
+        "calibrate_against_previewer": {
+          "type": "boolean",
+          "default": true,
+          "description": "On dimension rejection, reverse-derive the board-add from the Previewer's stated expected wrap width rather than trusting a formula."
+        },
+        "spine_override_in": {
+          "type": "number",
+          "description": "Escape hatch: a Previewer/Mixam-stated EXACT spine width (inches) that bypasses the formula entirely. Set after a dimension rejection reveals the real number; composite_cover.py then uses it verbatim."
+        }
       },
       "default": {}
     },
-
     "kdp_metadata": {
       "type": "object",
       "description": "KDP listing metadata. Description <=4000 chars (HTML <p><b><i> allowed); target just under. Substitute ' - ' for em-dashes in fields that reject them.",
       "additionalProperties": false,
       "properties": {
-        "description": { "type": "string", "maxLength": 4000, "description": "Marketing description, <=4000 chars (aim ~3900-3990)." },
-        "categories": { "type": "array", "items": { "type": "string" }, "maxItems": 3, "description": "Up to 3 KDP categories at submit; more via Author Central." },
-        "keywords": { "type": "array", "items": { "type": "string", "maxLength": 50 }, "maxItems": 7, "description": "7 long-tail keyword slots, <=50 chars each, no quotes/commas, each a distinct reader angle." },
-        "bisac": { "type": "array", "items": { "type": "string" }, "maxItems": 3, "description": "BISAC codes (e.g. COM004000). Up to 3." },
+        "description": {
+          "type": "string",
+          "maxLength": 4000,
+          "description": "Marketing description, <=4000 chars (aim ~3900-3990)."
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 3,
+          "description": "Up to 3 KDP categories at submit; more via Author Central."
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "maxItems": 7,
+          "description": "7 long-tail keyword slots, <=50 chars each, no quotes/commas, each a distinct reader angle."
+        },
+        "bisac": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 3,
+          "description": "BISAC codes (e.g. COM004000). Up to 3."
+        },
         "price": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "kindle": { "type": "number", "default": 5.99, "description": "70% royalty tier is $2.99-$9.99." },
-            "paperback": { "type": "number", "default": 14.99 },
-            "hardcover": { "type": "number", "default": 24.99 }
+            "kindle": {
+              "type": "number",
+              "default": 5.99,
+              "description": "70% royalty tier is $2.99-$9.99."
+            },
+            "paperback": {
+              "type": "number",
+              "default": 14.99
+            },
+            "hardcover": {
+              "type": "number",
+              "default": 24.99
+            }
           },
-          "default": { "kindle": 5.99, "paperback": 14.99, "hardcover": 24.99 }
+          "default": {
+            "kindle": 5.99,
+            "paperback": 14.99,
+            "hardcover": 24.99
+          }
         },
         "isbn_policy": {
           "type": "string",
-          "enum": ["kdp_free", "own_isbn", "none"],
+          "enum": [
+            "kdp_free",
+            "own_isbn",
+            "none"
+          ],
           "default": "kdp_free",
           "description": "kdp_free = KDP assigns a free print ISBN + overlays its own barcode; Kindle needs none (ASIN)."
         }
       },
       "default": {}
     },
-
     "authorship": {
       "type": "object",
       "description": "The human-in-the-loop dial. Class A=human-only/outline; B=scaffold with [BO-WRITES] markers; C=full machine draft. Authoritative from the contract; never silent-upgraded.",
       "additionalProperties": false,
       "properties": {
-        "default_class": { "type": "string", "enum": ["A", "B", "C"], "default": "C" },
-        "quality_gate": { "type": "boolean", "default": false, "description": "If true, the deterministic engine's integrate stage HARD-FAILS on authorial_act.py findings (the single-authorial-act gate: register-uniformity, verbatim cross-unit callbacks, meta-openers, summary boxes, repeated endings). Default false = advisory (the verdict is logged, never blocks). Enable once the manuscript is tuned to read as one continuous authorial act." },
+        "default_class": {
+          "type": "string",
+          "enum": [
+            "A",
+            "B",
+            "C"
+          ],
+          "default": "C"
+        },
+        "quality_gate": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the deterministic engine's integrate stage HARD-FAILS on authorial_act.py findings (the single-authorial-act gate: register-uniformity, verbatim cross-unit callbacks, meta-openers, summary boxes, repeated endings). Default false = advisory (the verdict is logged, never blocks). Enable once the manuscript is tuned to read as one continuous authorial act."
+        },
         "per_chapter_overrides": {
           "type": "object",
           "description": "Map of unit_id -> class (e.g. {'prologue':'A','part_ix_grief':'A','epilogue':'A'}).",
-          "additionalProperties": { "type": "string", "enum": ["A", "B", "C"] },
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "C"
+            ]
+          },
           "default": {}
         }
       },
-      "default": { "default_class": "C", "per_chapter_overrides": {} }
+      "default": {
+        "default_class": "C",
+        "per_chapter_overrides": {}
+      }
     },
-
     "voice": {
       "type": "object",
       "description": "Voice calibration + drift lint inputs. Feeds lint_manuscript.py and the Context Pack.",
       "additionalProperties": false,
       "properties": {
-        "unit_noun": { "type": "string", "enum": ["chapter", "part"], "default": "chapter", "description": "Generalizes the command grammar: 'generate chapter N' vs 'generate part N'." },
-        "exemplars_path": { "type": "string", "default": "exemplars/", "description": "Dir of voice-calibration passages (anchor + supporting)." },
-        "blacklist": { "type": "array", "items": { "type": "string" }, "description": "Forbidden phrasings/vocabulary (e.g. delve, crucial, leverage-as-verb, meta-openings). Hard exit-1 lint outside scaffolding dirs.", "default": [] },
-        "greenlist": { "type": "array", "items": { "type": "string" }, "description": "Sanctioned signature phrases/Bo-isms to preserve.", "default": [] },
-        "sacred_terms": { "type": "array", "items": { "type": "string" }, "description": "Glossary of terms with locked usage ('Never Say Instead'); e.g. an exact refrain wording that must not drift.", "default": [] },
-        "no_em_dashes": { "type": "boolean", "default": true, "description": "HARD gate: forbid em-dashes (U+2014) and en-dashes (U+2013) in prose. Default TRUE (Bo's named #1 AI-tell). lint_manuscript.py fails (exit 1) on any em/en-dash in a manuscript file. Compound-adjective hyphens (U+002D) are never flagged. A non-Bo book that legitimately uses em-dashes sets this false. See docs/author_voice/AUTHOR_VOICE_Bo_Chen.md §1." },
-        "lint_waivers": { "type": "array", "items": { "type": "string" }, "description": "Replica/source-faithful books: exact strings adjudicated as SOURCE-FAITHFUL blemishes (the printed page was rendered and eyeballed; the artifact is the source's own, e.g. a typo printed in the original book). lint_manuscript.py suppresses any finding whose detail carries a waived string, printing a WAIVED line so the suppression stays visible in the output. History: the reader shipped in cf61c7e without this declaration, and additionalProperties:false made the feature unreachable by ANY valid config (GATE-2 rejected it) - caught at the 2026-07-28 round table; selfcheck's nested-block key-drift gate now holds the class.", "default": [] }
+        "unit_noun": {
+          "type": "string",
+          "enum": [
+            "chapter",
+            "part"
+          ],
+          "default": "chapter",
+          "description": "Generalizes the command grammar: 'generate chapter N' vs 'generate part N'."
+        },
+        "exemplars_path": {
+          "type": "string",
+          "default": "exemplars/",
+          "description": "Dir of voice-calibration passages (anchor + supporting)."
+        },
+        "blacklist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Forbidden phrasings/vocabulary (e.g. delve, crucial, leverage-as-verb, meta-openings). Hard exit-1 lint outside scaffolding dirs.",
+          "default": []
+        },
+        "greenlist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Sanctioned signature phrases/Bo-isms to preserve.",
+          "default": []
+        },
+        "sacred_terms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glossary of terms with locked usage ('Never Say Instead'); e.g. an exact refrain wording that must not drift.",
+          "default": []
+        },
+        "no_em_dashes": {
+          "type": "boolean",
+          "default": true,
+          "description": "HARD gate: forbid em-dashes (U+2014) and en-dashes (U+2013) in prose. Default TRUE (Bo's named #1 AI-tell). lint_manuscript.py fails (exit 1) on any em/en-dash in a manuscript file. Compound-adjective hyphens (U+002D) are never flagged. A non-Bo book that legitimately uses em-dashes sets this false. See docs/author_voice/AUTHOR_VOICE_Bo_Chen.md §1."
+        },
+        "lint_waivers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Replica/source-faithful books: exact strings adjudicated as SOURCE-FAITHFUL blemishes (the printed page was rendered and eyeballed; the artifact is the source's own, e.g. a typo printed in the original book). lint_manuscript.py suppresses any finding whose detail carries a waived string, printing a WAIVED line so the suppression stays visible in the output. History: the reader shipped in cf61c7e without this declaration, and additionalProperties:false made the feature unreachable by ANY valid config (GATE-2 rejected it) - caught at the 2026-07-28 round table; selfcheck's nested-block key-drift gate now holds the class.",
+          "default": []
+        }
       },
-      "default": { "unit_noun": "chapter", "exemplars_path": "exemplars/", "blacklist": [], "greenlist": [], "sacred_terms": [] }
+      "default": {
+        "unit_noun": "chapter",
+        "exemplars_path": "exemplars/",
+        "blacklist": [],
+        "greenlist": [],
+        "sacred_terms": []
+      }
     },
-
     "check_part_pages": {
       "type": "object",
       "additionalProperties": false,
       "description": "Optional recto-parity heading override consumed by check_part_pages.py. If absent, headings are synthesized from units[].title / voice.unit_noun.",
       "properties": {
-        "headings": { "type": "array", "items": { "type": "string" }, "description": "Explicit ordered list of heading STEMS to Find on recto pages (matched before the dash tail)." }
+        "headings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Explicit ordered list of heading STEMS to Find on recto pages (matched before the dash tail)."
+        }
       }
+    },
+    "strings": {
+      "type": "object",
+      "description": "Optional reader-facing string overrides for generator front/back matter (localized editions). Keys: contents_heading, toc_title, readers_note_heading, about_author_heading, copyright_line, first_edition_line, epub_doc_titles{cover,title_page,dedication,epigraph,copyright,contents,about}. Absent keys fall back to the English defaults baked in the generators."
     }
   }
 }

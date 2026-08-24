@@ -23,6 +23,13 @@ export class BooksmithP0 extends Container<Env> {
     BOOKSMITH_MODEL_EXTRA_BODY: JSON.stringify({ thinking: { type: "disabled" } }),
     BOOKSMITH_TOKEN_BUDGET: String(ALPHA_FLOOR_TOKENS),
     PYTHONUTF8: "1",
+    // H0 capability seams (a12): both OPTIONAL pass-throughs. Ticket configs
+    // default to hypergen covers; cover.art.method="workers_ai_flux" only works
+    // once CF_AI_TOKEN is set. vision_verify auto-upgrades claude->claude-api
+    // only when ANTHROPIC_API_KEY exists (else PENDING/SKIP as today).
+    CF_ACCOUNT_ID: "e13b1f08e91348c714d04252a43e3a74",
+    CF_API_TOKEN: this.env.CF_AI_TOKEN ?? "",
+    ANTHROPIC_API_KEY: this.env.ANTHROPIC_API_KEY ?? "",
   };
 }
 
@@ -30,6 +37,8 @@ interface Env {
   BOOKSMITH_P0: DurableObjectNamespace;
   DEMO_TOKEN?: string;
   DEEPSEEK_API_KEY?: string;
+  CF_AI_TOKEN?: string;
+  ANTHROPIC_API_KEY?: string;
 }
 
 export default {
@@ -50,7 +59,7 @@ export default {
     // keeps its old container).
     const url = new URL(request.url);
     const m = /^\/t\/(BR-[0-9A-Z]{6})(\/|$)/.exec(url.pathname);
-    const name = m ? `ticket-${m[1]}-a11c` : "runner-a11c";
+    const name = m ? `ticket-${m[1]}-a12` : "runner-a12";
     const container = getContainer(env.BOOKSMITH_P0 as never, name);
     return container.fetch(request);
   },

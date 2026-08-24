@@ -273,7 +273,18 @@ def lint_corruption(text: str) -> list:
         # A lone asterisk directly after a CJK character or CJK closer is a
         # printed FOOTNOTE MARKER (…《他的肺里装满了尘埃》* — 2026-07-23, DRDJ
         # replica), not an emphasis delimiter: exclude it from the balance.
-        emph_probe = re.sub(r"(?<=[一-鿿》」』）])\*(?!\*)", "", masked_para)
+        # EXCEPT a paragraph-final asterisk when the paragraph itself OPENS
+        # with one: a fully wrapped italic caption ending in a CJK closer
+        # (*……（图版待补。）* — 2026-08-12, carlquist_zh) is a closing marker,
+        # not a footnote.
+        emph_probe = masked_para
+        _wrapped_tail = (emph_probe.startswith("*") and emph_probe.endswith("*")
+                         and not emph_probe.endswith("**") and len(emph_probe) > 2)
+        if _wrapped_tail:
+            emph_probe = emph_probe[:-1]
+        emph_probe = re.sub(r"(?<=[一-鿿》」』）])\*(?!\*)", "", emph_probe)
+        if _wrapped_tail:
+            emph_probe += "*"
         asterisks = len(re.findall(r"(?<!\*)\*(?!\*)", emph_probe))
         if asterisks % 2 != 0:
             findings.append(("UNBALANCED_EMPHASIS", start_line,
@@ -735,6 +746,40 @@ def main() -> int:
     lint_waivers = [w for w in (voice.get("lint_waivers", []) or [])
                     if isinstance(w, str) and w.strip()] if isinstance(voice, dict) else []
 
+    # H0 (cloud/PLAN_H0_2026-08-24.md §2 D2): a unit whose LATEST author is the
+    # HUMAN (per registry/human_edited_units.json, maintained by
+    # _tools/authorship_ledger.py) carries the customer's own voice. Its
+    # findings print as HUMAN-EDIT ADVISORY and never gate the build — a dash a
+    # human typed is their voice, not an AI tell (the same doctrine as the ZH
+    # 破折号 rule). The moment an AI re-draft replaces the prose, the ledger's
+    # latest actor flips to "ai" and the unit re-enters this hard gate.
+    _human_cache: dict = {}
+
+    def _human_units_for(fp) -> set:
+        p = Path(fp).resolve()
+        ws = None
+        for anc in p.parents:
+            if anc.name == "manuscript":
+                ws = anc.parent
+                break
+        if ws is None:
+            return set()
+        key = str(ws)
+        if key not in _human_cache:
+            hu = ws / "registry" / "human_edited_units.json"
+            try:
+                _human_cache[key] = set(json.loads(hu.read_text("utf-8")))
+            except (OSError, json.JSONDecodeError, TypeError):
+                _human_cache[key] = set()
+        return _human_cache[key]
+
+    def _unit_of(fp) -> str:
+        stem = Path(fp).stem
+        if stem.endswith("_current"):
+            return stem[: -len("_current")]
+        m = re.match(r"^(.*?)_v\d+(?:_[a-z_]+)?$", stem)
+        return m.group(1) if m else stem
+
     exit_code = 0
     total = 0
     for f in files:
@@ -767,6 +812,17 @@ def main() -> int:
                   f"(voice.lint_waivers): {detail[:90]}")
         if not findings:
             print("  CLEAN — no corruption or voice-drift artifacts.")
+            continue
+
+        if _unit_of(f) in _human_units_for(f):
+            print(f"  HUMAN-EDIT ADVISORY — {len(findings)} finding(s) in a unit "
+                  f"whose latest author is the customer; their own words are "
+                  f"not gated (authorship ledger, PLAN_H0 D2):")
+            for code, line, detail in findings[:20]:
+                loc = f"line {line}" if line else "(whole-file)"
+                print(f"    [{code}] {loc}: {detail[:90]}")
+            if len(findings) > 20:
+                print(f"    ... {len(findings) - 20} more")
             continue
 
         exit_code = 1

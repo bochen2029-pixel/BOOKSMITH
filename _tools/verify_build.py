@@ -1033,7 +1033,7 @@ def check_cover_art_provenance(root: Path, cfg: dict):
     # bytes actually on disk — sidecar.art_sha256 must equal sha256(art_file).
     # Closes the gap where a stale/hand-copied "sdxl" sidecar beside swapped art
     # passed on the method string alone (the gate never opened the file).
-    generative = {"sdxl", "flux"}
+    generative = {"sdxl", "flux", "workers_ai_flux"}
     methods = []
     verified_gen_shas = set()
     bind_problems = []

@@ -53,6 +53,7 @@ SOURCE
 import argparse
 import base64
 import json
+import os
 import re
 import subprocess
 import sys
@@ -317,6 +318,59 @@ def run_claude(image: Path, rubric: str) -> dict:
     }
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Claude API backend (H0, PLAN_H0 §3 A5 — the cloud's real perceptual verdict)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def run_claude_api(image: Path, rubric: str, timeout: float = 120.0,
+                   max_tokens: int = 1024) -> dict:
+    """A real, unattended verdict via the Anthropic Messages API (Haiku-class
+    vision, ~1 cent per cover). Used where no harness and no KEEL exist — the
+    per-tenant cloud container. stdlib-only (urllib): the container must not
+    depend on `requests` for its perceptual gate."""
+    import base64
+    import urllib.request
+
+    key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not key:
+        return {"backend": "claude-api", "verdict": "PENDING", "issues":
+                ["ANTHROPIC_API_KEY not set — claude-api backend unavailable"],
+                "ocr": "", "image": str(image), "rubric": rubric}
+    model = os.environ.get("BOOKSMITH_VISION_MODEL", "claude-haiku-4-5-20251001")
+    media = "image/png" if image.suffix.lower() == ".png" else "image/jpeg"
+    b64 = base64.b64encode(image.read_bytes()).decode("ascii")
+    body = {
+        "model": model, "max_tokens": max_tokens,
+        "messages": [{"role": "user", "content": [
+            {"type": "image", "source": {"type": "base64",
+                                         "media_type": media, "data": b64}},
+            {"type": "text", "text":
+                rubric + "\n\nAnswer with ONLY a JSON object: "
+                         '{"verdict":"PASS"|"FAIL","issues":[...],"ocr":"..."}'},
+        ]}],
+    }
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"x-api-key": key, "anthropic-version": "2023-06-01",
+                 "content-type": "application/json"}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        content = "".join(b.get("text", "") for b in payload.get("content", [])
+                          if b.get("type") == "text")
+        out = parse_verdict(content)
+        out["backend"] = "claude-api"
+        out["model"] = model
+        return out
+    except Exception as exc:                                       # noqa: BLE001
+        # An unreachable verifier is PENDING (unadjudicated), never a PASS and
+        # never a build-killing FAIL — mirrors the C-21 liveness doctrine.
+        return {"backend": "claude-api", "verdict": "PENDING",
+                "issues": [f"claude-api call failed: {exc}"], "ocr": "",
+                "image": str(image), "rubric": rubric}
+
+
 def _resolve_auto_backend(config_path: Path) -> str:
     """Portable default: 'keel' only when kit_env.vision names a local server
     binary that actually exists on this machine AND requests is importable;
@@ -372,12 +426,15 @@ def main() -> int:
     ap.add_argument("--rubric", default="",
                     help="Rubric text file path OR inline rubric text. "
                          "Defaults to the wrap-verify checklist.")
-    ap.add_argument("--backend", choices=["auto", "keel", "claude"], default="auto",
+    ap.add_argument("--backend", choices=["auto", "keel", "claude", "claude-api"],
+                    default="auto",
                     help="auto (default) = keel when kit_env.vision names a local "
-                         "server binary that exists on this machine, else claude "
-                         "(the portable zero-setup path); "
+                         "server binary that exists on this machine, else "
+                         "claude-api when ANTHROPIC_API_KEY is set (unattended "
+                         "cloud verdict), else claude (hand to harness vision); "
                          "keel = local Qwen ($0 on-box); "
-                         "claude = resize + hand to harness vision.")
+                         "claude = resize + hand to harness vision; "
+                         "claude-api = real Anthropic Messages call (H0 A5).")
     ap.add_argument("--config", default=str(DEFAULT_KIT_ENV),
                     help="Path to kit_env.json (machine paths). "
                          "Default: kit_env.json next to this script.")
@@ -403,6 +460,16 @@ def main() -> int:
     backend = args.backend
     if backend == "auto":
         backend = _resolve_auto_backend(Path(args.config))
+        if backend == "claude" and os.environ.get("ANTHROPIC_API_KEY", "").strip():
+            # H0 A5: with a platform key present (the cloud container), the
+            # unattended API verdict beats the hand-to-harness PENDING envelope.
+            backend = "claude-api"
+
+    if backend == "claude-api":
+        result = run_claude_api(safe_image, rubric,
+                                timeout=args.timeout, max_tokens=args.max_tokens)
+        emit(result)
+        return 4 if result.get("verdict") == "PENDING" else 0
 
     if backend == "claude":
         emit(run_claude(safe_image, rubric))
