@@ -236,6 +236,18 @@ dashboard is UNVERIFIED (confirm-on-return is the primary paid-path and works wi
   wired but DORMANT until their secrets exist (CF_AI_TOKEN / ANTHROPIC_API_KEY on the runner —
   optional, config-gated). Dev rows BR-9UH2BV left in D1 like the sims. Still-owed human steps
   unchanged: Email-Sending zone enable + orders@ sender; Stripe live-webhook eyeball.
+- **H0.1 — THE EMAIL RAIL IS LIVE (2026-08-24 night, site worker `ef6cd3e5`): RESEND, not the
+  zone-enable.** Bo supplied a Resend API key; `bookraising.org` was ALREADY VERIFIED in the Resend
+  account (domain id c437a606…, DNS pre-done), so the long-owed Email-Sending zone enable is moot.
+  worker.js: `sendResend()` (throws on failure) + `sendMail` now Resend-first with the EMAIL
+  binding as fallback (still fail-open for receipts/ready-mail); `authRequest` magic-link sends
+  via Resend and keeps its fail-LOUD 502. Secret `RESEND_API_KEY` on the site worker (lesson-14
+  printf recipe; local dotfile `C:\Websites\bookraising\.resend_key` = the truth; the folder is
+  NOT a git repo). Proofs: direct API send accepted (id 6f776514…) + live `/api/auth/request`
+  through the deployed worker returned `{ok:true}` on the fail-loud path = a REAL sign-in mail
+  delivered. **Receipts, ready-mail, and magic-link re-entry are all live.** Remaining owed human
+  steps shrink to: Stripe live-webhook eyeball + ntfy subscription confirm. Pre-change snapshots:
+  `_backups/pre_resend_<ts>/` (worker.js, raise.html, wrangler.toml).
 - **Lesson 23 (the existence-cache class — bind it everywhere):** an "exists → skip" cache is only
   correct for immutable artifacts; the moment ANY verb can regenerate a key in place, the test must
   be "FRESH → skip" (mtime/sha), or the first rebuild serves build-#1 bytes forever. It bit TWICE
