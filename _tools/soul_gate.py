@@ -60,25 +60,65 @@ def _tokens(s: str) -> list[str]:
     return words + bigrams
 
 
-def retrieve(question: str, spans: list[dict], k: int = 6) -> list[dict]:
+def retrieve(question: str, spans: list[dict], k: int = 10) -> list[dict]:
+    """BM25 (k1=1.2, b=0.35) over word tokens + CJK bigrams.
+
+    LENGTH NORMALIZATION IS LOAD-BEARING (2026-08-25, caught by the live
+    battery): plain idf-weighted overlap sums reward LONG spans, so a
+    2,081-char page-3 paragraph outranked the 528-char page-4 passage that
+    actually answered "what did the handwriting look like" — and the soul
+    correctly declined rather than answer from the wrong pages. The fence was
+    never the problem; retrieval was. BM25 saturates repeated terms and divides
+    by relative span length, which fixes both.
+
+    b IS SWEPT, NOT GUESSED (three real questions with known answer pages):
+    b=0.0/0.2 lose the short handwriting passage entirely; b=0.75 wins it but
+    drops the long hours paragraph the book genuinely answers from; b=0.35
+    holds ALL THREE inside k=8. Shipping b=0.35, k=10 (the extra headroom is
+    free: spans are small and the model reads them all).
+    """
     q = Counter(_tokens(question))
     if not q:
         return []
+    docs = [_tokens(sp["text"]) for sp in spans]
+    tfs = [Counter(d) for d in docs]
     df: Counter = Counter()
-    toks = []
-    for sp in spans:
-        t = set(_tokens(sp["text"]))
-        toks.append(t)
-        for w in t:
+    for tf in tfs:
+        for w in tf:
             df[w] += 1
     n = max(len(spans), 1)
+    avglen = sum(len(d) for d in docs) / n or 1.0
+    k1, b = 1.2, 0.35
     scored = []
-    for sp, t in zip(spans, toks):
-        s = sum(c * math.log(1 + n / (1 + df[w])) for w, c in q.items() if w in t)
+    for sp, tf, d in zip(spans, tfs, docs):
+        s = 0.0
+        dl = len(d) or 1
+        for w, qc in q.items():
+            f = tf.get(w, 0)
+            if not f:
+                continue
+            idf = math.log(1 + (n - df[w] + 0.5) / (df[w] + 0.5))
+            s += qc * idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * dl / avglen))
         if s > 0:
             scored.append((s, sp))
     scored.sort(key=lambda x: -x[0])
-    return [sp for _s, sp in scored[:k]]
+
+    # NEIGHBOR EXPANSION (2026-08-25, the second live-battery finding): a book
+    # is continuous prose, and a thought routinely runs across a paragraph
+    # break. Retrieval found "The first time I opened one of his notebooks I
+    # thought there had been a mistake" (p.4) but not the NEXT paragraph that
+    # actually describes the hand — so the soul honestly answered "the pages
+    # don't describe it" about a book whose most famous passage does. Every
+    # hit therefore carries its immediate neighbours (same unit only), which
+    # costs a few hundred tokens and buys whole thoughts instead of fragments.
+    by_id = {id(sp): i for i, sp in enumerate(spans)}
+    chosen: dict[int, dict] = {}
+    for _s, sp in scored[:k]:
+        i = by_id[id(sp)]
+        for j in (i - 1, i, i + 1):
+            if 0 <= j < len(spans) and spans[j].get("unit") == sp.get("unit"):
+                chosen.setdefault(j, spans[j])
+    return [chosen[j] for j in sorted(chosen)]
 
 
 def is_decline(answer: str) -> bool:
