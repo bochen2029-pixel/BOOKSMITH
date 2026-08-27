@@ -245,8 +245,16 @@ function resolveSrc(config, cliSrc, wsRoot) {
 function resolveTypography(config) {
   const interior = config.interior || {};
   const bodyPt = num(interior.body_pt, 12);
+  // CJK editions: interior.body_font_latin pairs a Latin face with a CJK body
+  // face via split rFonts (ascii/hAnsi = Latin, eastAsia/cs = body). Absent the
+  // key, FONT stays a plain string and output is byte-identical to before.
+  const bodyName = str(interior.body_font, "Georgia");
+  const latinName = str(interior.body_font_latin, "");
   return {
-    FONT: str(interior.body_font, "Georgia"),
+    FONT: latinName
+      ? { ascii: latinName, hAnsi: latinName, eastAsia: bodyName, cs: bodyName }
+      : bodyName,
+    FONT_NAME: latinName ? `${latinName} + ${bodyName}` : bodyName,
     BODY_SIZE: bodyPt * 2,               // docx size is half-points
     BODY_LINE: num(interior.leading, 340),
     FIRST_INDENT: num(interior.first_line_indent, 360),
@@ -608,7 +616,7 @@ function midflowImageParagraph(midflow, relPath, tag) {
     console.warn(`[${tag}] mid-flow image unreadable (${ext}), skipped: ${relPath}`);
     return null;
   }
-  let wIn = Math.min(dims.w / MIDFLOW_DPI, midflow.widthIn);
+  let wIn = midflow.widthIn; // fill the full text-block width (up to the margins); the height clamp below protects tall/portrait figures
   let hIn = wIn * (dims.h / dims.w);
   if (hIn > MIDFLOW_MAX_H_IN) { wIn *= MIDFLOW_MAX_H_IN / hIn; hIn = MIDFLOW_MAX_H_IN; }
   const wPx = Math.round(wIn * 96);
@@ -976,11 +984,11 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
       lines.push("Any resemblance to actual events or persons, living or dead, is coincidental.");
       lines.push("");
     }
-    lines.push(`© 2026 ${author}. All rights reserved.`);
+    lines.push(str((config.strings || {}).copyright_line, `© 2026 ${author}. All rights reserved.`));
     lines.push("");
-    lines.push("First edition");
+    lines.push(str((config.strings || {}).first_edition_line, "First edition"));
     lines.push("");
-    lines.push(`Set in ${T.FONT}.`);
+    lines.push(str((config.strings || {}).set_in_line, `Set in ${T.FONT_NAME}.`));
     const kids = [];
     for (const cl of lines) {
       if (cl === "") { kids.push(new Paragraph({ spacing: { before: 120 } })); continue; }
@@ -1013,7 +1021,7 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
     const attribution = typeof epi === "string" ? "" : str(epi.attribution, "");
     const kids = text.split("\n").map((l) => new Paragraph({
       spacing: { after: 60 }, alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: l, font: T.FONT, size: 20, color: "666666", italics: true })],
+      children: [new TextRun({ text: l, font: T.FONT, size: 28, color: "222222", italics: true })],
     }));
     if (attribution) {
       // the em-dash prefix is a rendered character the source lint can never
@@ -1021,7 +1029,7 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
       const attrPrefix = (config.voice && config.voice.no_em_dashes === false) ? "— " : "";
       kids.push(new Paragraph({
         spacing: { before: 120, after: 200 }, alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: `${attrPrefix}${attribution}`, font: T.FONT, size: 18, color: "888888", italics: true })],
+        children: [new TextRun({ text: `${attrPrefix}${attribution}`, font: T.FONT, size: 22, color: "555555", italics: true })],
       }));
     }
     return kids;
@@ -1031,7 +1039,7 @@ function buildFrontMatterSections(config, T, PAGE_COMMON, emptyHeadersFooters) {
     const note = str(config.readers_note, "");
     const kids = [new Paragraph({
       spacing: { before: 1200, after: 400 }, alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: "A NOTE TO THE READER", font: T.FONT, size: 20, color: T.BODY_COLOR, characterSpacing: 40 })],
+      children: [new TextRun({ text: str((config.strings || {}).readers_note_heading, "A NOTE TO THE READER"), font: T.FONT, size: 20, color: T.BODY_COLOR, characterSpacing: 40 })],
     })];
     if (note) {
       for (const para of note.split("\n\n")) {
@@ -1199,9 +1207,9 @@ async function main() {
   const tocChildren = [
     new Paragraph({
       spacing: { before: 1800, after: 600 }, alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: "CONTENTS", font: T.FONT, size: 22, color: T.BODY_COLOR, characterSpacing: 60 })],
+      children: [new TextRun({ text: str((config.strings || {}).contents_heading, "CONTENTS"), font: T.FONT, size: 22, color: T.BODY_COLOR, characterSpacing: 60 })],
     }),
-    new TableOfContents("Table of Contents", {
+    new TableOfContents(str((config.strings || {}).toc_title, "Table of Contents"), {
       hyperlink: true,
       headingStyleRange: "1-1",
       stylesWithLevels: [new StyleLevel("Heading1", 1)],
@@ -1268,7 +1276,7 @@ async function main() {
         alignment: AlignmentType.CENTER,
         spacing: { before: 480, after: 360 },
         children: [new TextRun({
-          text: "ABOUT THE AUTHOR", font: T.FONT, size: 22,
+          text: str((config.strings || {}).about_author_heading, "ABOUT THE AUTHOR"), font: T.FONT, size: 22,
           color: T.BODY_COLOR, characterSpacing: 60,
         })],
       }),
@@ -1302,13 +1310,23 @@ async function main() {
   });
 
   // ---- Build the document ----
+  // CJK editions: tag the default run language East-Asian so Word's kinsoku
+  // line-breaking engages (without it a line can START with 。，” — seen on the
+  // first carlquist_zh render, 2026-08-12). No-op for non-zh configs.
+  // w:val is the LATIN language, NOT the East-Asian one (2026-08-14: tagging it zh-CN
+  // made Word classify ASCII as East Asian and render every Latin word from the eastAsia
+  // font, silently voiding interior.body_font_latin — caught by reading a rendered page's
+  // font names, invisible to every XML-level gate). eastAsia drives kinsoku; leave it zh-CN.
+  const eaLang = String(config.language || "").toLowerCase().startsWith("zh")
+    ? { value: "en-US", eastAsia: "zh-CN" }
+    : undefined;
   const doc = new Document({
     features: { updateFields: true },
     styles: {
       default: {
-        document: { run: { font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR } },
+        document: { run: { font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR, ...(eaLang ? { language: eaLang } : {}) } },
         heading1: {
-          run: { font: T.FONT, size: 28, color: T.BODY_COLOR },
+          run: { font: T.FONT, size: 28, color: T.BODY_COLOR, ...(eaLang ? { language: eaLang } : {}) },
           paragraph: { alignment: AlignmentType.CENTER },
         },
       },
@@ -1341,7 +1359,7 @@ async function main() {
               (blurb ? "  [Blurb bleed model: +0.125 W outer edge, +0.25 H]" : ""));
   console.log(`Margins (DXA)   : top=${margins.top} bottom=${margins.bottom} gutter=${margins.gutter} outside=${margins.outside}`);
   console.log(`Margins (in)    : top=${(margins.top/1440).toFixed(3)} bottom=${(margins.bottom/1440).toFixed(3)} gutter=${(margins.gutter/1440).toFixed(3)} outside=${(margins.outside/1440).toFixed(3)}`);
-  console.log(`Body            : ${T.BODY_SIZE/2}pt ${T.FONT}, leading ${T.BODY_LINE}, indent ${T.FIRST_INDENT} DXA, color #${T.BODY_COLOR}`);
+  console.log(`Body            : ${T.BODY_SIZE/2}pt ${T.FONT_NAME}, leading ${T.BODY_LINE}, indent ${T.FIRST_INDENT} DXA, color #${T.BODY_COLOR}`);
   console.log(`Unit noun       : ${unitNoun} (level "${unitLevel}")  |  units: ${unitContents.length}`);
   console.log(`Front-matter    : ${frontSections.length} section(s)  |  recto: ${recto}`);
   console.log(`Contents/TOC    : ${includeToc ? "included — title-case auto-TOC w/ dot leader (§16.3)" : "OMITTED (interior.include_toc=false)"}`);

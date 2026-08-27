@@ -533,6 +533,17 @@ def simple_page(lang, title, inner):
 
 def build(cfg: dict, master: Path, ws: Path, out_path: Path):
     lang = cfg.get("language", "en")
+    # Localized reader-facing strings (config.strings; absent keys fall back to
+    # the historical English literals so existing books build byte-identical).
+    S = cfg.get("strings") or {}
+    DT = S.get("epub_doc_titles") or {}
+    t_cover = DT.get("cover", "Cover")
+    t_titlepage = DT.get("title_page", "Title Page")
+    t_dedication = DT.get("dedication", "Dedication")
+    t_epigraph = DT.get("epigraph", "Epigraph")
+    t_copyright = DT.get("copyright", "Copyright")
+    t_contents = DT.get("contents", S.get("contents_heading", "Contents"))
+    t_about = DT.get("about", "About the Author")
     title = cfg["title"]
     subtitle = cfg.get("subtitle", "")
     author = cfg["author"]
@@ -557,8 +568,8 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
     if cover_src is not None:
         cover_ext = cover_src.suffix.lower().lstrip(".")
         cover_name = f"cover.{'jpg' if cover_ext in ('jpg', 'jpeg') else cover_ext}"
-        docs.append(("coverpage", "cover.xhtml", "Cover", simple_page(
-            lang, "Cover",
+        docs.append(("coverpage", "cover.xhtml", t_cover, simple_page(
+            lang, t_cover,
             f'<div class="coverwrap"><img class="cover" src="../images/{cover_name}" alt="{esc_attr(title)}"/></div>'),
             False))
     else:
@@ -570,23 +581,24 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         tp.append(f'<p class="subtitle centered">{esc(subtitle)}</p>')
     tp.append(f'<p class="author centered">{esc(author)}</p>')
     tp.append("</div>")
-    docs.append(("titlepage", "titlepage.xhtml", "Title Page",
-                 simple_page(lang, "Title Page", "\n".join(tp)), False))
+    docs.append(("titlepage", "titlepage.xhtml", t_titlepage,
+                 simple_page(lang, t_titlepage, "\n".join(tp)), False))
 
-    cp = ['<div class="copyright">',
-          f"<p>Copyright © {year} {esc(author)}. All rights reserved.</p>"]
+    copyright_line = (esc(S["copyright_line"]) if S.get("copyright_line")
+                      else f"Copyright © {year} {esc(author)}. All rights reserved.")
+    cp = ['<div class="copyright">', f"<p>{copyright_line}</p>"]
     if is_fiction:
         cp.append("<p>This is a work of fiction. Names, characters, places, and "
                   "incidents are the products of the author’s imagination or are "
                   "used fictitiously. Any resemblance to actual persons, living or "
                   "dead, events, or locales is entirely coincidental.</p>")
     cp.append("</div>")
-    docs.append(("copyright", "copyright.xhtml", "Copyright",
-                 simple_page(lang, "Copyright", "\n".join(cp)), False))
+    docs.append(("copyright", "copyright.xhtml", t_copyright,
+                 simple_page(lang, t_copyright, "\n".join(cp)), False))
 
     if cfg.get("dedication"):
-        docs.append(("dedication", "dedication.xhtml", "Dedication", simple_page(
-            lang, "Dedication",
+        docs.append(("dedication", "dedication.xhtml", t_dedication, simple_page(
+            lang, t_dedication,
             f'<div class="dedication"><p class="centered">{inline(cfg["dedication"])}</p></div>'),
             False))
 
@@ -597,19 +609,24 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         dash = "— " if (cfg.get("voice") or {}).get("no_em_dashes", True) is False else ""
         attr = (f'<p class="attribution centered">{dash}{inline(epi.get("attribution", ""))}</p>'
                 if epi.get("attribution") else "")
-        docs.append(("epigraph", "epigraph.xhtml", "Epigraph", simple_page(
-            lang, "Epigraph",
-            f'<div class="epigraph"><p class="centered">{inline(epi["text"])}</p>{attr}</div>'),
+        # multi-line epigraphs (e.g. bilingual editions) keep their line breaks,
+        # matching the DOCX generators' split-on-\n behavior
+        epi_html = "<br/>".join(inline(l) for l in str(epi["text"]).split("\n"))
+        docs.append(("epigraph", "epigraph.xhtml", t_epigraph, simple_page(
+            lang, t_epigraph,
+            f'<div class="epigraph"><p class="centered">{epi_html}</p>{attr}</div>'),
             False))
 
     if cfg.get("readers_note"):
         # print (generate_book.js readersNoteChildren) renders this; the EPUB
         # must too, or the editions diverge and parity drifts
         paras = [p.strip() for p in re.split(r"\n\s*\n", str(cfg["readers_note"])) if p.strip()]
-        inner = ('<div class="readersnote">\n<p class="centered">A NOTE TO THE READER</p>\n'
+        rn_head = S.get("readers_note_heading", "A NOTE TO THE READER")
+        rn_title = DT.get("readers_note", "A Note to the Reader") if not S.get("readers_note_heading") else S.get("readers_note_heading")
+        inner = (f'<div class="readersnote">\n<p class="centered">{rn_head}</p>\n'
                  + "\n".join(f"<p>{inline(p)}</p>" for p in paras) + "\n</div>")
-        docs.append(("readersnote", "readersnote.xhtml", "A Note to the Reader",
-                     simple_page(lang, "A Note to the Reader", inner), False))
+        docs.append(("readersnote", "readersnote.xhtml", rn_title,
+                     simple_page(lang, rn_title, inner), False))
 
     unit_ids = [u.get("id") for u in (cfg.get("units") or []) if isinstance(u, dict)]
     if unit_ids and len(units) != len(unit_ids):
@@ -649,12 +666,12 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
 
     if cfg.get("about_the_author"):
         paras = [p.strip() for p in re.split(r"\n\s*\n", cfg["about_the_author"]) if p.strip()]
-        inner = ('<section epub:type="backmatter">\n<h1 class="unit">About the Author</h1>\n'
+        inner = (f'<section epub:type="backmatter">\n<h1 class="unit">{t_about}</h1>\n'
                  + "\n".join(f"<p{' class=' + chr(34) + 'first' + chr(34) if i == 0 else ''}>{inline(p)}</p>"
                              for i, p in enumerate(paras))
                  + "\n</section>")
-        docs.append(("about", "about.xhtml", "About the Author",
-                     simple_page(lang, "About the Author", inner), True))
+        docs.append(("about", "about.xhtml", t_about,
+                     simple_page(lang, t_about, inner), True))
 
     # ---- package documents ----
     book_uuid = uuid.uuid5(uuid.NAMESPACE_URL, f"booksmith:{slug}:{title}:{author}")
@@ -710,10 +727,10 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
     nav = f"""<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="{lang}" lang="{lang}">
-<head><title>Contents</title><link rel="stylesheet" type="text/css" href="css/style.css"/></head>
+<head><title>{t_contents}</title><link rel="stylesheet" type="text/css" href="css/style.css"/></head>
 <body>
  <nav epub:type="toc" id="toc">
-  <h1>Contents</h1>
+  <h1>{t_contents}</h1>
   <ol>
 {nav_lis}
   </ol>
@@ -763,7 +780,7 @@ def build(cfg: dict, master: Path, ws: Path, out_path: Path):
         w("OEBPS/content.opf", opf)
         w("OEBPS/nav.xhtml", nav)
         w("OEBPS/toc.ncx", ncx)
-        w("OEBPS/css/style.css", CSS)
+        w("OEBPS/css/style.css", CSS + ("\n" + S["epub_css_extra"] + "\n" if S.get("epub_css_extra") else ""))
         if cover_name:
             z.write(str(cover_src), f"OEBPS/images/{cover_name}",
                     compress_type=zipfile.ZIP_DEFLATED)

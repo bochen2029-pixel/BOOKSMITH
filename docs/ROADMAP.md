@@ -180,6 +180,12 @@ sales → reinvestment into the next title. A **publishing business that runs it
 with the human as the taste-setter and the one who clicks "publish." Every step gated;
 nothing outward-facing happens without the sanctioned human confirm.
 
+> **2026-08-05 — a concrete instantiation captured:** Bo's cloud-SaaS direction (Cloudflare
+> Durable Objects / Project Think / `@cloudflare/computer` containers + Stripe metering + per-user
+> bookshelves + a public three.js shelf; DeepSeek/Kimi-K3/RunPod as the cloud model stack) is
+> written up with verified sources, the kit-capability mapping, risks, and phasing in
+> **`docs/CLOUD_HORIZON.md`**. Backlog note only — nothing started.
+
 ---
 
 ## 6 · Cross-cutting workstreams (run continuously across all horizons)

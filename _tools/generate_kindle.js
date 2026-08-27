@@ -112,8 +112,16 @@ function resolveOutPath(config, cliOut, wsRoot) {
 function resolveTypography(config) {
   const interior = config.interior || {};
   const bodyPt = num(interior.body_pt, 12);
+  // CJK editions: interior.body_font_latin pairs a Latin face with a CJK body
+  // face via split rFonts (ascii/hAnsi = Latin, eastAsia/cs = body). Absent the
+  // key, FONT stays a plain string and output is byte-identical to before.
+  const bodyName = str(interior.body_font, "Georgia");
+  const latinName = str(interior.body_font_latin, "");
   return {
-    FONT: str(interior.body_font, "Georgia"),
+    FONT: latinName
+      ? { ascii: latinName, hAnsi: latinName, eastAsia: bodyName, cs: bodyName }
+      : bodyName,
+    FONT_NAME: latinName ? `${latinName} + ${bodyName}` : bodyName,
     BODY_SIZE: bodyPt * 2,               // half-points
     BODY_LINE: num(interior.leading, 340),
     FIRST_INDENT: num(interior.first_line_indent, 360),
@@ -707,9 +715,9 @@ async function main() {
     copyrightLines.push("Any resemblance to actual events or persons, living or dead, is coincidental.");
     copyrightLines.push("");
   }
-  copyrightLines.push(`© 2026 ${author}. All rights reserved.`);
+  copyrightLines.push(str((config.strings || {}).copyright_line, `© 2026 ${author}. All rights reserved.`));
   copyrightLines.push("");
-  copyrightLines.push("First edition");
+  copyrightLines.push(str((config.strings || {}).first_edition_line, "First edition"));
   for (const cl of copyrightLines) {
     if (cl === "") { children.push(new Paragraph({ spacing: { before: 120 } })); continue; }
     children.push(new Paragraph({
@@ -764,7 +772,7 @@ async function main() {
     children.push(new Paragraph({ children: [new PageBreak()] }));
     children.push(new Paragraph({
       spacing: { before: 2000, after: 500 }, alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: "A NOTE TO THE READER", font: T.FONT, size: 22, color: T.BODY_COLOR, characterSpacing: 60 })],
+      children: [new TextRun({ text: str((config.strings || {}).readers_note_heading, "A NOTE TO THE READER"), font: T.FONT, size: 22, color: T.BODY_COLOR, characterSpacing: 60 })],
     }));
     for (const para of readersNote.split(/\n\s*\n/)) {
       const p = para.trim();
@@ -789,9 +797,9 @@ async function main() {
     children.push(new Paragraph({ children: [new PageBreak()] }));
     children.push(new Paragraph({
       spacing: { before: 2000, after: 600 }, alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: "CONTENTS", font: T.FONT, size: 24, color: T.BODY_COLOR, characterSpacing: 60 })],
+      children: [new TextRun({ text: str((config.strings || {}).contents_heading, "CONTENTS"), font: T.FONT, size: 24, color: T.BODY_COLOR, characterSpacing: 60 })],
     }));
-    children.push(new TableOfContents("Table of Contents", {
+    children.push(new TableOfContents(str((config.strings || {}).toc_title, "Table of Contents"), {
       hyperlink: true,
       headingStyleRange: "1-1",
       stylesWithLevels: [new StyleLevel("Heading1", 1)],
@@ -822,7 +830,7 @@ async function main() {
   children.push(new Paragraph({ children: [new PageBreak()] }));
   children.push(new Paragraph({
     spacing: { before: 2000, after: 600 }, alignment: AlignmentType.CENTER,
-    children: [new TextRun({ text: "ABOUT THE AUTHOR", font: T.FONT, size: 22, color: T.BODY_COLOR, characterSpacing: 60 })],
+    children: [new TextRun({ text: str((config.strings || {}).about_author_heading, "ABOUT THE AUTHOR"), font: T.FONT, size: 22, color: T.BODY_COLOR, characterSpacing: 60 })],
   }));
   const aboutText = str(config.about_the_author, "");
   const aboutParas = aboutText
@@ -838,13 +846,22 @@ async function main() {
   }
 
   // ---- Document: single section, uniform 1" margins, no print furniture ----
+  // CJK editions: East-Asian run language so downstream renderers apply CJK
+  // line-breaking (kinsoku); no-op for non-zh configs.
+  // w:val is the LATIN language, NOT the East-Asian one (2026-08-14: tagging it zh-CN
+  // made Word classify ASCII as East Asian and render every Latin word from the eastAsia
+  // font, silently voiding interior.body_font_latin — caught by reading a rendered page's
+  // font names, invisible to every XML-level gate). eastAsia drives kinsoku; leave it zh-CN.
+  const eaLang = String(config.language || "").toLowerCase().startsWith("zh")
+    ? { value: "en-US", eastAsia: "zh-CN" }
+    : undefined;
   const doc = new Document({
     features: { updateFields: includeToc },   // only a TOC field needs on-open fill (§7.2); off by default (§16.4)
     styles: {
       default: {
-        document: { run: { font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR } },
+        document: { run: { font: T.FONT, size: T.BODY_SIZE, color: T.BODY_COLOR, ...(eaLang ? { language: eaLang } : {}) } },
         heading1: {
-          run: { font: T.FONT, size: 32, color: T.BODY_COLOR },
+          run: { font: T.FONT, size: 32, color: T.BODY_COLOR, ...(eaLang ? { language: eaLang } : {}) },
           paragraph: { alignment: AlignmentType.CENTER },
         },
       },
@@ -869,7 +886,7 @@ async function main() {
   console.log(`Source markdown : ${srcPath}`);
   console.log(`Output          : ${outPath}`);
   console.log(`Size            : ${(buf.length / 1024).toFixed(1)} KB`);
-  console.log(`Body            : ${T.BODY_SIZE/2}pt ${T.FONT}, leading ${T.BODY_LINE}, color #${T.BODY_COLOR}`);
+  console.log(`Body            : ${T.BODY_SIZE/2}pt ${T.FONT_NAME}, leading ${T.BODY_LINE}, color #${T.BODY_COLOR}`);
   console.log(`Unit noun       : ${unitNoun} (Heading 1 for auto-TOC)`);
   console.log(`Furniture       : single section, 1" margins, NO page numbers/headers/mirror/versos`);
   console.log(`TOC             : ${includeToc ? "manual CONTENTS + hyperlinked field (kindle_include_toc=true)" : "OMITTED by default — Amazon auto-navs from Heading 1 (§16.4)"}`);
