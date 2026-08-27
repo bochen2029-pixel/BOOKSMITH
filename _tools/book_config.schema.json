@@ -43,6 +43,42 @@
       "default": "en",
       "description": "BCP-47 language tag for EPUB dc:language + xml:lang (read by build_epub.py). Defaults to 'en'."
     },
+    "passport": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Book-passport emission knobs (read by _tools/emit_passport.py; schema _tools/passport.schema.json v0.1). Optional; every field has a safe default.",
+      "properties": {
+        "public": {
+          "type": "boolean",
+          "default": false,
+          "description": "Privacy roster rule enforced in DATA: the public shelf refuses any passport without public:true. Only Bo's own public books ever set this."
+        },
+        "translation_of": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$",
+          "description": "Slug of the sibling-language master when this book is one half of an EN/ZH pair (the shelf renders pairs as one spine-pair)."
+        }
+      }
+    },
+    "strings": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Localized reader-facing strings for non-English/bilingual editions, read by generate_book.js, generate_kindle.js, and build_epub.py. EVERY key is optional; an absent key falls back to the historical English literal so existing books build byte-identical. additionalProperties stays true — this is a growing string table, extended per edition, never a rebuild.",
+      "properties": {
+        "copyright_line": { "type": "string" },
+        "first_edition_line": { "type": "string" },
+        "set_in_line": { "type": "string" },
+        "contents_heading": { "type": "string" },
+        "toc_title": { "type": "string" },
+        "readers_note_heading": { "type": "string" },
+        "epub_css_extra": { "type": "string", "description": "Extra CSS appended to the EPUB stylesheet (e.g. CJK font stacks / line-height)." },
+        "epub_doc_titles": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Per-document nav/page titles in the EPUB (cover, title_page, dedication, epigraph, copyright, contents, about, readers_note)."
+        }
+      }
+    },
     "math": {
       "type": "boolean",
       "description": "Explicit math-book flag for the residual-LaTeX gate (verify_build.py). Defaults to (is_fiction == false) when absent; set true to force the check for a fiction book with equations, or false to silence it for a $-bearing nonfiction book."
