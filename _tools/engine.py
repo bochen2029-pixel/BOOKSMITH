@@ -790,7 +790,22 @@ class Engine:
                 "is_text": p.suffix.lower() in text_ext,
                 "convertible": p.suffix.lower() in doc_ext,
             })
-        # 3) one relational digest per source (the model is a pure function)
+        # 3) one relational digest per source (the model is a pure function).
+        #    config.ingest.dag (or BOOKSMITH_INGEST_DAG=1) swaps in the scripted
+        #    gestalt DAG (ingest_dag.py - the G4 no-harness null): core read
+        #    WHOLE via a rolling synopsis, satellites digested AGAINST the core,
+        #    plus a synthesis pass. Flag off = the loop below, byte-identical.
+        use_dag = bool((self.cfg.get("ingest") or {}).get("dag")) or \
+            os.environ.get("BOOKSMITH_INGEST_DAG") == "1"
+        if use_dag and sources:
+            import ingest_dag
+            names = ingest_dag.run_dag(
+                self.ws, self.cfg, self.model, self._read_brief()[:4000], sources,
+                log=lambda **kw: self.log("ingest.dag", **kw))
+            manifest["digests"] = names
+            manifest["dag"] = True
+            save_json_atomic(canon / "_ingest.json", manifest)
+            return f"ingested {len(top)} source(s); {len(names)} digest(s) [gestalt DAG]"
         brief = self._read_brief()[:1500]
         used = set()
         for p in sources:

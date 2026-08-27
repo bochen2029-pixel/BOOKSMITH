@@ -166,6 +166,21 @@ schema-valid); **G** the INGEST stage (intake docs become relational digests + a
 manifest under GATE-1); **H** the keyless architect turn (the seed plan fulfilled
 over the disk bridge). No network, no key, no Word.
 
+## The gestalt ingest DAG (the G4 no-harness null)
+
+The classic ingest digests each source from a 6,000-char excerpt against the
+brief. `config.ingest.dag: true` (or `BOOKSMITH_INGEST_DAG=1`) swaps in
+`_tools/ingest_dag.py` — the CLAUDE.md §3 ingest topology as pure functions:
+the CORE source (named via `config.ingest.core`, else the largest) is read
+WHOLE through a rolling-synopsis window chain; every satellite is digested
+AGAINST that core synopsis (24K-char excerpts); a final synthesis pass emits
+order / tensions / holes. Outputs are ordinary `canon_refs/_digest_*.md`
+files (`_digest_00_core_synopsis.md` sorts first, `_digest_zz_synthesis.md`
+last) so `stage_seed` consumes them unchanged. Flag off = the classic loop,
+byte-identical. Offline proof: `python _tools/ingest_dag.py --selftest`.
+This lane is ARM-C of the pre-registered G4 blind side-by-side (does a
+scripted ingest read engine-flat next to a session's gestalt ingest?).
+
 ## What is proven vs. what a real run adds
 
 The smoke test + a real-book `verify` stage run prove the whole mechanical spine:

@@ -60,6 +60,15 @@
         }
       }
     },
+    "ingest": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Ingest-stage knobs. dag:true swaps the classic per-source digest loop for the scripted gestalt DAG (_tools/ingest_dag.py - core read whole via rolling synopsis, satellites digested against the core, synthesis pass; the G4 no-harness null). Default false = byte-identical classic path.",
+      "properties": {
+        "dag": { "type": "boolean", "default": false },
+        "core": { "type": "string", "description": "Filename (within intake/ or intake/converted/) of the CORE source; absent, the largest source by words is the core." }
+      }
+    },
     "strings": {
       "type": "object",
       "additionalProperties": true,
