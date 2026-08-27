@@ -6,7 +6,10 @@
 import { Container, getContainer } from "@cloudflare/containers";
 
 const ALPHA_FLOOR_USD = 10.0;               // max model spend per ticket (revisable constant)
-const WORST_RATE_USD_PER_MTOK = 0.87;       // deepseek-v4-pro output rate = worst case
+// DeepSeek repriced 2026-08-17 with a peak/off-peak split (peak 01:00-04:00 +
+// 06:00-10:00 UTC Mon-Fri = 2x off-peak). The floor divides by the PEAK v4-pro
+// output rate so the ceiling is honest at any hour a build may run.
+const WORST_RATE_USD_PER_MTOK = 3.96;       // deepseek-v4-pro PEAK output (off-peak 1.98; pre-08-17 was 0.87)
 const ALPHA_FLOOR_TOKENS = Math.floor((ALPHA_FLOOR_USD / WORST_RATE_USD_PER_MTOK) * 1_000_000);
 
 export class BooksmithP0 extends Container<Env> {
