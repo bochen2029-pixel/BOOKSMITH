@@ -384,6 +384,7 @@ def compile_blacklist(blacklist: list) -> tuple:
     """Split the config blacklist into (case_sensitive, case_insensitive, regex)
     tiers. Returns three lists of (needle_or_pattern, label)."""
     cs, ci, rx = [], [], []
+    cs_rx, ci_rx = [], []   # bare entries, compiled with word boundaries
     for raw in blacklist:
         entry = str(raw).strip()
         if not entry:
@@ -410,12 +411,37 @@ def compile_blacklist(blacklist: list) -> tuple:
             except re.error as exc:
                 print(f"[warn] bad blacklist regex {pat!r}: {exc}", file=sys.stderr)
             continue
-        # Heuristic: a phrase containing an uppercase letter is a proper-noun
-        # style term → case-sensitive; otherwise case-insensitive.
+        # 2026-09-03: a bare entry means THE WORD, not any occurrence of those
+        # letters. Substring matching halted a real paid build: blacklist "dry"
+        # fired inside "laundry" and "drying rack" across three chapters of clean
+        # prose. Short bare words are false-positive generators (sundry, foundry,
+        # dryer). The explicit regex forms (`regex:` and `/.../`) remain the way to
+        # ask for anything looser.
+        #
+        # Boundaries use ASCII LOOKAROUNDS, never \b. Python's \w includes CJK, so
+        # \b between two Chinese characters is NOT a boundary; a \b-based fix would
+        # have silently switched the voice gate OFF for the 46 CJK blacklist terms
+        # in the Chinese books. An assertion is added ONLY on an edge whose char is
+        # ASCII [A-Za-z0-9_], so CJK terms, the '-' dash entries, 'TL;DR' and
+        # 'Moreover,' all keep their previous behaviour exactly.
+        #
+        # A trailing '*' means STEM: left-bounded prefix, so 'delve*' still catches
+        # delved/delving as the old substring did.
+        stem = entry.endswith("*")
+        core = entry[:-1] if stem else entry
+        if not core:
+            continue
+        pat = re.escape(core)
+        if re.match(r"[A-Za-z0-9_]", core[0]):
+            pat = r"(?<![A-Za-z0-9_])" + pat
+        if not stem and re.search(r"[A-Za-z0-9_]\Z", core):
+            pat = pat + r"(?![A-Za-z0-9_])"
         if any(c.isupper() for c in entry):
-            cs.append((entry, f"blacklist (case-sensitive) {entry!r}"))
+            cs_rx.append((re.compile(pat), f"blacklist (case-sensitive) {core!r}"))
         else:
-            ci.append((entry.lower(), f"blacklist {entry!r}"))
+            ci_rx.append((re.compile(pat, re.I), f"blacklist {core!r}"))
+    # bare entries now live in the regex tier; cs/ci stay for any future literal use
+    rx = list(rx) + cs_rx + ci_rx
     return cs, ci, rx
 
 

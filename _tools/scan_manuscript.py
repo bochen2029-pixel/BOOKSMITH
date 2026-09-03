@@ -40,6 +40,17 @@ PLACEHOLDER_PATTERNS = [
     ("warn_bracket", re.compile(r"\[[^\]]*[" + WARN_GLYPHS + r"][^\]]*\]")),
     ("bo_writes", re.compile(r"\[BO-WRITES", re.I)),
     ("todo_bracket", re.compile(r"\[(TODO|TK|TBD|XXX|FIXME|PLACEHOLDER|INSERT|TBA)\b", re.I)),
+    # F-GYM-01 (2026-09-03, found by the gym witness suite on its first run):
+    # mustache/template tokens. cloud/shim.py already scrubs these via
+    # TEMPLATE_TOKEN_RE because the seed model echoes placeholders MID-LINE
+    # (seen live, BR-QC0816), but this pre-build gate was blind to them, so an
+    # unfilled {{AUTHOR_NAME}} passed the gate whose stated job is 'zero
+    # placeholders' and would ship inside a produced book. Same regex as the
+    # shim, deliberately, so the two layers agree.
+    # False-positive risk is bounded: _prose_only() blanks fenced code blocks
+    # AND inline `code`/$math$ spans before this runs, so a book that
+    # legitimately shows template syntax in a code span is unaffected.
+    ("mustache", re.compile(r"\{\{[^{}\n]*\}\}")),
     ("instr_caps", re.compile(r"AT LINE-READ|NAME AND CREDENTIAL|WITH CONSENT, AT")),
     ("angle_stub", re.compile(r"<[A-Za-z][A-Za-z0-9 _-]{2,40}>")),
     ("fill_blank", re.compile(r"_{3,}")),
