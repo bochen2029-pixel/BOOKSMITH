@@ -52,9 +52,31 @@ by name — never an arbitrary executor) onto the P0 image; `worker/` is the thi
 possible Worker + `@cloudflare/containers` binding (bearer-token gated, one instance,
 scale-to-zero after 15m idle).
 
+> ### ⚠ BUMPING THE IMAGE IS TWO EDITS, AND THE SECOND ONE ORPHANS LIVE WORKSPACES
+>
+> `wrangler.toml`'s `image = ...:aNN` is **not** the switch. The runner names each
+> container `ticket-<ID>-aNN` (`src/index.ts`), and **the instance name is the
+> container's identity**. Bump only the image tag and every existing ticket keeps its
+> warm old container, so the new image is never used. Proven live 2026-09-03: the
+> lint fix was pushed as `a14`, a stalled build was re-run, and it failed on the
+> identical old-image finding.
+>
+> Bump the suffix too and the tickets get **new, empty containers**. A workspace lives
+> INSIDE its container, and `archiveWorkspace` runs only on the **ready** flip, so any
+> ticket that is briefing / outlining / building / **stalled** loses its workspace.
+> That is how BR-33J879's four drafted chapters were orphaned.
+>
+> **THE RULE:** bump `image` and the `-aNN` instance suffix together, and before you
+> do, check the desk (`/desk`) for in-flight tickets. Finished books are safe (their
+> outputs and workspace are archived in R2 and served container-independently);
+> anything not `ready` is not.
+
 ```bash
 docker build -t booksmith-cf:p0 -f cloud/Dockerfile.cf <staged-tree>
 npx wrangler containers push booksmith-cf:p0        # (Windows: --path-to-docker <docker bridge>)
+# BOTH of these, together:
+#   cloud/worker/wrangler.toml : image = ".../booksmith-cf:aNN"
+#   cloud/worker/src/index.ts  : `ticket-${m[1]}-aNN` and "runner-aNN"
 cd cloud/worker && npm install && npx wrangler deploy
 printf "%s" "<token>" | npx wrangler secret put DEMO_TOKEN
 curl -H "Authorization: Bearer <token>" -X POST https://<worker>.workers.dev/run/smoketest

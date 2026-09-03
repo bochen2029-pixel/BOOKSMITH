@@ -881,3 +881,54 @@ from the sidecars, or it is a wish.
 not that the output LOOKS right.* Perceptual gates catch ugly. They do not catch counterfeit.
 Ask any new node: "if this silently fell back, what would go red?" If the answer is nothing, it is
 unheld, no matter what the matrix claims.
+
+
+---
+
+## 22. CONTAINER IMAGE ROLLOUT + THE FAILURE-CASE ARCHIVE GAP (2026-09-03, live incident)
+
+*Found while shipping the word-bounded blacklist fix to production, on the night a
+paying customer's build stalled.*
+
+### 22.1 Symptom: a pushed image has no effect
+**Symptom.** `booksmith-cf:a14` built, pushed (digest verified), `wrangler.toml`
+bumped, runner deployed. A stalled build re-run failed on the *identical* finding the
+new image fixes (`blacklist 'thing'` matching inside "something").
+
+**Cause.** `cloud/worker/src/index.ts` names containers `ticket-<ID>-a13`. The
+**instance name is the container's identity**, so every existing ticket kept its warm
+a13 container. The image tag in `wrangler.toml` decides what a *new* instance pulls;
+it cannot migrate a live one.
+
+**Fix.** Bump the `-aNN` suffix in `src/index.ts` in the same change as the image tag
+in `wrangler.toml`. Neither alone is a rollout. Now warned inline in the
+`cloud/README.md` push block.
+
+### 22.2 Symptom: bumping the suffix destroys in-flight books
+**Symptom.** After the suffix bump, a stalled ticket's four drafted chapters were gone;
+its fresh container reported `rc=None` and an empty tail.
+
+**Cause.** A workspace lives INSIDE its container. `archiveWorkspace` runs **only on
+the ready flip** (`apiStatus`, the `next === "ready"` branch), so `briefing`,
+`outlining`, `building` and **`stalled`** tickets have nothing in R2 to restore from.
+**The one case where the workspace matters most is the only case that discards it.**
+
+**Fix (procedure).** Check `/desk` for in-flight tickets before any suffix bump.
+Finished books are safe: outputs and workspace are archived under `tickets/<id>/` and
+served R2-first, container-independently (verified: an 8-file ready book downloaded
+fine across the bump).
+
+**Fix (code, NOT YET DONE - backlog).** Archive the workspace on the **stalled** flip
+as well as ready. Cost is R2 storage for books nobody downloads; the benefit is that a
+failed build stays diagnosable and restartable after its container is evicted. Two
+related gaps found the same night, both still open:
+- `apiStatus` short-circuited on `stalled` and never asked the runner *why* (FIXED).
+- the engine's token ledger is surfaced only while the container lives; per-book cost
+  is never persisted, so every completed book silently discards its own unit economics.
+
+### 22.3 The general rule
+A fix to `_tools/*.py` in the working tree **reaches no customer**. The engine runs
+from the container image, which is built from `git archive HEAD`. To ship a gate fix:
+commit it, stage the public tree, rebuild both images, push, bump image + instance
+suffix together, deploy. Prove the behaviour *inside* the image before pushing
+(`docker run --rm booksmith-cf:aNN python -c ...`) rather than trusting the file copy.
