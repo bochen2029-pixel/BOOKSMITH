@@ -99,6 +99,9 @@ _handoff/
 #     is the operator's ad-hoc working copy of the same tool — local only. ---
 _tools/chunker/_*_chunks/
 /chunker/
+# chunk output written beside a source doc (<name>.chunks/, e.g. docs/*.chunks/):
+# regenerable slices of that doc, never the source of truth (2026-09-24)
+*.chunks/
 
 # --- intake drop zone (2026-08-02): contents are per-book private source and
 #     never ship; only the drop-zone README is tracked. Prior builds' intake
@@ -155,3 +158,6 @@ openworker-main/
 openworker-main.zip
 _tools/cover_compose_drdj.py
 *TEMPsmoke_ws_path.txt
+# family working folders (2026-09-24): the parents' unpublished books (EN + ZH,
+# Word + PDF), life digests and voice feedback; private, never in the public tree
+_family_holistic_*/
