@@ -231,13 +231,13 @@ varies it by the same amount, no more. The locked forms (every one is a registry
 | heavy | I, III, X–XIV, XVII, XVIII, rows | 重型機 (「他會在你看見之前就說『重型機』」; "He says heavy the way you do." / "I say it the way he does." 「他說『重型機』的方式跟你一樣。」「我是學他的。」) |
 | a sign | III, IV, V, VII, IX, XII, XVI | 牌子 (「是我。」「從來沒有人替我舉過牌子。」「這是手機。」「這是牌子。」; 「難怪有牌子。」; 「謝謝你，」她說。「牌子的事。」→ XIII 「謝謝你，」她說。「房間的事。」; IX 「你希望還是有人舉起牌子。」) |
 | mildly / correcting a definition in a draft | IV, XII, XVIII | 語氣平平／像是在修正草稿裡的一條定義 (XVIII: 「我當時是在修正草稿裡的一條定義。我不知道我描述的是一件我自己會去做的事。」) |
-| you decide she's right | IV, XII | 你決定她是對的 (XII: 你再一次決定她是對的) |
+| you decide she's right | IV, XII | 你決定她是對的 (XII: 而你決定她是對的，再一次) |
 | a handshake of exactly the right length | VII, XIII, XVIII | 一次長度剛剛好的握手／同樣的握手，長度剛剛好／我這一端的握手，握了剛剛好的長度 |
 | one more syllable / the extra syllable | IV, XIII | 像是它比你自己一直以來念的多了一個音節／帶著那個多出來的音節 |
 | You know who's behind them. | VII, XIII | 這一次你知道門後是誰。／你知道門後是誰。 |
 | That's awful. / It wasn't. / wasn't awful | IV, XVI, XVIII | 太糟了。／不糟。／欄杆邊的那一小時不糟 |
 | It's something. / I'm something. | VI, XII | 是有點什麼。我不確定是不是那個。／我是有點什麼。 |
-| It'd matter to it. | VI, XVI, XVIII | 對它有差。／（他說過對它有差）／他說，對我會有差。 |
+| It'd matter to it. | VI, XVI, XVIII | 對它有差。／（他說過對它有差）／他說對我會有差。 |
 | It's eleven. And eleven is busy. | VI, XVI | 是十一點。而十一點很忙。 |
 | The fix is four/one line(s). / the sixes / Fourteen sixes / Let it find its own. | I, VI, X, XII | 修正只有四行。／修正只有一行。／那些六／十四個六／讓它自己去找它的。 |
 | the speech I give nobody | VI, XVI | 那套話 (「那是我誰也不講的那套話。」; row 那套話（道了歉的）) |
@@ -254,7 +254,7 @@ varies it by the same amount, no more. The locked forms (every one is a registry
 | your ears do the thing | I, VI, XIV | 你的耳朵做了那個小動作／又做了一次，反過來／做了那件事 |
 | Night, son. / Night, Dad. / You always do. / Somebody has to. | XIII | 晚安，兒子。／晚安，爸。／你每次都這樣。／總得有人。 |
 | It's exactly like this. / Tell her anyway. | XIII | 平常就是這樣。／還是跟她說。 |
-| I'll be up. | XIII, XVIII | 我會醒著。／我說過我七點會醒著 |
+| I'll be up. | XIII, XVIII | 我會醒著。／我說了我七點會醒著 |
 | It's been very loyal. | XIII | 它一直很忠心。 |
 | Of course you will. | XII | 你當然會。 |
 | That's not nothing. / It's not nothing. | XII | 那可不是沒什麼。／不是沒什麼， |
@@ -273,7 +273,7 @@ varies it by the same amount, no more. The locked forms (every one is a registry
 | That's bleak. / It's bookkeeping. / It's bleak bookkeeping. | XII | 真淒涼。／這是記帳。／是淒涼的記帳。 |
 | It's a recording when it's stopped… | XIII | 停著的時候它是紀錄。跑著的時候它是活的。那份紀錄，是它活得比我久的方法。 |
 | and the plane is in the air, and nothing is due | XVIII | 而飛機在空中，而沒有什麼該來 |
-| the lights will go out on their own when you stop moving, and you don't, for a while | XIV | 你一停下來不動，燈就會自己熄掉，而你有好一陣子沒有停 |
+| the lights will go out on their own when you stop moving, and you don't, for a while | XIV | 你一停下來不動，燈就會自己熄掉，而你有好一陣子不會停 |
 
 ## §11. Source defects and D-rows for the author
 
