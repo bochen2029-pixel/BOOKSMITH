@@ -641,7 +641,7 @@
     "id": "G.core",
     "tier": "M",
     "forms": [
-     "核心區"
+     "市中心"
     ],
     "en": "\\bout of the core\\b"
    },
@@ -1027,7 +1027,7 @@
     "id": "R.loiter",
     "tier": "M",
     "forms": [
-     "逗留比較便宜"
+     "賴著比較便宜"
     ],
     "en": "\\bcheaper to loiter\\b"
    },
@@ -1223,7 +1223,7 @@
     "id": "R.professionalinterest",
     "tier": "M",
     "forms": [
-     "專業的興趣"
+     "專業的"
     ],
     "en": "\\bprofessional interest\\b"
    }
@@ -5048,7 +5048,7 @@
     "id": "R.exceptthat",
     "tier": "M",
     "forms": [
-     "除了這個"
+     "就這個不知道"
     ],
     "en": "\\beverything about it except that\\b"
    }
@@ -5116,7 +5116,7 @@
     "id": "R.appalled",
     "tier": "M",
     "forms": [
-     "難以置信"
+     "錯愕"
     ],
     "en": "\\bappalled\\b"
    }
@@ -6928,7 +6928,7 @@
     "id": "R.hiseyes",
     "tier": "M",
     "forms": [
-     "他的眼睛"
+     "眼睛的關係"
     ],
     "en": "\\bhis eyes\\b"
    },
@@ -7173,7 +7173,7 @@
     "id": "R.cheapreliable",
     "tier": "M",
     "forms": [
-     "完全可靠"
+     "完全靠得住"
     ],
     "en": "\\bcompletely reliable\\b"
    },
@@ -7585,7 +7585,7 @@
     "id": "R.nickel",
     "tier": "M",
     "forms": [
-     "鎳幣"
+     "鎳的顏色"
     ],
     "en": "\\bnickel\\b"
    },
@@ -7806,7 +7806,7 @@
     "id": "R.goodatit",
     "tier": "M",
     "forms": [
-     "看她把這件事做得很好"
+     "看她多擅長這件事"
     ],
     "en": "\\bwatched her be good at it\\b"
    },
@@ -8076,7 +8076,7 @@
     "id": "R.hardedged",
     "tier": "M",
     "forms": [
-     "稜角分明"
+     "輪廓變硬"
     ],
     "en": "\\bhard-edged\\b"
    }
@@ -8960,7 +8960,7 @@
     "id": "R.sleephalf",
     "tier": "M",
     "forms": [
-     "睡眠那一半"
+     "睡著的那一半"
     ],
     "en": "\\bthe sleep half\\b"
    },
@@ -11205,7 +11205,7 @@
     "id": "R.asifanswer",
     "tier": "M",
     "forms": [
-     "彷彿那是一個答案，而它是"
+     "像那是一個答案，而它就是"
     ],
     "en": "\\bas if that were an answer, and it is\\b"
    }
