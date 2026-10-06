@@ -20,7 +20,7 @@ R.notsad	=	=	这些都谈不上悲伤	這些都談不上悲傷	=	=	R13 (the cell
 R.takesher	=	\btakes her\b ;; @except ch_11.013	带走她	帶走她	=	=	R17/R24: 門轉動，帶走她; XI "takes her a moment" is not the door
 R.listing	=	=	歪	歪	=	=	R15 (ch_08): 歪在那個輪子上; the row hints the verb only
 R.goout	=	=	你一停下来不动，灯就会自己熄掉	你一停下來不動，燈就會自己熄掉	=	=	R23: the XIV close as charter §10 gives it (ch_14 worker, moderator agrees)
-R.forawhile2	=	=	而你有好一阵子没有停	而你有好一陣子沒有停	=	=	R23: "and you don't, for a while"
+R.forawhile2	=	=	而你有好一阵子不会停	而你有好一陣子不會停	=	=	R23/R29: "and you don't, for a while" looks forward (SEAMS_B)
 R.podcast	=	\bpodcast\b ;; @accept Podcast	=	=	=	=	R24: Taiwan print capitalizes Podcast (charter §7)
 R.aplane	=	\bA plane\b ;; @except ch_11.036,ch_12.036	=	=	=	=	R24: "what a plane is" is not the reply "A plane."
 T.fahrenheit	=	\b(?:degrees|79, 71, 64, 57)\b ;; @except ch_10.008	=	=	=	=	R24: 華氏 once per scene (charter §6): X .003 carries it, .008 is bare 度
@@ -40,3 +40,8 @@ R.cantakeback	=	=	收回不了	收回不了	=	=	R27: 它收回不了的那些時
 R.paidforitself	=	=	值回了成本	值回了成本	=	=	R27: the split 值回了成本 (XII .005), not the calque 值回了自己
 R.tothebit	=	=	收到一个比特都不差	收到一個位元都不差	=	=	R27: the charter line 把一件事收回來，收到一個位元都不差 (XII .048)
 F.commit	=	=	先把预测定下来	先把預測定下來	=	=	R27: "Commit the forecast before the turn" (XII .117)
+R.marblehush	=	=	大理石和寂静	大理石和寂靜	=	=	R28: hush is not the row token 靜 (SEAMS_A)
+R.norowforit	=	=	那件事没有一笔	那件事沒有一筆	=	=	R29: "it" is the not-awful hour, not the field (XVIII .005, SEAMS_B BLOCK)
+R.whatsitfor	=	=	它是为了什么	它是為了什麼	=	=	R29: the question that 不為什麼 answers (XII .027)
+R.promisedtexas	=	=	答应我的是得州	答應我的是德州	=	=	R29: 「他們答應我的是德州。」, no catchphrase, no particle (X .008)
+R.weekwent	=	=	像顺利的一周都会过的那样	像順利的一週都會過的那樣	=	=	R29: the X opener reads on a first pass (SEAMS_B)

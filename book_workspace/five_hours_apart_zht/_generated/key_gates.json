@@ -3577,7 +3577,7 @@
     "id": "R.norowforit",
     "tier": "M",
     "forms": [
-     "沒有一筆是它的"
+     "那件事沒有一筆"
     ],
     "en": "\\bThere isn't a row for it\\b"
    },
@@ -7774,7 +7774,7 @@
     "id": "R.weekwent",
     "tier": "M",
     "forms": [
-     "順利的一週都是這麼過的"
+     "像順利的一週都會過的那樣"
     ],
     "en": "\\bthe way weeks go when they go well\\b"
    },
@@ -7864,7 +7864,7 @@
     "id": "R.promisedtexas",
     "tier": "M",
     "forms": [
-     "說好的德州呢"
+     "答應我的是德州"
     ],
     "en": "\\bI was promised Texas\\b"
    }
@@ -11106,7 +11106,7 @@
     "id": "R.whatsitfor",
     "tier": "H",
     "forms": [
-     "它是做什麼用的"
+     "它是為了什麼"
     ],
     "en": "\\bWhat's it for\\b"
    }
@@ -13152,7 +13152,7 @@
     "id": "R.marblehush",
     "tier": "M",
     "forms": [
-     "大理石和靜"
+     "大理石和寂靜"
     ],
     "en": "\\bmarble and hush\\b"
    }
@@ -13747,7 +13747,7 @@
     "id": "R.forawhile2",
     "tier": "H",
     "forms": [
-     "而你有好一陣子沒有停"
+     "而你有好一陣子不會停"
     ],
     "en": "\\band you don't, for a while\\b"
    },
