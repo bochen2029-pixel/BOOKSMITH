@@ -161,3 +161,8 @@ _tools/cover_compose_drdj.py
 # family working folders (2026-09-24): the parents' unpublished books (EN + ZH,
 # Word + PDF), life digests and voice feedback; private, never in the public tree
 _family_holistic_*/
+
+# --- five_hours_apart: the English source workspace + its two translated editions (2026-10-06) ---
+!book_workspace/five_hours_apart/
+!book_workspace/five_hours_apart_zht/
+!book_workspace/five_hours_apart_zhs/

@@ -1,0 +1,157 @@
+{
+  "title": "Five Hours Apart",
+  "subtitle": "A hypothetical, in three parts",
+  "author": "Bo Chen",
+  "slug": "five_hours_apart",
+  "genre": "literary fiction / short story",
+  "is_fiction": true,
+  "language": "en",
+  "formats": [
+    "digital_pdf",
+    "epub",
+    "kindle",
+    "kdp_paperback"
+  ],
+  "trim": {
+    "w": 6,
+    "h": 9
+  },
+  "paper": "cream",
+  "finish": "matte",
+  "min_pages": 1,
+  "units": [
+    {
+      "id": "front",
+      "title": "Five Hours Apart",
+      "class": "A"
+    },
+    {
+      "id": "part_1",
+      "title": "Part One · Five Hours Apart",
+      "class": "A"
+    },
+    {
+      "id": "ch_01",
+      "title": "I. Forty-One",
+      "class": "A"
+    },
+    {
+      "id": "ch_02",
+      "title": "II. Stemmons",
+      "class": "A"
+    },
+    {
+      "id": "ch_03",
+      "title": "III. International Parkway",
+      "class": "A"
+    },
+    {
+      "id": "ch_04",
+      "title": "IV. The Doors",
+      "class": "A"
+    },
+    {
+      "id": "ch_05",
+      "title": "V. Carpenter Freeway",
+      "class": "A"
+    },
+    {
+      "id": "ch_06",
+      "title": "VI. Forty-Eight",
+      "class": "A"
+    },
+    {
+      "id": "ch_07",
+      "title": "VII. Elm Street",
+      "class": "A"
+    },
+    {
+      "id": "ch_08",
+      "title": "VIII. Four in the Morning",
+      "class": "A"
+    },
+    {
+      "id": "ch_09",
+      "title": "IX. Stemmons, Again",
+      "class": "A"
+    },
+    {
+      "id": "part_2",
+      "title": "Part Two · Nothing Is Due",
+      "class": "A"
+    },
+    {
+      "id": "ch_10",
+      "title": "X. Norther",
+      "class": "A"
+    },
+    {
+      "id": "ch_11",
+      "title": "XI. The Smallest Room",
+      "class": "A"
+    },
+    {
+      "id": "ch_12",
+      "title": "XII. The Tape",
+      "class": "A"
+    },
+    {
+      "id": "ch_13",
+      "title": "XIII. Departures",
+      "class": "A"
+    },
+    {
+      "id": "ch_14",
+      "title": "XIV. Forty-One, Again",
+      "class": "A"
+    },
+    {
+      "id": "part_3",
+      "title": "Part Three · Say",
+      "class": "A"
+    },
+    {
+      "id": "ch_15",
+      "title": "XV. Body",
+      "class": "A"
+    },
+    {
+      "id": "ch_16",
+      "title": "XVI. Room",
+      "class": "A"
+    },
+    {
+      "id": "ch_17",
+      "title": "XVII. Gears",
+      "class": "A"
+    },
+    {
+      "id": "ch_18",
+      "title": "XVIII. Open",
+      "class": "A"
+    }
+  ],
+  "authorship": {
+    "default_class": "A",
+    "per_chapter_overrides": {}
+  },
+  "voice": {
+    "unit_noun": "chapter",
+    "exemplars_path": "exemplars/",
+    "blacklist": [],
+    "greenlist": [],
+    "sacred_terms": [
+      "heavy",
+      "nothing is due",
+      "earned its keep",
+      "carve",
+      "knot",
+      "quiet",
+      "frontier",
+      "lane",
+      "rent",
+      "the odd week"
+    ],
+    "no_em_dashes": false
+  }
+}

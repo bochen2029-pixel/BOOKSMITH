@@ -1,0 +1,253 @@
+{
+  "frozen_at": "2026-10-06T20:19:01+00:00",
+  "source_of_record": "_translation/source_of_record.md",
+  "sha256": "63438c99becde26a5870e5f5fc02c1cb089e9a053f8f5e40465292dfc775ba4d",
+  "units": [
+    {
+      "unit": "front",
+      "segments": 3,
+      "words": 19,
+      "types": {
+        "h1": 1,
+        "italic": 1,
+        "code": 1
+      },
+      "sha256": "7fbe6efb5cf0e06d49bc0492b24db987172c42fa5d0673c4cebf33df3b88680a"
+    },
+    {
+      "unit": "part_1",
+      "segments": 1,
+      "words": 7,
+      "types": {
+        "h1": 1
+      },
+      "sha256": "4da8f42cc8d3f3d6519e4ee490bb4b2d0375c10f6f665823d780a57480181323"
+    },
+    {
+      "unit": "ch_01",
+      "segments": 15,
+      "words": 796,
+      "types": {
+        "h2": 1,
+        "para": 14
+      },
+      "sha256": "d8521ffdba48e8f93a17f3cf5cee4cb2a9700e8771b8fc5ea8dafc7570d15000"
+    },
+    {
+      "unit": "ch_02",
+      "segments": 16,
+      "words": 947,
+      "types": {
+        "h2": 1,
+        "para": 13,
+        "quote": 1,
+        "dialogue": 1
+      },
+      "sha256": "95f252b3e12d51ccb43ef14f418d10f042f2c74aa85b5a64ebaefbdaffbb39d3"
+    },
+    {
+      "unit": "ch_03",
+      "segments": 15,
+      "words": 984,
+      "types": {
+        "h2": 1,
+        "para": 14
+      },
+      "sha256": "f5f1b45e8c78709a2c83093ca13523d40bb546112c0204abd1bf4f0c766f79b5"
+    },
+    {
+      "unit": "ch_04",
+      "segments": 20,
+      "words": 423,
+      "types": {
+        "h2": 1,
+        "para": 8,
+        "dialogue": 11
+      },
+      "sha256": "280e57cb6a18515a800b69fc9ebba942d0dec2ef382d56ff32fcaee9cf0e333e"
+    },
+    {
+      "unit": "ch_05",
+      "segments": 36,
+      "words": 557,
+      "types": {
+        "h2": 1,
+        "para": 9,
+        "dialogue": 26
+      },
+      "sha256": "6c84013a1ddc112b4e46fa2424c366c8c4e62cba83610956114e6cab6882958b"
+    },
+    {
+      "unit": "ch_06",
+      "segments": 89,
+      "words": 1819,
+      "types": {
+        "h2": 1,
+        "para": 25,
+        "dialogue": 63
+      },
+      "sha256": "c83061d77ca10c1d700783d0b2301da11938805d9aef4a5f5fc292e0dec18628"
+    },
+    {
+      "unit": "ch_07",
+      "segments": 24,
+      "words": 405,
+      "types": {
+        "h2": 1,
+        "para": 8,
+        "dialogue": 15
+      },
+      "sha256": "43e284c914e4c0dbd1e3f4d0c3c16b6196475745dbf5004ffc361ad25d481635"
+    },
+    {
+      "unit": "ch_08",
+      "segments": 7,
+      "words": 249,
+      "types": {
+        "h2": 1,
+        "para": 6
+      },
+      "sha256": "7390bbdd5bcd71cdc1b44e7c1de6d1c61a8100625b600afd54de04c22d8a7a72"
+    },
+    {
+      "unit": "ch_09",
+      "segments": 8,
+      "words": 394,
+      "types": {
+        "h2": 1,
+        "para": 7
+      },
+      "sha256": "ebd001dad025e50f49812934eb621a28b0e39724d64fff5b538ed312a26026f6"
+    },
+    {
+      "unit": "part_2",
+      "segments": 1,
+      "words": 7,
+      "types": {
+        "h1": 1
+      },
+      "sha256": "66eaf66ded169d1286b7609de5cc26117274ed20d17b398e88a902a2c331bef6"
+    },
+    {
+      "unit": "ch_10",
+      "segments": 21,
+      "words": 591,
+      "types": {
+        "h2": 1,
+        "para": 7,
+        "dialogue": 13
+      },
+      "sha256": "4d7724fab216428c44ec2453f5dec439401995da78e34f7b7ff712d46a1d6f57"
+    },
+    {
+      "unit": "ch_11",
+      "segments": 49,
+      "words": 1153,
+      "types": {
+        "h2": 1,
+        "para": 13,
+        "dialogue": 35
+      },
+      "sha256": "aec85d4a31cb12ce73881f9bc6e7940d92dbaa9cd165541460652403f1ed5e5e"
+    },
+    {
+      "unit": "ch_12",
+      "segments": 125,
+      "words": 2486,
+      "types": {
+        "h2": 1,
+        "para": 25,
+        "code": 7,
+        "dialogue": 92
+      },
+      "sha256": "819858d45359c7b9b7f5911900840c7445962e3bf5be0b77023182b4094567b3"
+    },
+    {
+      "unit": "ch_13",
+      "segments": 41,
+      "words": 646,
+      "types": {
+        "h2": 1,
+        "para": 11,
+        "dialogue": 29
+      },
+      "sha256": "28e8e10715c9b144189ed0d0f585e513cc35b9328a7864aa813ab5c734642ef2"
+    },
+    {
+      "unit": "ch_14",
+      "segments": 12,
+      "words": 432,
+      "types": {
+        "h2": 1,
+        "para": 9,
+        "code": 2
+      },
+      "sha256": "37abb642d26c96e4f18b1165288fe016435959a4cbb77344ea6ab249d61ccaae"
+    },
+    {
+      "unit": "part_3",
+      "segments": 1,
+      "words": 5,
+      "types": {
+        "h1": 1
+      },
+      "sha256": "ecd200aef1227077515e194eb66716f0a06039673189764a414c30fa5b96db97"
+    },
+    {
+      "unit": "ch_15",
+      "segments": 6,
+      "words": 293,
+      "types": {
+        "h2": 1,
+        "para": 2,
+        "code": 3
+      },
+      "sha256": "777eabd211d5688304da4d18cca47b5b7f7d847e709b9d8f0223246d3903a213"
+    },
+    {
+      "unit": "ch_16",
+      "segments": 6,
+      "words": 335,
+      "types": {
+        "h2": 1,
+        "code": 5
+      },
+      "sha256": "7af94b31591b6dd664ec86c1e87a395f96926f4a41a740ed41a884ffc32e4804"
+    },
+    {
+      "unit": "ch_17",
+      "segments": 7,
+      "words": 353,
+      "types": {
+        "h2": 1,
+        "code": 6
+      },
+      "sha256": "79d27fba8f3cad427ac6f8eeeadc169321baa2395053f2ad03eb7f3bdaa9ad1f"
+    },
+    {
+      "unit": "ch_18",
+      "segments": 12,
+      "words": 569,
+      "types": {
+        "h2": 1,
+        "code": 3,
+        "italic": 5,
+        "para": 3
+      },
+      "sha256": "464160e1a5ad5ee482ee39aacbd7765b48180e366dee221934b467eb071e6cca"
+    }
+  ],
+  "segments_total": 515,
+  "words_total": 13470,
+  "types_total": {
+    "code": 27,
+    "dialogue": 285,
+    "h1": 4,
+    "h2": 18,
+    "italic": 6,
+    "para": 174,
+    "quote": 1
+  },
+  "intake_identical": true,
+  "intake_sha256": "63438c99becde26a5870e5f5fc02c1cb089e9a053f8f5e40465292dfc775ba4d"
+}
