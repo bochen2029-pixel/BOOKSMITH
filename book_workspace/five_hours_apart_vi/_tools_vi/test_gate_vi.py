@@ -33,10 +33,12 @@ def run(unit, text, segs, reg):
 
 # (name, unit, old, new): one defect the book gate must catch; the old text must occur in the clean unit
 BOOK_DEFECTS = [
-    ("wrapped row quote broken", "ch_16", "hay mucho movimiento", "hay movimiento"),
-    ("echo broken in the prose", "ch_04", "—Es un celular.", "—Es un teléfono."),
-    ("refrain dropped", "ch_08", "y nada está por llegar", "y nada más"),
-    ("closing row off the opening", "ch_18", "sobre el agua  abierta", "sobre el agua  abierto"),
+    ("wrapped row quote broken", "ch_16", "                       là hạ cánh.”", "                       là hạ xuống.”"),
+    ("echo broken in the prose", "ch_04", "– Đó là cái điện thoại.", "– Đó là chiếc điện thoại."),
+    ("refrain dropped", "ch_08", "và chẳng có gì sắp đến.", "và không còn gì nữa."),
+    ("closing row off the opening", "ch_18", "trên mặt nước  mở", "trên mặt nước  mở ra"),
+    ("prose echo drifted", "ch_14", "Các xa lộ trắng về phía anh", "Các xa lộ sáng trắng về phía anh"),
+    ("one wording drifted (R.likeanything)", "ch_18", "có cái gì mang cảm giác gì không", "có gì giống gì không"),
 ]
 
 

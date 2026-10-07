@@ -141,7 +141,8 @@ III/IX the tired arm is one phrase ("mỏi tay, anh đổi tay" / "mỏi tay, đ
 I .007 the tower is a building at dusk; III .013 the father's present tense ("Bố anh bảo là tại mắt"); the train is
 a light-rail train ("tàu điện"); the hotel door is one revolving door ("cửa xoay"); "the council" (X) is II's review
 council; the windowsill is "bậu cửa sổ" at every site; "anything is like anything for it" (VI .055, XVIII .006) is
-one wording: "liệu với nó, có điều gì giống như một điều gì không" (es R18: the literal form is opaque; say it plainly).
+one wording: "liệu với nó, có cái gì mang cảm giác gì không" (es R18: the literal form is opaque; say it plainly; the
+registry row R.likeanything holds both sites).
 
 ## §13. Forbidden and warned forms (gate)
 

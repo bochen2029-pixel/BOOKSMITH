@@ -27,13 +27,17 @@ REFRAIN = "chẳng có gì sắp đến"
 # line, because the prose may close the speech with an attribution ("– Tôi đây, – cô nói."); a row quote that wraps is
 # rejoined.
 ECHOES = [
-    ("ch_16", "ch_04", "Soy yo"), ("ch_16", "ch_04", "Nunca me habían esperado con un letrero"),
-    ("ch_16", "ch_04", "Es un celular"), ("ch_16", "ch_04", "Es un letrero"), ("ch_16", "ch_04", "No lo fue"),
-    ("ch_16", "ch_06", "Son las once. Y a las once hay mucho movimiento"),
-    ("ch_16", "ch_06", "A eso le importaría"), ("ch_16", "ch_12", "Nada esta semana"), ("ch_16", "ch_12", "No sé"),
-    ("ch_16", "ch_12", "Me preguntaste por qué el aterrizaje"),
-    ("ch_16", "ch_09", "una lista de notas es verdad sobre una canción"),
-    ("ch_17", "ch_01", "Digamos que es un martes"),
+    ("ch_16", "ch_04", "Tôi đây"), ("ch_16", "ch_04", "Chưa từng có ai cầm biển đón tôi"),
+    ("ch_16", "ch_04", "Đó là cái điện thoại"), ("ch_16", "ch_04", "Đó là tấm biển"), ("ch_16", "ch_04", "Không hề"),
+    ("ch_16", "ch_06", "Là mười một giờ. Mà mười một giờ thì đông"),
+    ("ch_16", "ch_06", "Với nó thì có quan trọng"), ("ch_16", "ch_12", "Tuần này thì không có gì"),
+    ("ch_16", "ch_12", "Tôi không biết"), ("ch_16", "ch_12", "Cô đã hỏi tại sao lại là hạ cánh"),
+    ("ch_16", "ch_09", "một dãy nốt nhạc là thật về một bài hát"),
+    ("ch_17", "ch_01", "Cứ cho đó là một ngày thứ Ba"),
+    # the prose echoes the book returns to (charter §11): I/XIV the freeways, I/XVIII the odd week, XII/XVIII the room
+    ("ch_14", "ch_01", "Các xa lộ trắng về phía anh và đỏ ở chiều ngược lại"),
+    ("ch_18", "ch_01", "trong tuần cuối cùng của tháng Mười, cái tuần lệch"),
+    ("ch_18", "ch_12", "căn phòng nhỏ nhất mà công ty thuê"),
 ]
 
 
