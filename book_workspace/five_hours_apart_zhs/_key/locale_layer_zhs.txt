@@ -106,13 +106,15 @@ re:(?<![\w])栅栏	道闸
 排程	排期
 傳訊息	发消息
 傳訊	发消息
+# the registry pass (O.text 訊→消息) runs before this layer, so 傳訊 and 傳訊息 arrive here as 传消息
+传消息	发消息
 訊息	消息
 簡訊	短信
 想像	想象
 重播	回放
 Podcast	播客
 # --- names and places that differ beyond script (the registry pass carries the rest) ---
-艾瑞絲	艾丽斯
+艾瑞絲	艾丽丝
 黛娜	达娜
 克耳文	开尔文
 科斯特利茲	科斯特利茨
@@ -162,10 +164,40 @@ forbid:识别证	工牌
 forbid:束带	扎带
 forbid:登机门	登机口
 forbid:进场	进近 (approach); 进场 on the mainland is entering a venue
-forbid:艾瑞丝	艾丽斯
+forbid:艾瑞丝	艾丽丝
 forbid:黛娜	达娜
 forbid:克耳文	开尔文
 forbid:沃斯堡	沃思堡
 forbid:希斯洛	希思罗
 forbid:里兹	利兹
 forbid:德州	得州
+# --- mainland review 2026-10-07 (_qa/MAINLAND.md): measure words, Taiwan colloquialisms, the UI verb for scrolling ---
+整台车	整辆车
+另一台车	另一辆车
+一支手机	一部手机
+一支电量剩	一部电量只剩
+一颗硬盘	一块硬盘
+一颗气球	一个气球
+一间餐厅	一家餐厅
+那间酒店	那家酒店
+最近有找到什么好的吗	最近有没有找到什么好的
+就被资遣	就被辞退
+喀	咔嗒
+七〇年代	七十年代
+re:卷(?=动|过|到)	滚
+re:往(上|下)卷	往\1滚
+灯号一变	信号灯一变
+re:有差(?!别)	有区别
+排期上用我的名字	排期表上用的是我的名字
+forbid:艾丽斯	艾丽丝 (Xinhua's 艾丽斯 is Alice)
+forbid:有差(?!别)	有区别 (有差 is Taiwan colloquial)
+forbid:台车	辆车 (a car takes 辆)
+forbid:支手机	部手机
+forbid:颗(?=硬盘|气球)	块 / 个
+forbid:(?<=[一那这])间(?=餐厅|酒店)	家
+forbid:(?<!没)有找到	有没有找到 / 找到了
+forbid:资遣	辞退
+forbid:喀	咔嗒
+forbid:〇年代	十年代
+forbid:卷(?=动|过|到)	滚 (scrolling)
+forbid:灯号	信号灯

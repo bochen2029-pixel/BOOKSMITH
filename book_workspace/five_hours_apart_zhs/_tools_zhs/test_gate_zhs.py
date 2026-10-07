@@ -4,7 +4,7 @@
   python3 _tools_zhs/test_gate_zhs.py [--dir translation/current] [--suffix .md] [--unit ch_16]
 
 Takes one derived unit that PASSES, then mutates it one defect at a time (corner quotes, ASCII quotes, 您, a Taiwan
-residue, a traditional-only character, a broken heading, merged blocks, a dropped machine token, a removed H form)
+residue, a traditional-only character, a broken heading, merged blocks, a dropped machine token, a row shifted off its column, a removed H form)
 and asserts the gate FAILS each one. Exit 1 if any case misbehaves.
 """
 import io
@@ -67,6 +67,11 @@ def main():
         rows = blocks[ci].split("\n")
         if len(rows) > 3:
             cases.append(("dropped row", with_block(ci, "\n".join(rows[:1] + rows[2:])), 1))
+        for k in range(1, len(rows) - 1):
+            if "  " in rows[k]:
+                shifted = rows[:k] + [rows[k].replace("  ", "   ", 1)] + rows[k + 1:]
+                cases.append(("row shifted off its column", with_block(ci, "\n".join(shifted)), 1))
+                break
     # remove every occurrence of one H form that the text carries
     done = False
     for i in prose:

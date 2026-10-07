@@ -9,6 +9,7 @@ copy of the Taiwan edition's translation/current), then
   3. the locale layer _key/locale_layer_zhs.txt in file order (tw<TAB>hans; '#' comments; a key may be written in
      either script, it is normalised through tw2s; a line 're:<regex><TAB>repl' is a regex rule),
   4. punctuation: 「」 -> “ ”, 『』 -> ‘ ’ (prose and rows alike),
+  5. rows: every fenced row block re-padded to the zh-Hant block's columns (rows_zhs.py),
 and write translation/drafts/<unit>_v<N>.md; with --publish also translation/current/<unit>.md.
 Prints every replacement it made so a reviewer can read them in their sentence.
 
@@ -28,6 +29,8 @@ WS = os.path.dirname(HERE)
 ZHT = os.path.join(os.path.dirname(WS), "five_hours_apart_zht")
 sys.path.insert(0, os.path.join(ZHT, "_tools_zht"))
 import zht_common as C  # noqa: E402
+sys.path.insert(0, HERE)
+import rows_zhs  # noqa: E402
 
 TW2SP = opencc.OpenCC("tw2sp")
 TW2S = opencc.OpenCC("tw2s")
@@ -89,7 +92,8 @@ def convert(text, rmap, rules, log):
         parts[i] = re.sub(r"([㐀-鿿，。：、])[ ]+(?=[A-Za-z0-9])", r"\1", parts[i])
         parts[i] = re.sub(r"(?<=[A-Za-z0-9])[ ]+([㐀-鿿，。：、])", r"\1", parts[i])
         parts[i] = re.sub(r"(?<=[㐀-鿿，。：、！？；“”])[ ]+(?=[㐀-鿿“”])", "", parts[i])
-    return "".join(parts)
+    # the rows: a cell that changed width (发消息 for 傳訊) must not drag the columns after it out of line
+    return rows_zhs.realign(text, "".join(parts), log)
 
 
 def next_draft(drafts, unit):

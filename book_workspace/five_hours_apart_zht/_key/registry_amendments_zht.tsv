@@ -61,3 +61,6 @@ R.asifanswer	=	=	像那是一个答案，而它就是	像那是一個答案，�
 R.tower_dusk	=	=	黄昏时一栋高楼的窗一盏盏亮起	黃昏時一棟高樓的窗一盞盞亮起	=	=	R33: towers are 高樓 (R21), the office tower of VI included
 R.derrick	=	=	钢制井架	鋼製井架	=	=	R33: the derrick keeps the oil-company image of VI
 R.therebefore	=	=	它比你先在那里	它比你先在那裡	=	=	R34: presence, not arrival, so 「它一直都在。」 escalates it (BACKDIFF_B)
+P.iris	=	=	艾丽丝	艾瑞絲	=	=	R35: CN 艾丽丝 per GT_NAMES (Xinhua keeps 艾丽斯 for Alice); the key had carried 艾丽斯
+P.iris_rows	=	=	艾丽丝	艾瑞絲	=	=	R35: the rows name her as the prose does
+A.runways1718	=	=	17号和18号跑道	一七和一八跑道	=	=	R35: mainland prose numbers runways with 号

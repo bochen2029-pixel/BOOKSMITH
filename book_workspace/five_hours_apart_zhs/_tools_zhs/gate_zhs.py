@@ -6,7 +6,7 @@
 
 The zh-Hant gate's structure checks (parity, headings, rows, tokens, floor), with the mainland key: the registry's
 zh-Hans forms, “ ” quotes, no Traditional-only characters, no Taiwan residue the locale layer names as forbidden,
-您 nowhere, the refrain 没有什么该来 as often as the source says "nothing is due", the cross-unit echoes.
+您 nowhere, the rows set in the zh-Hant columns (rows_zhs.py), the refrain 没有什么该来 as often as the source says "nothing is due", the cross-unit echoes.
 """
 import json
 import os
@@ -25,7 +25,7 @@ TRADITIONAL_ONLY = set("這麼們國時說為會對還來發東車門問間開�
                        "總結進統繼續動態術語氣權體驗務業產資質軟單價報標題類義論議設計劃層級據庫號灣幾個號辦廳廠")
 ECHOES = [
 ("ch_16", "ch_04", "不糟"),     ("ch_16", "ch_04", "从来没有人替我举过牌子"), ("ch_16", "ch_04", "这是手机"), ("ch_16", "ch_04", "这是牌子"),
-    ("ch_16", "ch_04", "是我"), ("ch_16", "ch_06", "是十一点。而十一点很忙"), ("ch_16", "ch_06", "对它有差"),
+    ("ch_16", "ch_04", "是我"), ("ch_16", "ch_06", "是十一点。而十一点很忙"), ("ch_16", "ch_06", "对它有区别"),
     ("ch_16", "ch_12", "这星期没有"), ("ch_16", "ch_12", "你问过为什么是降落"),
     ("ch_16", "ch_09", "一张音符清单对一首歌来说是真的"), ("ch_17", "ch_01", "假设这是一个星期二"),
     ("front", "ch_18", "预期   重型机  海上   未闭"),
@@ -34,6 +34,17 @@ ECHOES = [
 
 sys.path.insert(0, HERE)
 from convert_zhs import convert, registry_map, locale_layer  # noqa: E402
+import rows_zhs as R  # noqa: E402
+
+_TW = {}
+
+
+def tw_blocks(unit):
+    """The zh-Hant blocks this unit derives from (the hash-verified copy in _zht_ref/)."""
+    if unit not in _TW:
+        p = os.path.join(WS, "_zht_ref", "translation_current", unit + ".md")
+        _TW[unit] = C.blocks(C.read(p)) if os.path.exists(p) else []
+    return _TW[unit]
 
 
 def _variants(form):
@@ -136,6 +147,10 @@ def gate(unit, text, segs, gates, headings, residue, allowed, quiet=False):
             missing = [tok for tok in C.code_tokens(s["text"]) if tok not in t]
             if missing:
                 fails.append("TOKENS  %s: missing %s" % (sid, ", ".join(sorted(set(missing)))))
+            tw = tw_blocks(unit)
+            if i < len(tw):
+                for iss in R.check(tw[i], t):
+                    fails.append("ROWALIGN %s: %s" % (sid, iss))
             continue
         if st == "quote" and not t.startswith(">"):
             fails.append("QUOTE   %s" % sid)

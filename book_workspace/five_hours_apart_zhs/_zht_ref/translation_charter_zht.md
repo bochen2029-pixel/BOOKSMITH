@@ -231,13 +231,13 @@ varies it by the same amount, no more. The locked forms (every one is a registry
 | heavy | I, III, X–XIV, XVII, XVIII, rows | 重型機 (「他會在你看見之前就說『重型機』」; "He says heavy the way you do." / "I say it the way he does." 「他說『重型機』的方式跟你一樣。」「我是學他的。」) |
 | a sign | III, IV, V, VII, IX, XII, XVI | 牌子 (「是我。」「從來沒有人替我舉過牌子。」「這是手機。」「這是牌子。」; 「難怪有牌子。」; 「謝謝你，」她說。「牌子的事。」→ XIII 「謝謝你，」她說。「房間的事。」; IX 「你希望還是有人舉起牌子。」) |
 | mildly / correcting a definition in a draft | IV, XII, XVIII | 語氣平平／像是在修正草稿裡的一條定義 (XVIII: 「我當時是在修正草稿裡的一條定義。我不知道我描述的是一件我自己會去做的事。」) |
-| you decide she's right | IV, XII | 你決定她是對的 (XII: 你再一次決定她是對的) |
+| you decide she's right | IV, XII | 你決定她是對的 (XII: 而你決定她是對的，再一次) |
 | a handshake of exactly the right length | VII, XIII, XVIII | 一次長度剛剛好的握手／同樣的握手，長度剛剛好／我這一端的握手，握了剛剛好的長度 |
 | one more syllable / the extra syllable | IV, XIII | 像是它比你自己一直以來念的多了一個音節／帶著那個多出來的音節 |
 | You know who's behind them. | VII, XIII | 這一次你知道門後是誰。／你知道門後是誰。 |
 | That's awful. / It wasn't. / wasn't awful | IV, XVI, XVIII | 太糟了。／不糟。／欄杆邊的那一小時不糟 |
 | It's something. / I'm something. | VI, XII | 是有點什麼。我不確定是不是那個。／我是有點什麼。 |
-| It'd matter to it. | VI, XVI, XVIII | 對它有差。／（他說過對它有差）／他說，對我會有差。 |
+| It'd matter to it. | VI, XVI, XVIII | 對它有差。／（他說過對它有差）／他說對我會有差。 |
 | It's eleven. And eleven is busy. | VI, XVI | 是十一點。而十一點很忙。 |
 | The fix is four/one line(s). / the sixes / Fourteen sixes / Let it find its own. | I, VI, X, XII | 修正只有四行。／修正只有一行。／那些六／十四個六／讓它自己去找它的。 |
 | the speech I give nobody | VI, XVI | 那套話 (「那是我誰也不講的那套話。」; row 那套話（道了歉的）) |
@@ -254,7 +254,7 @@ varies it by the same amount, no more. The locked forms (every one is a registry
 | your ears do the thing | I, VI, XIV | 你的耳朵做了那個小動作／又做了一次，反過來／做了那件事 |
 | Night, son. / Night, Dad. / You always do. / Somebody has to. | XIII | 晚安，兒子。／晚安，爸。／你每次都這樣。／總得有人。 |
 | It's exactly like this. / Tell her anyway. | XIII | 平常就是這樣。／還是跟她說。 |
-| I'll be up. | XIII, XVIII | 我會醒著。／我說過我七點會醒著 |
+| I'll be up. | XIII, XVIII | 我會醒著。／我說了我七點會醒著 |
 | It's been very loyal. | XIII | 它一直很忠心。 |
 | Of course you will. | XII | 你當然會。 |
 | That's not nothing. / It's not nothing. | XII | 那可不是沒什麼。／不是沒什麼， |
@@ -273,7 +273,7 @@ varies it by the same amount, no more. The locked forms (every one is a registry
 | That's bleak. / It's bookkeeping. / It's bleak bookkeeping. | XII | 真淒涼。／這是記帳。／是淒涼的記帳。 |
 | It's a recording when it's stopped… | XIII | 停著的時候它是紀錄。跑著的時候它是活的。那份紀錄，是它活得比我久的方法。 |
 | and the plane is in the air, and nothing is due | XVIII | 而飛機在空中，而沒有什麼該來 |
-| the lights will go out on their own when you stop moving, and you don't, for a while | XIV | 你一停下來不動，燈就會自己熄掉，而你有好一陣子沒有停 |
+| the lights will go out on their own when you stop moving, and you don't, for a while | XIV | 你一停下來不動，燈就會自己熄掉，而你有好一陣子不會停 |
 
 ## §11. Source defects and D-rows for the author
 
@@ -376,3 +376,7 @@ runs the gate, fixes, promotes to `translation/current/<unit>.md`, and writes `_
 | R29 | 2026-10-06 | QA round 1, Parts Two and Three (SEAMS_B): 「那件事沒有一筆。」 (XVIII, the referent of "it"); the close of XIV looks forward, 而你有好一陣子不會停 (R.forawhile2); 「它是為了什麼？」 answered by 「不為什麼。」 (XII); 「他們答應我的是德州。」 (X); 那間飯店 one measure word for the hotel (II, X); 「一個人，認為原子是流體裡打的結。」 (XI); 標了名的點 without the sheet's 一片 (XII); 很粗略 for "very coarse" (XII); 「朝一座城市，它到那裡的時候，這裡天還黑著。」 (XIV). Kept: the author's — as the null in XVI's depth row. |
 | R30 | 2026-10-06 | Rows audit (ROWS): "hold one open" carries the row word, 「我看過它讓一個三個小時都沒閉合。」 (XII); "held at the edge" 維持在邊緣 (XV); "blind up" is a state in row and prose alike, 遮陽板升著 (XVII, XVIII); the clocks' "gap 5 h" is 隔 5 h, echoing the title (XVII); the §9 token table is read with: text = 傳訊 (verb), window seat = 靠窗的座位, the XVI edge row says 第六層 as the English spells it, and the fork C row quotes 「假設這是一個星期二…」 with the one-cell … of a machine token (the §9 list's 「……」 is superseded). Six row blocks in XV, XVI, XVII realigned, whitespace only. |
 | R31 | 2026-10-06 | QA round 1, Taiwan register (REGISTER_TW, 80 findings; 74 applied, 6 kept): English frames unpacked into spoken Taiwanese (知道歸知道; 喜歡到跟誰都解釋不清; 她的口音有北方的底子; 你還沒來得及決定什麼，身體就先注意到; 久到你聽得見自己剛剛做了什麼), English pronouns dropped where Chinese drops them (the ears, the fans, the sensors), 被 removed where Chinese names the agent (有人等到了人; 那架飛機上有個人，有人在等), measure words by the Chinese noun (兩扇門, 一個鍵盤, 一個駕駛盤, 一套油門桿組), feeling words corrected (錯愕 for appalled, 便宜 for cheap, 賴著 for loiter), 市中心 for the core, 鎳的顏色, 七點五十二分 read as the clock shows it (III), and the hint rows caught up. Kept against the findings: the thought being thought (II .016, the author's thinker-less passive), 把閒聊這種語言的詞用完了 (R28), 他們答應我的是德州 (R29), 朝一座城市，它到那裡的時候 (R29), 開始看得出來 (VI), 那件事沒有一筆 (R29). |
+| R32 | 2026-10-06 | P6 full read by the moderator (all 22 units, aligned with the English, then as continuous Chinese): the text holds; two lines fixed, 「一件倫敦大衣，不適合這裡」 (IV) and the terminal doors 滑開又關上 (XIII). Confirmed faithful and kept: XIII .021 (the narrator keeps speaking after 她看著你, as in the English), 七七七 beside 737 (the English's own word/digit split), 「8:14 它來了」 (the author's digits in speech), 他指過的地方 (VIII, the author's). |
+| R33 | 2026-10-06 | Blind back-translation diff, Part One (BACKDIFF_A; 1 BLOCK, 18 FIX checked against the current text, most already fixed by R28–R31): 「我可以看看那匹馬嗎？」 (VI, her own request, not a joint one); 一棟高樓的窗 (I, towers are 高樓); 他現在晚上不開車了 (III, the father is alive and the English is present tense); 有那麼一下 for "for a moment" (VI); 鋼製井架 for the steel derrick (VII, the oil-company image). Kept: 語氣平平 (R9), 很嚮往 (R9), 大致了解, 耳朵會不會塞住, 談不上悲傷 (R13), the row tokens of the front row, 沒關係 for "That's fine", 商業街, the Mid-Cities gloss (D5). |
+| R34 | 2026-10-07 | Blind back-translation diff, Parts Two and Three (BACKDIFF_B, by the moderator after the assistant stopped on a usage limit): one open finding, "It was there before you were" is presence, 「它比你先在那裡。」 (XII), so 「它一直都在。」 escalates it; everything else the back-translation flagged was already fixed by R29–R33 or is locked. |
+| R35 | 2026-10-07 | zh-Hans column only, from the mainland review (../five_hours_apart_zhs/_qa/MAINLAND.md): Iris is 艾丽丝 in the mainland edition, as GT_NAMES found (Xinhua keeps 艾丽斯 for Alice), P.iris and P.iris_rows amended; the runways are 17号和18号跑道. No zh-Hant form changes. |
