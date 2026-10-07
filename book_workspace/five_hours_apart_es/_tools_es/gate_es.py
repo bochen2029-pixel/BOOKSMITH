@@ -23,15 +23,45 @@ import rows_es as R  # noqa: E402
 
 FLOOR, CEILING = 0.75, 1.9
 REFRAIN = "nada está por llegar"
-# (quoting unit, quoted unit, the line both must carry verbatim): the rows quote the prose
+# (quoting unit, quoted unit, the words both must carry verbatim): the rows quote the prose. No closing period in the
+# line, because the prose may close the speech with a raya ("—Soy yo —dice—."); a row quote that wraps is rejoined.
 ECHOES = [
-    ("ch_16", "ch_04", "Soy yo."), ("ch_16", "ch_04", "Es un celular."), ("ch_16", "ch_04", "Es un letrero."),
-    ("ch_16", "ch_04", "No lo fue."), ("ch_16", "ch_06", "Son las once. Y a las once hay mucho movimiento."),
-    ("ch_16", "ch_06", "A eso le importaría."), ("ch_16", "ch_12", "Nada esta semana."), ("ch_16", "ch_12", "No sé."),
-    ("ch_16", "ch_12", "Me preguntaste por qué el aterrizaje."),
+    ("ch_16", "ch_04", "Soy yo"), ("ch_16", "ch_04", "Nunca me habían esperado con un letrero"),
+    ("ch_16", "ch_04", "Es un celular"), ("ch_16", "ch_04", "Es un letrero"), ("ch_16", "ch_04", "No lo fue"),
+    ("ch_16", "ch_06", "Son las once. Y a las once hay mucho movimiento"),
+    ("ch_16", "ch_06", "A eso le importaría"), ("ch_16", "ch_12", "Nada esta semana"), ("ch_16", "ch_12", "No sé"),
+    ("ch_16", "ch_12", "Me preguntaste por qué el aterrizaje"),
     ("ch_16", "ch_09", "una lista de notas es verdad sobre una canción"),
     ("ch_17", "ch_01", "Digamos que es un martes"),
 ]
+
+
+def row_quotes(text):
+    """Every “…” inside the fenced rows, a quote that wraps onto continuation lines rejoined with one space."""
+    out = []
+    for blk in C.blocks(text):
+        if not blk.startswith("```"):
+            continue
+        lines = blk.split("\n")[1:-1]
+        for i, line in enumerate(lines):
+            for m in re.finditer("“", line):
+                rest = line[m.end():]
+                if "”" in rest:
+                    out.append(rest[:rest.index("”")])
+                    continue
+                frag = re.split(r"\s{2,}", rest)[0]
+                for cont in lines[i + 1:]:
+                    cont = cont.strip()
+                    if "”" in cont:
+                        frag += " " + cont[:cont.index("”")]
+                        break
+                    frag += " " + re.split(r"\s{2,}", cont)[0]
+                out.append(frag)
+    return out
+
+
+def carries(text, line):
+    return line in text or any(line in q for q in row_quotes(text))
 
 
 def gate(unit, text, segs, reg, quiet=False):
@@ -49,6 +79,8 @@ def gate(unit, text, segs, reg, quiet=False):
             if i == 0 and unit in heads and t.strip() != heads[unit]:
                 fails.append("HEADING %s: expected %r got %r" % (sid, heads[unit], t.strip()))
             continue
+        # a row quote that wraps is rejoined, so a locked line is found whole
+        t_terms = t if st != "code" else t + "\n" + "\n".join(row_quotes(t))
         for r in reg:
             if "spec" not in r:
                 continue
@@ -57,7 +89,7 @@ def gate(unit, text, segs, reg, quiet=False):
                 continue
             if sid in sp["excepts"] or not r["re"].search(s["text"]):
                 continue
-            if not C.has_form(t, r["forms"]):
+            if not C.has_form(t_terms, r["forms"]):
                 (fails if r["tier"] == "H" else warns).append(
                     "TERM    %s: %s expects %s for /%s/" % (sid, r["id"], " | ".join(r["forms"]), sp["pattern"]))
         if st == "code":
@@ -132,7 +164,7 @@ def book(d, segs, reg):
         print("FAIL  REFRAIN %r %d < %d" % (REFRAIN, n, n_src))
         fails += 1
     for quoting, quoted, line in ECHOES:
-        if quoting in texts and quoted in texts and (line not in texts[quoting] or line not in texts[quoted]):
+        if quoting in texts and quoted in texts and (not carries(texts[quoting], line) or not carries(texts[quoted], line)):
             print("FAIL  ECHO %r must be in %s and %s" % (line, quoting, quoted))
             fails += 1
     if "front" in texts and "ch_18" in texts:

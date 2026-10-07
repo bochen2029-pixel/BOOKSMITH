@@ -7,11 +7,15 @@ BEHAVE).
 Takes one unit that PASSES (the clean control), then mutates it one defect at a time and asserts the gate FAILS
 each: an ASCII quote, «», "...", a raya in narration, a spaced dash in speech, a speech paragraph without its raya,
 an unpaired ¿, a decomposed accent, a Spain form, a calque, English left behind, a broken heading, merged blocks,
-a dropped machine token, a dropped row line, a shifted row, a removed locked form. Exit 1 if any case misbehaves.
+a dropped machine token, a dropped row line, a shifted row, a removed locked form. Then the book checks on a copy
+of the whole edition: a broken locked line inside a wrapped row quote, a broken echo, a dropped refrain, a closing
+row that no longer matches the opening row. Exit 1 if any case misbehaves.
 """
 import io
 import os
+import shutil
 import sys
+import tempfile
 import unicodedata
 from contextlib import redirect_stdout
 
@@ -24,6 +28,44 @@ import gate_es as G  # noqa: E402
 def run(unit, text, segs, reg):
     with redirect_stdout(io.StringIO()):
         return G.gate(unit, text, segs, reg, quiet=True)
+
+
+# (name, unit, old, new): one defect the book gate must catch; the old text must occur in the clean unit
+BOOK_DEFECTS = [
+    ("wrapped row quote broken", "ch_16", "hay mucho movimiento", "hay movimiento"),
+    ("echo broken in the prose", "ch_04", "—Es un celular.", "—Es un teléfono."),
+    ("refrain dropped", "ch_08", "y nada está por llegar", "y nada más"),
+    ("closing row off the opening", "ch_18", "sobre el agua  abierta", "sobre el agua  abierto"),
+]
+
+
+def book_cases(d, segs, reg):
+    if not all(os.path.exists(os.path.join(d, u + ".md")) for u in C.UNITS):
+        print("skip  book     (the edition is not complete)")
+        return 0
+    bad = 0
+    tmp = tempfile.mkdtemp(prefix="gate_es_book_")
+    try:
+        for name, unit, old, new in [("clean book", None, None, None)] + BOOK_DEFECTS:
+            for u in C.UNITS:
+                shutil.copyfile(os.path.join(d, u + ".md"), os.path.join(tmp, u + ".md"))
+            if unit:
+                path = os.path.join(tmp, unit + ".md")
+                t = C.read(path)
+                if old not in t:
+                    print("BAD   book     %-40s %r not in %s" % (name, old, unit))
+                    bad += 1
+                    continue
+                C.write(path, t.replace(old, new, 1))
+            with redirect_stdout(io.StringIO()):
+                got = G.book(tmp, segs, reg)
+            want = 1 if unit else 0
+            ok = got == want
+            bad += 0 if ok else 1
+            print("%s   %-8s %-40s expected %s got %s" % ("ok " if ok else "BAD", "book", name, "FAIL" if want else "PASS", "FAIL" if got else "PASS"))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    return bad
 
 
 def main():
@@ -102,6 +144,7 @@ def main():
         ok = got == want
         bad += 0 if ok else 1
         print("%s   %-8s %-40s expected %s got %s" % ("ok " if ok else "BAD", unit, name, "FAIL" if want else "PASS", "FAIL" if got else "PASS"))
+    bad += book_cases(d, segs, reg)
     print("battery: %s" % ("ALL CASES BEHAVE" if bad == 0 else "%d CASES MISBEHAVE" % bad))
     return 0 if bad == 0 else 1
 

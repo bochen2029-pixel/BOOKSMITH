@@ -138,7 +138,7 @@ ROWS = [
     (r"\bknots in a sheet, held at the edge\b", r"nudos en una lámina, sostenidos en el borde"),
     (r"\bit does not know\b", r"no lo sabe"), (r"\bevery transponder\b", r"cada transpondedor"),
     (r"\(the small one listens\)", r"\(el pequeño escucha\)"), (r"\bhalf a hemisphere \(his face\)", r"medio hemisferio \(su cara\)"),
-    (r"\ba word on a sign\b", r"una palabra en un letrero"), (r"\blit, empty \(he said so\)", r"iluminado, vacío \(lo dijo él\)"),
+    (r"\ba word on a sign\b", r"una palabra en un letrero"), (r"\blit, empty \(he said so\)", r"iluminadas, vacías \(lo dijo él\)"),
     (r"\ba man on a porch, looking up\b", r"un hombre en un porche, mirando hacia arriba"),
     (r"\bevery cell that mattered, most that didn't\b", r"cada celda que importaba, casi todas las que no"),
     (r"\bbadge = keeper\b", r"credencial = custodio"), (r"\bthe can, cold\b", r"la lata, fría"), (r"\bthe rail\b", r"la baranda"),
