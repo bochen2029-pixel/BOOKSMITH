@@ -1,0 +1,10 @@
+id	old	new	source	why
+ch_01.008	Nadie sabrá nunca cuáles cuatro líneas.	Nadie sabrá nunca qué cuatro líneas.	MOD	cuáles + noun reads as a calque; qué
+ch_01.011	así que aterrizan en las diecisiete y las dieciocho,	así que aterrizan en las pistas diecisiete y dieciocho,	MOD	bare 'las diecisiete' reads as 17:00; name the runways
+ch_02.009	si el clima quería ponerlo	si el clima quería uno	MOD	EN 'if the weather wanted one'; ponerlo is stiff
+ch_03.013	Cuando eras chico, tu papá te llevaba	Cuando eras chico, tu padre te llevaba	MOD	narration says 'tu padre' everywhere else (X, XII, XIII, XVIII)
+ch_10.004	se paró frente al consejo	se paró frente al comité	MOD	II calls it el comité de revisión
+ch_11.020	es la única parte de esto que escribí yo que llamaría ingeniosa	es la única parte de lo que escribí que yo llamaría ingeniosa	MOD	two stacked que-clauses
+ch_14.008	cada una de ellas alguien a quien esperan, o no.	cada una de ellas alguien a quien reciben, o no.	MOD	echo of II 'alguien la recibe, o no' (meet = recibir)
+ch_14.004	En la repisa de la ventana el receptor	En el alféizar el receptor	MOD	narration names the windowsill alféizar (I); same object
+ch_18.010	En la repisa de una ventana del centro, un receptor negro	En un alféizar del centro, un receptor negro	MOD	echo of I 'En el alféizar, un receptor negro del tamaño de un pulgar'
