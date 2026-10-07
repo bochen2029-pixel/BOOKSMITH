@@ -2,6 +2,7 @@ id	old	new	source	why
 ch_01.007	llenando la pantalla	que llenan la pantalla	REG NIT	adjectival gerund on "éxitos"; the relative is cleaner
 ch_01.008	Nadie sabrá nunca cuáles cuatro líneas.	Nadie sabrá nunca cuáles fueron las cuatro líneas.	REG FIX	the verbless "cuáles cuatro líneas" is the English ellipsis carried over; Spanish wants the verb (and "cuál" as determiner reads colloquial here)
 ch_01.011	así que aterrizan en las diecisiete y las dieciocho,	así que aterrizan en las pistas diecisiete y dieciocho,	MOD	bare 'las diecisiete' reads as 17:00; name the runways
+ch_01.013	En el alféizar,	En la repisa de la ventana,	REG FIX	the receiver's sill returns near-verbatim at XIV .004 and XVIII .010 (and in XI .034's dialogue), all as "la repisa de la ventana"; "alféizar" here is the odd one out, so the callback is lost (and "alféizar" is bookish for this narrator)
 ch_01.014	sin un ruido	sin hacer ruido	REG NIT	"sin un ruido" is the English "without a sound"; the set phrase is "sin hacer ruido"
 ch_02.003	la pluma del boleto	la barrera del boleto	MOD+BACK	pluma is Mexican only (BACK_A, BACK_B); barrera reads everywhere
 ch_02.003	y la pluma se levanta	y la barrera se levanta	MOD+BACK	as above
@@ -62,22 +63,29 @@ ch_11.045	Ella no dice nada a eso	Ella no dice nada al respecto	REG NIT	"decir n
 ch_12.026	Ella mira la fila un rato más, y la dejas.	Ella mira la fila un rato más, y la dejas mirar.	MOD+BACK	la dejas = leave it / let her; EN 'you let her'
 ch_12.034	—Enséñame algo que pueda deshacer —dice—.	—Enséñame algo que él pueda deshacer —dice—.	MOD+BACK	pueda = it / I; the field is the one that undoes
 ch_12.076	Pero entonces nunca se ha equivocado con nada que haya cambiado.	Pero entonces nunca se habría equivocado con nada que cambiara.	MOD+BACK	a hypothetical (if fed UTC) wants the conditional
+ch_12.090	del ancho de tu mano	del ancho de una mano	REG NIT	a measure, not his hand; the indefinite drops the body-part possessive (charter §3)
+ch_12.097	Tiene un nudo para hacia dónde apunta el aeropuerto.	Tiene un nudo para la dirección en que apunta el aeropuerto.	REG FIX	"para hacia dónde" stacks a preposition on an interrogative adverb; reads as a word-for-word "for which way"
+ch_12.114	lo he comparado contra todo lo que tengo	lo he comparado con todo lo que tengo	REG FIX	"comparar contra" is the English "check against"; Spanish compares "con"
 ch_12.117	Entonces reserva las próximas diez	Entonces aparta las próximas diez	MOD+BACK	reservar read as 'book'; hold out = set aside
+ch_12.120	una hora antes de que cambie el viento que yo no puedo ver y él sí	que yo no puedo ver y él sí, una hora antes de que cambie el viento	REG FIX	with "el viento" right before "que", the relative first attaches to the wind (which the field cannot feel, .096); moving the time phrase to the end ties "que yo no puedo ver" to "algo"
 ch_13.004	y en la Stemmons le das el volante.	y en la Stemmons le das el volante al carro.	MOD+BACK	same ambiguity as V .002
 ch_13.004	pasas la pluma del boleto	pasas la barrera del boleto	MOD+BACK	as above
+ch_13.009	Pesado, del sur.	Un pesado, del sur.	REG FIX	charter §9 gives the father's line as "—Un pesado, del sur."; without the article "Pesado" reads as the adjective, not the aircraft noun that .018 ("Dice *pesado* igual que tú") turns on
 ch_13.021	Podría volver a correr toda su vida	Yo podría volver a correr toda su vida	MOD+BACK	podría = I/it (BACK_B); EN 'I could run its whole life again'
+ch_13.036	el mismo apretón de manos, exactamente de la duración justa	el mismo apretón, de la duración exacta	REG FIX	charter §11 locks "el mismo apretón, de la duración exacta"; "duración justa" loses VII .020's "de la duración exacta", so the handshake echo goes soft
 ch_13.041	Sabes quién está detrás.	Sabes quién está detrás de ellas.	MOD+BACK	bare detrás left the doors unnamed (BACK_B); VII keeps the bare form, where the door is in the sentence before
 ch_14.003	la pluma del estacionamiento se levanta	la barrera del estacionamiento se levanta	MOD+BACK	as above
-ch_14.004	En la repisa de la ventana el receptor	En el alféizar el receptor	MOD	narration names the windowsill alféizar (I); same object
 ch_14.004	lo contrario del martes, cuando la iban poniendo a dormir detrás de ti.	lo contrario del martes, cuando iban poniendo a dormir la oficina detrás de ti.	MOD+BACK	la had no clear antecedent (BACK_B); echo of I 'poniendo a dormir la oficina detrás de ti'
-ch_14.006	Arriba del registro, debajo de la fila	En lo más reciente del registro, debajo de la fila	MOD+BACK	arriba ... debajo read as a contradiction (BACK_B); EN 'at the top of the record' = the newest end
+ch_14.006	Arriba del registro, debajo	En la parte de arriba del registro, debajo	REG FIX	"arriba de" means above/outside it; the row is at the top of the record, not above it
 ch_14.008	cada una de ellas alguien a quien esperan, o no.	cada una de ellas alguien a quien reciben, o no.	MOD	echo of II 'alguien la recibe, o no' (meet = recibir)
+ch_14.008	Las autopistas son blancas hacia ti y rojas al alejarse.	Las autopistas son blancas en tu dirección y rojas en la otra.	REG FIX	charter §11 names I/XIV the freeways as a word-for-word callback; I .010 says "blancas en tu dirección y rojas en la otra", and the English repeats "white toward you and red away" verbatim
 ch_14.012	y vas a estar en el cuarto para eso, y él también.	y vas a estar en el cuarto para eso, y el campo también.	MOD+BACK	él read as the father (BACK_B); EN 'and so will it'
+ch_15.003	nada con qué medirlo	nada con que medirlo	REG BLOCK	with an explicit antecedent ("nada") the "que" is a relative and takes no accent (RAE: "no tengo nada que hacer" vs "no tengo qué hacer")
 ch_17.003	deshecho: 0	deshacer: 0	MOD+BACK	deshecho read as a typo for desecho (BACK_B); the infinitive matches pensar/asentar in the same block and the prose verb (R17)
 ch_17.004	previsión desfasada 1 h  se funde  vuelve a crecer	previsión desfasada 1 h  se derrite  vuelve a crecer	MOD+BACK	se funde split melt/fuse next to fusiona = join (BACK_B); se derrite is only melt
 ch_17.006	previsión desfasada 1 h  se funde    vuelve a crecer	previsión desfasada 1 h  se derrite    vuelve a crecer	MOD+BACK	same, the field row
 ch_17.007	(un martes que escribió)	(un martes que escribió el cuarto)	MOD+BACK	no subject (BACK_B); ÉL is the narrator in these rows, so the writer is named: the room
 ch_18.002	no tiene yo.	no tiene un yo.	MOD+BACK	bare 'yo' read as a slip (BACK_B); 'un yo' = a self
+ch_18.003	durante el tiempo justo	el tiempo exacto	REG FIX	charter §11 locks "sostuve mi lado de un apretón de manos el tiempo exacto"; "exacto" is what lets the handshake be heard against VII .020 and XIII .036 ("de la duración exacta")
 ch_18.006	y nunca saber si algo era como algo para ella.	y nunca saber si para ella algo se sentía como algo.	MOD+BACK	same calque as VI .055; the echo now matches VI
-ch_18.010	En la repisa de una ventana del centro, un receptor negro	En un alféizar del centro, un receptor negro	MOD	echo of I 'En el alféizar, un receptor negro del tamaño de un pulgar'
 ch_18.010	con lo que haga.	con lo que haga el campo.	MOD+BACK	haga had no subject next to her (BACK_B); EN 'what it does'

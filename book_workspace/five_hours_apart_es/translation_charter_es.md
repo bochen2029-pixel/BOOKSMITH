@@ -84,7 +84,7 @@ no tienes ningún motivo para saberlo.* Fork C quotes it as «Digamos que es un 
 
 carro (the self-driving car), celular, laptop, estacionamiento, elevador, manejar, credencial (the badge), letrero
 (the sign; also the road signs), mesero, la cuenta, renta, calentador (the space heater), cinchos (zip ties), pódcast,
-maleta, abrigo, autopista, caseta de peaje / peaje, botones (the bellman), maletero (the porter), valet, baranda (the
+maleta, abrigo, autopista, caseta de peaje / peaje, botones (the bellman), cargador de maletas (the porter; maletero is a car trunk in much of South America), barrera (the ticket and garage arm; pluma is Mexico-only), valet, baranda (the
 arrivals rail), porche, mensaje / mandar un mensaje (text), computadora, pantalla, monitor, teclado, etiquetadora.
 Never the Spain forms the gate lists (coche, ordenador, móvil, aparcamiento, conducir, vale as "OK", vosotros, os).
 
@@ -136,14 +136,14 @@ line up in the English line up in the Spanish (`_tools_es/rows_es.py` re-pads; t
 | text / branch / history | mensaje / rama / historial | decides she is right | decide que ella tiene razón |
 | edge / note | borde / nota | clock / ROOM / MIND / LAMP | reloj / CUARTO / MENTE / LÁMPARA |
 | turn / geared, one tooth to one | vuelta / engranado, diente a diente | runs down | se agota |
-| think / taken back / costs heat / rate / slow is cheap | pensar / deshecho / cuesta calor / ritmo / lento es barato | run on / hold at / replay from | seguir / detener en / reproducir desde |
-| plane / down 27L / asleep / watching / up / reads it | avión / aterriza 27L / dormido / mirando / despierta / lo lee | off 1 h / melt / regrow | desfasada 1 h / se funde / vuelve a crecer |
+| think / taken back / costs heat / rate / slow is cheap | pensar / deshacer / cuesta calor / ritmo / lento es barato | run on / hold at / replay from | seguir / detener en / reproducir desde |
+| plane / down 27L / asleep / watching / up / reads it | avión / aterriza 27L / dormido / mirando / despierta / lo lee | off 1 h / melt / regrow | desfasada 1 h / se derrite / vuelve a crecer |
 | seen. not had. | visto. no vivido. | why: no row | por qué: no hay fila |
 | slice | porción | past the midpoint / not computed | pasado el punto medio / no calculado |
 | OCEAN / LONDON | OCÉANO / LONDRES | gap 5 h (stays) / fall back / not reached | desfase 5 h (se mantiene) / atrasar / no alcanzado |
 | stir / dreaming | se agita / soñando | north Dallas / heat on | norte de Dallas / calefacción encendida |
 | window seat / blind up / coat on lap | asiento de ventanilla / persiana arriba / abrigo en el regazo | rendering | representación |
-| it has no I. it has her. | no tiene yo. la tiene a ella. | out / cooling / state held / readers | apagada / enfriándose / estado conservado / lectores |
+| it has no I. it has her. | no tiene un yo. la tiene a ella. | out / cooling / state held / readers | apagada / enfriándose / estado conservado / lectores |
 | rule 5 quiet is not sleep and not death | quieto no es dormido ni muerto | rule 6 the stop is a pause. nothing is deleted. | parar es una pausa. nada se borra. |
 | no last row. a latest one. | no hay última fila. hay una más reciente. | run him. write her. | córrelo. escríbela. |
 
@@ -168,7 +168,7 @@ line up in the English line up in the Spanish (`_tools_es/rows_es.py` re-pads; t
 | the speech I give nobody | VI, XI, XVI | el discurso que no le doy a nadie / el otro discurso, el que no le has dado a nadie / el discurso (con disculpa) |
 | an expectation that hasn't closed / That's waiting. / It doesn't wait. / It waited. | XII, XVIII | una previsión que no se ha cerrado / Eso es esperar. / No espera. / Esperó. |
 | Nothing this week. / I don't know. / You asked why the landing. | XII, XVI | Nada esta semana. / No sé. / Me preguntaste por qué el aterrizaje. |
-| lit and empty / glowing for no one | II, V, VII, VIII, XVI | encendidos y vacíos / brillando para nadie |
+| lit and empty / glowing for no one | II, V, VII, VIII, XVI | iluminadas y casi vacías (II) / iluminado y vacío (VI, VIII, the train) / iluminadas, vacías (XVI row) / brillando para nadie |
 | the click | I, VI | el clic |
 | secondhand / a borrowed share | III, VI | de segunda mano / una parte prestada |
 | your ears do the small thing they do at the end of a flight | I, VI, X, XIV | los oídos te hacen esa cosa pequeña que hacen al final de un vuelo (then "los oídos te lo hacen otra vez, al revés" / "hacen lo suyo") |
@@ -247,4 +247,5 @@ on the body, the ASCII quote ", "..." for …, a double space in prose, vosotros
 | R14 | 2026-10-07 | Meaning rulings imported from the zh-Hant charter §12. |
 | R15 | 2026-10-07 | The moderator translates every unit; QA by independent agents (§14). |
 | R16 | 2026-10-07 | The plural of the number is seises ("los seises", "Catorce seises"): "encontraron los seis. Eran catorce." would read as six, then fourteen. |
-| R17 | 2026-10-07 | "take back" is deshacer everywhere (XII prose: "algo que pueda deshacer", "¿Qué querías deshacer tú?"; row "taken back" → deshecho), so the human wish and the machine row share one verb; "un-think / un-imagine" → des-pensar / des-imaginó. |
+| R17 | 2026-10-07 | "take back" is deshacer everywhere (XII prose: "algo que pueda deshacer", "¿Qué querías deshacer tú?"; row "taken back" → deshacer, the infinitive like pensar/asentar; R18), so the human wish and the machine row share one verb; "un-think / un-imagine" → des-pensar / des-imaginó. |
+| R18 | 2026-10-07 | QA round 1 (_qa/merge_r1.py, _qa/APPLY_r1.tsv; 90 count-asserted edits in 17 units): the blind back-translation diffed against the English (both halves) + the moderator's full read (42 edits) and the Latin American register review (2 BLOCK, 28 FIX, 18 NIT applied; 5 NIT and 8 duplicates not). Rulings it carries: "anything is like anything for it" → "si para él/ella algo se siente/sentía como algo" (VI .055, XVIII .006, one wording); the locked lines restored where they had drifted ("—Un pesado, del sur.", "el mismo apretón, de la duración exacta", "el tiempo exacto", I/XIV "blancas en tu dirección y rojas en la otra", II/XIV "alguien la recibe / a quien reciben, o no"); the windowsill is "la repisa de la ventana" at every site; X's council is II's "comité"; pluma → barrera, maletero → cargador de maletas; "le das el volante al carro" (V, XIII); "abrirse sobre" (open onto) kept as one set at IV, VII, XIII; rows: deshacer: 0, se derrite, "(un martes que escribió el cuarto)" (ÉL is the narrator in these rows), "no tiene un yo.". Source observations kept as written: Iris awake "veinte" hours (V) then "veinticuatro" (VI); XVI logs "No sé." at 19:05:12, after the 19:04:43 fork it precedes in XII. |

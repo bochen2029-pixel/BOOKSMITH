@@ -22,12 +22,17 @@ MOD_SUPERSEDED = {
     ("ch_03.003", "Las construyeron en medio círculo"): "REG's colon + 'eran personas' is the minimal fix",
     ("ch_06.050", "y que ya dejaste de intentar."): "REG 'y ya dejaste de intentarlo' is closer to the English ellipsis",
     ("ch_02.016", "la oscuridad se vuelve del ámbar mate"): "same fix as REG (se tiñe); one copy",
+    ("ch_14.004", "En la repisa de la ventana el receptor"): "REG fixes the sill once, at I .013: 'repisa de la ventana' everywhere",
+    ("ch_18.010", "En la repisa de una ventana del centro"): "as above",
+    ("ch_14.006", "Arriba del registro, debajo de la fila"): "REG 'En la parte de arriba del registro' keeps the English 'top'",
 }
 # Register findings not taken (id, start of old): why.
 REG_REJECTED = {
     ("ch_01.005", "donde sucede casi todo"): "the 'opinions' reading is a stretch; the sentence reads as the English",
     ("ch_04.002", "se abren sobre ella"): "abrirse sobre = open onto (a view): the doors reveal her; kept in IV, VII and XIII alike",
     ("ch_07.024", "abrirse y cerrarse sobre gente"): "as IV .002",
+    ("ch_13.030", "cada pocos segundos sobre gente"): "as IV .002 (the four 'sobre' sites stay as a set)",
+    ("ch_13.040", "y se abren sobre alguien más"): "as IV .002",
 }
 # Register findings taken with a different replacement (id, start of old): new text.
 REG_MODIFIED = {
@@ -38,6 +43,7 @@ REG_DUPLICATE = {
     ("ch_04.016", "y luego ella te deja"), ("ch_06.055", "si algo es como algo para él"),
     ("ch_09.005", "y ella está dormida, o cerca"), ("ch_10.004", "se paró frente al consejo"),
     ("ch_10.004", "se sentaron los dos en tu escritorio"), ("ch_11.020", "la única parte de esto que escribí yo"),
+    ("ch_14.008", "alguien a quien esperan, o no"), ("ch_18.006", "si algo era como algo para ella"),
 }
 
 LINE = re.compile(r'^- \[(BLOCK|FIX|NIT)\] (\S+) \| old: "(.*)" \| new: "(.*)" \| why: (.*)$')
