@@ -110,7 +110,7 @@ ROWS = [
     (r"\bpaid via\b", r"bezahlt über"), (r"\brun 7", r"gelaufen 7"), (r"\bthis one: last\b", r"dieser: letzter"),
     (r"\bcomputed by reach\b", r"berechnet nach Reichweite"), (r"\bdepth\b", r"\bTiefe\b"), (r"\bHIM\b", r"\bER\b"),
     (r"\bFATHER\b", r"\bVATER\b"), (r"\bRAIL\b", r"\bGELÄNDER\b"), (r"\bWEATHER\b", r"\bWETTER\b"),
-    (r"\bSMALL\b", r"\bKLEIN\b"), (r"\bsmall\b", r"\bklein\b"), (r"\bcolleague\b", r"\bKollegin\b"),
+    (r"\bSMALL\b", r"\bKLEIN\b"), (r"\bsmall\b", r"\bklein"), (r"\bcolleague\b", r"\bKollegin\b"),
     (r"\bcrowd\b", r"\bMenge\b"), (r"\brestored\b", r"\bwiederhergestellt\b"), (r"\btext\b", r"\bNachricht\b"),
     (r"\bbranch\b", r"\bZweig\b"), (r"\bhistory\b", r"\bVerlauf\b"),
     (r"\bdecides she is right\b", r"beschließt, dass sie recht hat"), (r"\bedge\b", r"\bRand\b"), (r"\bnote\b", r"\bNotiz\b"),

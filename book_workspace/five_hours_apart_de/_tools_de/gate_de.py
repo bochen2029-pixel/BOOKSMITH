@@ -26,6 +26,17 @@ REFRAIN = r"nichts steht an|steht nichts an"  # German word order may invert it 
 # line, because the prose may close the speech with an attribution („Das bin ich“, sagt sie.); a row quote that wraps
 # is rejoined.
 ECHOES = [
+    ("ch_16", "ch_04", "Das bin ich"), ("ch_16", "ch_04", "Ich hatte noch nie ein Schild"),
+    ("ch_16", "ch_04", "Das ist ein Handy"), ("ch_16", "ch_04", "Das ist ein Schild"), ("ch_16", "ch_04", "War es nicht"),
+    ("ch_16", "ch_06", "Es ist elf. Und um elf ist viel los"), ("ch_16", "ch_06", "Ihm wäre es wichtig"),
+    ("ch_16", "ch_12", "Diese Woche nichts"), ("ch_16", "ch_12", "Ich weiß es nicht"),
+    ("ch_16", "ch_12", "Du hast gefragt, warum die Landung"),
+    ("ch_16", "ch_09", "wie eine Liste von Noten über ein Lied stimmt"),
+    ("ch_17", "ch_01", "Sagen wir, es ist ein Dienstag"),
+    # the prose echoes the book returns to (charter §11): I/XIV the freeways, I/XVIII the odd week, XII/XVIII the room
+    ("ch_14", "ch_01", "weiß auf dich zu und rot von dir weg"),
+    ("ch_18", "ch_01", "in der letzten Oktoberwoche, der schrägen Woche"),
+    ("ch_18", "ch_12", "im kleinsten Raum, den die Firma mietet"),
 ]
 
 

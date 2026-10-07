@@ -31,6 +31,15 @@ def run(unit, text, segs, reg):
 
 # (name, unit, old, new): one defect the book gate must catch; the old text must occur in the clean unit
 BOOK_DEFECTS = [
+    ("wrapped row quote broken", "ch_16", "                       die Landung.”", "                       die Ankunft.”"),
+    ("echo broken in the prose", "ch_04", "„Das ist ein Handy.“", "„Das ist ein Telefon.“"),
+    ("refrain dropped", "ch_08", "und nichts steht an.", "und nichts mehr."),
+    ("closing row off the opening", "ch_18", "über Wasser  offen", "über Wasser  geöffnet"),
+    ("prose echo drifted", "ch_14", "weiß auf dich zu und rot von dir weg", "weiß zu dir und rot weg von dir"),
+    ("one wording drifted (R.likeanything)", "ch_18", "irgendetwas nach irgendetwas anfühlt", "irgendwie anfühlt"),
+    ("sorted drifted (R.sorted)", "ch_09", "vom einundvierzigsten Stock aus sortiert hast", "vom einundvierzigsten Stock aus geordnet hast"),
+    ("the flaw drifted (R.hole)", "ch_10", "wo das Loch gewesen war", "wo die Lücke gewesen war"),
+    ("the bellman drifted (R.bellman)", "ch_08", "wo der Page ihn abgestellt hat", "wo der Hotelangestellte ihn abgestellt hat"),
 ]
 
 
