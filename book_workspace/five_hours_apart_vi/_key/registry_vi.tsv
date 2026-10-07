@@ -1,0 +1,183 @@
+id	tier	EN	vi	note
+heading.front	H	=	# Cách nhau năm tiếng	
+heading.part_1	H	=	# Phần Một · Cách nhau năm tiếng	
+heading.ch_01	H	=	## I. Bốn mươi mốt	
+heading.ch_02	H	=	## II. Stemmons	
+heading.ch_03	H	=	## III. International Parkway	
+heading.ch_04	H	=	## IV. Những cánh cửa	
+heading.ch_05	H	=	## V. Xa lộ Carpenter	
+heading.ch_06	H	=	## VI. Bốn mươi tám	
+heading.ch_07	H	=	## VII. Phố Elm	
+heading.ch_08	H	=	## VIII. Bốn giờ sáng	
+heading.ch_09	H	=	## IX. Stemmons, lần nữa	
+heading.part_2	H	=	# Phần Hai · Chẳng có gì sắp đến	
+heading.ch_10	H	=	## X. Gió bấc	a norther: the cold north wind
+heading.ch_11	H	=	## XI. Căn phòng nhỏ nhất	
+heading.ch_12	H	=	## XII. Cuộn băng	
+heading.ch_13	H	=	## XIII. Khởi hành	airport departures
+heading.ch_14	H	=	## XIV. Bốn mươi mốt, lần nữa	
+heading.part_3	H	=	# Phần Ba · Cứ cho là	
+heading.ch_15	H	=	## XV. Cơ thể	
+heading.ch_16	H	=	## XVI. Phòng	
+heading.ch_17	H	=	## XVII. Bánh răng	
+heading.ch_18	H	=	## XVIII. Mở	
+P.iris	H	=\bIris\b	Iris	
+P.wren	H	=\bWren\b	Wren	
+P.dana	H	=\bDana\b	Dana	
+P.kelvin	H	\bKelvin\b	Kelvin	
+P.kosterlitz	H	\bKosterlitz\b	Kosterlitz	
+P.thouless	H	\bThouless\b	Thouless	
+P.berezinskii	H	\bBerezinskii\b	Berezinskii	
+G.dallas	H	\bDallas\b	Dallas	
+G.euless	H	\bEuless\b	Euless	
+G.irving	H	\bIrving\b	Irving	
+G.arlington	H	\bArlington\b	Arlington	
+G.grapevine	H	\bGrapevine\b	Grapevine	
+G.lascolinas	H	\bLas Colinas\b	Las Colinas	
+G.deepellum	H	\bDeep Ellum\b	Deep Ellum	
+G.midcities	H	\bMid-Cities\b	Mid-Cities	
+G.fortworth	H	\bFort Worth\b	Fort Worth	
+G.heathrow	H	\bHeathrow\b	Heathrow	
+G.london	H	\bLondon\b	London	never Luân Đôn
+G.leeds	H	\bLeeds\b	Leeds	
+G.ireland	H	\bIreland\b	Ireland	
+G.channel	H	\bthe Channel\b	eo biển Manche	
+G.atlantic	H	\bAtlantic\b	Đại Tây Dương	
+G.singapore	H	\bSingapore\b	Singapore	
+G.manhattan	H	\bManhattan\b	Manhattan	
+G.lovefield	H	\bLove Field\b	Love Field	
+G.dfw	H	=\bDFW\b	DFW	
+G.terminald	H	\bTerminal D\b	Nhà ga D|Terminal D	
+G.stemmons	H	\bStemmons\b	Stemmons	
+G.carpenter	H	\bCarpenter\b	Carpenter	
+G.intlparkway	H	\bInternational Parkway\b	International Parkway	
+G.commerce	H	=\bCommerce\b	Commerce	
+G.elm	H	=\bElm\b	Elm	
+G.pacific	H	=\bPacific\b	Pacific	
+G.reunion	H	=\bReunion\b	Reunion	
+G.trinity	H	\bTrinity\b	Trinity	
+G.magnolia	H	\bMagnolia\b	Magnolia	
+G.pegasus	H	\bPegasus\b	Pegasus	
+G.bachman	H	\bBachman\b	Bachman	
+G.design	H	\bDesign District\b	Design District	
+G.westend	H	\bWest End\b	West End	
+G.metroplex	H	\bMetroplex\b	Metroplex	
+G.texas	H	=\bTexas\b	Texas	
+G.texan	H	\bTexan\b	Texas	
+G.grok	H	\bGrok\b	Grok	
+G.ultra	H	\bUltra Sunrise\b	Ultra Sunrise	
+G.convention	H	\bconvention center\b	trung tâm hội nghị	
+G.irissign	H	=\bIRIS WREN\b	IRIS WREN	
+G.home	H	=\bHOME\b	NHÀ	the car screen's HOME
+R.hypothetical	H	\bA hypothetical, in three parts\b	Một giả định, trong ba phần	
+R.say	H	=\bSay (?:it's|the)\b	Cứ cho	R3
+R.oddweek	H	\bthe odd week\b	tuần lệch	
+R.nothingdue	H	\bnothing(?:'s| is) due\b	chẳng có gì sắp đến	R5
+R.heavy	H	\bheav(?:y|ier|ies)\b	nặng	R6: hạng nặng for the aircraft
+R.keep	H	\bearn(?:ed|s)? its keep\b	đáng đồng tiền bát gạo	
+R.rent	H	\bpays? rent\b	tiền thuê	
+R.stoppedpaying	H	\bstopped paying\b	trả	
+R.sign	H	\bsigns?\b	biển	
+R.click	H	\bclick\b	tách	
+R.secondhand	H	\bsecondhand\b	gián tiếp	
+R.borrowed	H	\ba borrowed share\b	vay mượn	
+R.handshake	H	\bhandshake\b	bắt tay	
+R.syllable	H	\bsyllable\b	âm tiết	
+R.knot	H	\bknots?\b	nút	
+R.sheet	H	\bsheet\b ;; @except ch_11.009	tấm	the paper on the wall is a tờ giấy
+R.field	H	\bthe field\b ;; @except ch_03.003,ch_12.102,ch_13.005	trường	
+R.frontier	H	\bfrontier\b	biên	
+R.lane	H	\blanes?\b	làn	
+R.row	H	\brows?\b	dòng	
+R.record	M	\bthe record\b	nhật ký	
+R.tape	H	\btape\b	băng	
+R.settle	H	\bsettle[sd]?\b	chốt	
+R.carve	H	\bcarve[sd]?\b	khắc	
+R.fork	H	\bfork(?:ed|s)?\b	nhánh	
+R.rewind	H	\brewind\b	tua	
+R.discard	H	\bdiscard\b	bỏ	
+R.expectation	H	\bexpectation\b	dự kiến	R7
+R.waiting	H	\bThat's waiting\b|\bthat was waiting\b	chờ đợi	R7
+R.doesntwait	H	\bIt doesn't wait\b	Nó không chờ	
+R.quietsmall	H	=\*Quiet\b	Lặng	the small type
+R.receiver	H	\breceiver\b	bộ thu	
+R.badge	H	=\bbadge\b	thẻ	
+R.keeper	H	\bkeeper\b	người giữ	
+R.sandbox	H	\bsandbox\b	sandbox	
+R.hash	H	\bhash\b	hash	
+R.ears	H	\bears\b	tai	
+R.amber	H	\bamber\b	hổ phách	
+R.patientline	H	\bpatient lines?\b	kiên nhẫn	
+R.landinglights	H	\blanding lights\b	đèn hạ cánh	
+R.arm	H	\bswitch(?:ing)? arms\b	đổi tay	
+R.sixes	H	\bsixes\b	số sáu	
+R.speech	H	\bspeech\b	diễn văn	
+R.bookkeeping	H	\bbookkeeping\b	sổ sách	
+R.bleak	H	\bbleak\b	ảm đạm	
+R.pond	H	\bpond\b	ao	
+R.lavalamp	H	\blava lamp\b	đèn dung nham	
+R.stereogram	H	\bstereogram\b	lập thể	
+R.pinwheel	H	\bpinwheels?\b	chong chóng	
+R.compass	H	\bcompass needles?\b	la bàn	
+R.edge	H	\bedges?\b ;; @except ch_02.009	rìa	the desk's edge is a mép
+R.horse	H	\bhorse\b	ngựa	
+R.doors	M	\bdoors\b	cửa	
+R.lamp	H	\blamps?\b	đèn	
+R.matter	H	\bmatter to (?:it|me)\b	quan trọng	
+R.pleased	H	\bI'm something\b	cái gì đó	
+R.itssomething	H	\bIt's something\b	cái gì đó	
+R.notnothing	H	\bnot nothing\b	không phải là không có gì	
+R.texanthing	H	\bmost Texan thing\b	Texas nhất	
+R.secret	H	\bIs it a secret\b	bí mật	
+R.notano	H	\bThat's not a no\b	không phải	
+R.bigger	H	\bbigger from down here\b	to hơn	
+R.mostthings	H	\bMost things are\b	Hầu hết mọi thứ	
+R.goinground	H	\b(?:going|gone) round\b	quay	
+R.listofnotes	H	\ba list of notes is true about a song\b	một dãy nốt nhạc là thật về một bài hát	
+R.nightson	H	\bNight, son\b	Ngủ ngon, con	
+R.nightdad	H	\bNight, Dad\b	Bố ngủ ngon	
+R.alwaysdo	H	\bYou always do\b	Lần nào bố cũng thế	
+R.somebody	H	\bSomebody has to\b	Phải có người làm chứ	
+R.exactlylike	H	\bIt's exactly like this\b	y như thế này	
+R.tellanyway	H	\bTell her anyway\b	Cứ bảo cô ấy	
+R.beup	H	\bI'll be up\b	Tôi sẽ thức	
+R.awful	H	\bawful\b	tệ	
+R.wasnt	H	=\bIt wasn't\b	Không hề	
+R.phone	H	\bIt's a phone\b	Đó là cái điện thoại	
+R.itsasign	H	\bIt's a sign\b	Đó là tấm biển	
+R.thatsme	H	\bThat's me\b	Tôi đây	
+R.forthesign	H	\bFor the sign\b	Vì tấm biển	
+R.fortheroom	H	\bFor the room\b	Vì căn phòng	
+R.behind	H	\bwho's behind them\b	ai ở phía sau	
+R.correcting	H	\bcorrecting a definition in a draft\b	một định nghĩa trong bản nháp	
+R.mildly	H	\bmildly\b	nhẹ nhàng	
+R.decide	H	\bdecide,? (?:again, )?(?:that )?she's right\b	cô đúng	
+R.fourlines	H	\bThe fix is four lines\b	Bản sửa là bốn dòng	
+R.oneline	H	\bThe fix is one line\b	Bản sửa là một dòng	
+R.fourteen	H	\bFourteen sixes\b	Mười bốn số sáu	
+R.findits	H	\bLet it find its own\b	tự tìm	
+R.nothingweek	H	\bNothing this week\b	Tuần này thì không có gì	
+R.whylanding	H	\bYou asked why the landing\b	tại sao lại là hạ cánh	
+R.glowingnoone	H	\bglowing for no one\b	chẳng ai	
+R.litempty	H	\blit and empty\b	vắng	
+R.eleven	H	\beleven is busy\b	mười một giờ thì đông	
+R.overwater	H	\bover (?:the )?water\b	trên mặt nước	
+R.windowseat	H	\bwindow seat\b	ghế cạnh cửa sổ	
+R.blindup	H	\bblind up\b	rèm	
+R.northdallas	H	\bnorth Dallas\b	bắc Dallas	
+R.ninedollars	H	\bnine dollars\b	Chín đô	
+R.lullaby	H	\blullaby\b	hát ru	
+R.blueribbon	H	\bblue ribbon\b	dải xanh	băng is the tape; the route is a dải
+R.onit	H	=\bOn it\b	Để tôi	
+R.whatwelearned	H	\bWhat we learned\b	học được	
+R.thereearly	H	\bIt was there before you were\b	Nó đã ở đó trước anh	
+R.norowforit	H	\bThere isn't a row for it\b	Không có dòng nào cho điều đó	
+R.pointed	H	\bwhere he pointed\b	anh đã chỉ	source defect S1
+R.fondly	H	=\bFondly\b	Trìu mến	
+R.appalled	H	\bappalled\b	hoảng	
+R.seethehorse	H	\bCould I see the horse\b	xem con ngựa	
+R.hiseyes	H	\bHe says it's his eyes\b	tại mắt	
+R.windowsill	H	\bwindowsill\b	bậu cửa sổ	
+R.council	H	\bcouncil\b	hội đồng	
+R.heavysouth	H	\bHeavy, out of the south\b	Hạng nặng, từ phía nam	
+R.handshakeexact	H	\bhandshake\b	vừa đúng	VII/XIII/XVIII 'dài vừa đúng'
