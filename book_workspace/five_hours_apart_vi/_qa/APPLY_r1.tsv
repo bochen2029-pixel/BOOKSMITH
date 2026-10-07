@@ -1,0 +1,143 @@
+id	old	new	source	why
+ch_01.003	đã lần lượt ru văn phòng ngủ	đã ru văn phòng ngủ	REG NIT	"lần lượt" doubles "từng dãy đèn một" in the same clause.
+ch_01.004	Điều nó thực sự làm là chuyển	Còn thực ra nó chuyển	REG FIX	"Điều + clause + là" is the English cleft calqued; the contrast reads naturally with "Còn thực ra".
+ch_01.005	có một lý do và chưa ai tìm ra nó	có một lý do, chỉ là chưa ai tìm ra	REG FIX	object "nó" for an abstract noun is the English "it"; Vietnamese drops it.
+ch_01.005	trong đó anh gật đầu	gật đầu	REG FIX	"trong đó" is the calqued relative "in which"; the shared subject carries the clause.
+ch_01.007	dòng này nối dòng kia những lần	dòng này nối dòng kia, những lần	MOD	BT: two phrases run together; a comma before the subject of the second
+ch_01.010	những mẫu ánh sáng của nó	những mẫu ánh sáng	REG NIT	possessive "của nó" is the English "its", redundant in Vietnamese.
+ch_01.015	Anh chưa chạm vào gì, màn hình đã đoán trước:	Anh chưa kịp chạm vào gì thì màn hình đã đoán trước:	MOD	BT: comma splice; chưa kịp … thì … đã is the Vietnamese 'before you have'
+ch_01.015	vì giờ đã quá sáu giờ của một ngày thường	vì đã quá sáu giờ tối một ngày thường	REG FIX	"giờ… giờ" clash and a của-calque; "sáu giờ tối" is how the time is said.
+ch_02.003	anh đã lên tới nơi, ra ngoài	anh đã lên khỏi hầm, ra ngoài	REG NIT	"lên tới nơi" means arriving at a destination; "up and out" of the garage is "lên khỏi hầm".
+ch_02.006	một dải xanh trải ra phía trước	một dải xanh dương trải ra phía trước	MOD	BT: 'xanh' reads green or blue; EN 'a blue ribbon', fixed at its first site (later 'dải xanh' as the registry has it)
+ch_02.006	Đó là thứ gần nhất anh biết với việc nhìn thấy một ý nghĩ.	Đó là thứ gần với việc nhìn thấy một ý nghĩ nhất mà anh biết.	REG FIX	the split comparative "gần nhất … với" follows English order; Vietnamese closes "gần với X nhất mà…" (as I.011 already does for the lullaby).
+ch_02.007	cùng giật mình một lúc	cùng lúc giật mình	REG FIX	"giật mình một lúc" reads as "flinch for a while"; "at once" is "cùng lúc".
+ch_02.010	Rồi màn hình kêu một tiếng.	Rồi màn hình kêu “ting” một tiếng.	MOD	EN 'the screen chimes': a chime, not a bare noise
+ch_02.012	cô là thứ mà phần lớn mọi người trong công ty vẫn là:	cô cũng như phần lớn mọi người trong công ty:	REG FIX	"là thứ mà … vẫn là" calques "what most people are"; "thứ" for a person also sounds dismissive.
+ch_02.013	Heathrow ở ngay đó rồi.	Heathrow đã ở ngay trước mắt.	REG NIT	avoids the "rồi. Rồi" stutter into the next sentence and says "within reach" more clearly.
+ch_02.015	Anh đọc cho máy ghi hai chữ gửi lại Dana,	Anh đọc hai chữ trả lời Dana,	MOD	BT: 'máy ghi' suggests a tape recorder; EN 'you dictate two words back to Dana'
+ch_02.016	mà anh đã phân loại	mà anh đã phân biệt	REG NIT	"sorted" points back to I.011 "Anh phân biệt được chúng"; the same verb lets the echo land.
+ch_03.002	và xuôi xuống International Parkway.	và chạy dọc International Parkway.	MOD	BT: 'xuôi xuống' reads as heading south; he enters from the south and drives north (D is on the left going north)
+ch_03.003	với con đường chạy thẳng	khi con đường chạy thẳng	REG FIX	"với" + clause for attendant circumstance calques English "with the road running"; "khi" is the Vietnamese link.
+ch_03.003	như biết một ngôi nhà mình đã lớn lên trong đó	như biết ngôi nhà nơi mình lớn lên	REG FIX	stranded "trong đó" copies "a house you grew up in".
+ch_03.004	mà tài xế đang ngủ	có tài xế đang ngủ	REG FIX	"mà" cannot carry the English "whose"; "chiếc sedan… mà tài xế đang ngủ" is ungrammatical-sounding.
+ch_03.005	Bên trong là giờ mà một sân bay thôi diễn.	Bên trong, đã đến giờ một sân bay thôi diễn.	REG FIX	"Bên trong là giờ mà" copies "Inside, it's the hour when".
+ch_03.005	lái máy đánh sàn thành những vòng chậm rãi	lái máy đánh sàn chầm chậm lượn vòng	REG FIX	"lái … thành những vòng" is not a Vietnamese collocation ("in slow loops" calqued).
+ch_03.007	, lạnh đến mức làm tay anh hơi buốt	, và lon nước lạnh đến mức làm tay anh hơi buốt	REG FIX	as written "lạnh" attaches to the sound; restoring the subject (and the author's "and…") makes the can cold.
+ch_03.007	Anh bật nắp ngay tại chỗ, đứng luôn.	Anh đứng ngay tại chỗ mà bật nắp.	REG FIX	"đứng luôn" reads as "and stood still / stood up at once", not "standing right there".
+ch_03.007	một độ sáng	một thoáng bừng sáng	REG FIX	"độ sáng" is a brightness level (a setting), not "a brightening".
+ch_03.010	sà vào vòng tay bà	sà vào vòng tay mẹ	REG NIT	"bà" can suggest an old woman; "mẹ" is warmer and unambiguous.
+ch_03.013	mặc chiếc áo vest đã mặc riêng cho dịp ấy	trong chiếc áo vest bố mặc riêng cho dịp ấy	REG FIX	"mặc … đã mặc" repeats the verb and drops the subject of the relative clause.
+ch_03.013	vì bố không tin giao thông	vì bố không tin đường sá	REG FIX	"tin giao thông" is a literal "trust the traffic"; "không tin đường sá" is how the worry is said.
+ch_03.013	anh hiểu rằng bố sẽ chẳng thấy phiền gì	anh hiểu rằng hẳn bố đã chẳng thấy phiền gì	REG FIX	"sẽ" reads as future; the English is the past "wouldn't have minded" (the hour he stood here).
+ch_03.013	Bố nói *hạng nặng* trước khi	Bố anh nói *hạng nặng* trước khi	REG NIT	charter §9 quotes this sentence as "Bố anh nói *hạng nặng*…", and it sets up XIII.035 "– Bố anh nói *hạng nặng* y như anh".
+ch_04.003	trên một bánh xe gãy	vì gãy mất một bánh	REG FIX	"lists … on a broken wheel" calqued with "trên"; Vietnamese gives the cause.
+ch_04.009	như một người định sẽ nhớ nó	như người định bụng sẽ nhớ lấy	REG FIX	"định sẽ" stacks two modals and "nhớ nó" is the English object pronoun.
+ch_04.009	so với cách anh vẫn đọc nó	so với cách anh vẫn đọc	REG NIT	second "nó" in one clause; the object is understood.
+ch_04.016	, trong đó hai người lạ từ chối	 giữa hai người lạ cứ từ chối	REG FIX	"trong đó" is the calqued "in which"; "nghi thức … giữa hai người lạ cứ từ chối rồi nhận" reads natively.
+ch_05.006	có nên đưa cô câu trả lời dễ dàng	có nên trả lời cô một câu cho dễ	REG FIX	"đưa cô câu trả lời dễ dàng" calques "giving her the easy answer"; "dễ dàng" is an adverb of ease.
+ch_05.020	Đúng là mọi cuộc họp tôi từng dự	Y hệt mọi cuộc họp tôi từng dự	REG FIX	"Đúng là + noun" does not say "that's every meeting"; Iris's quip needs "y hệt" (just like).
+ch_05.025	sáng ở đầu gần như một chiếc đèn lồng	sáng ở đầu bên này, như một chiếc đèn lồng	REG BLOCK	garden path: "đầu gần như" is read "at the end, almost like a lantern"; the "near end" is lost and "almost" is added.
+ch_05.025	hiện ra phía trước cùng một lúc	bỗng hiện ra trọn vẹn phía trước	REG FIX	"cùng một lúc" means simultaneously (with what?); "all at once" here is sudden and whole.
+ch_05.025	những tòa tháp được viền bằng ánh sáng	những tòa tháp viền ánh sáng	REG NIT	passive "được … bằng" where the stative reads naturally.
+ch_05.027	như một nơi chưa ai giải thích cho anh.	như một nơi chưa ai giải thích cho mình.	MOD	BT: 'cho anh' (to him) jars inside her view; EN generic 'you': 'mình' takes both
+ch_05.036	chiếc va li với cái bánh gãy	chiếc va li gãy bánh	REG FIX	"với" for "with its broken wheel" is translationese; the compound is the native form.
+ch_05.036	và anh thấy, thật vô lý, một chút nhói lòng	và thật vô lý, anh thấy hơi nhói lòng	REG NIT	the aside wedged between verb and object follows English order.
+ch_06.003	nó được giữ mở cửa riêng cho hai người	nó còn mở cửa chỉ vì hai người	REG FIX	passive "được giữ mở cửa" calques "kept open for you".
+ch_06.003	những xa lộ anh đã lái tối nay	những xa lộ anh đã lái qua tối nay	REG FIX	"lái" takes the vehicle as object; a road needs "lái qua".
+ch_06.003	giơ tay lên trời	giơ cao một tay	REG NIT	"giơ tay lên trời" suggests surrender or prayer; he was holding up the phone sign.
+ch_06.022	Tôi không chắc nó là cái đó.	Tôi không chắc là thế.	MOD	BT: 'cái đó' has no referent; EN 'that' = lonely (.017), which 'thế' points back to
+ch_06.026	có một cái lỗ, và tôi đã nhìn chằm chằm vào cái lỗ ấy	có một lỗ hổng, và tôi đã nhìn chằm chằm vào lỗ hổng ấy	REG FIX	a flaw in an argument or a system is a "lỗ hổng"; "cái lỗ" is a physical hole.
+ch_06.027	Cả công việc của anh là	Nghề của anh chính là	REG FIX	"Cả công việc của anh" calques "Your whole job"; the emphasis is carried by "chính là".
+ch_06.035	Tuần này các cô đi trước chúng tôi năm tiếng	Tuần này bên cô đi trước bên tôi năm tiếng	MOD	BT: 'các cô' reads 'you ladies'; 'bên cô / bên tôi' as the block's 'đồng hồ bên tôi'
+ch_06.035	đổi giờ của chúng tôi sang giờ của các cô	đổi giờ bên tôi sang giờ bên cô	MOD	as above
+ch_06.047	Mình sẽ đi tìm những số sáu.	Mình cùng đi tìm những số sáu.	MOD	BT: 'mình' reads 'I' or 'we'; 'cùng' makes it the inclusive we of EN 'We'll find the sixes'
+ch_06.050	Anh đã thấy hơi tiếc rồi, như lần nào hiến máu anh cũng hơi tiếc cái kim	Anh đã thấy hơi ngại rồi, như lần nào hiến máu anh cũng hơi ngại mũi kim	REG FIX	"tiếc cái kim" means regretting the loss of a needle; the small dread of a cost is "ngại".
+ch_06.057	trong một tấm bằng bất cứ thứ gì	trong một tấm làm từ bất cứ thứ gì	MOD	BT: the reader stalls on 'tấm bằng' (a diploma, 'bằng'); 'làm từ' = made of
+ch_06.057	cái điều nó đang làm với chính nó	cái việc nó đang làm với chính nó	REG FIX	"cái điều" is a clumsy stack; spoken Vietnamese says "cái việc".
+ch_06.057	và hạ nó xuống	và hạ giọng xuống	REG FIX	"bring it down" (the voice) is the idiom "hạ giọng"; "hạ nó xuống" sounds like lowering an object.
+ch_06.064	thấy họ cầm nó đúng cách	thấy họ cầm nó cho tử tế	REG NIT	"properly" here echoes IV.003 "đọc cho tử tế" (Iris doing things properly); the same word lets it echo.
+ch_06.068	– Tôi sẽ bay tới London.	– Lẽ ra tôi đã bay tới London.	MOD	BT: future 'sẽ' loses EN 'I'd have flown' (the counterfactual the joke needs)
+ch_06.078	mà việc có người ngồi ở ghế mới quan trọng	mà có người ngồi ở ghế mới quan trọng	REG FIX	the "việc" nominalization calques "it matters that there's someone"; the clause reads directly without it.
+ch_06.079	lâu hơn câu nói ấy cần một chút	lâu hơn mức câu nói ấy cần một chút	REG FIX	without "mức" the comparison parses as "longer than the sentence needs a bit" (cf. V.020 "to hơn mức câu đùa đáng được").
+ch_06.082	và điều đó không ngượng ngùng, khiến anh ngạc nhiên	và anh ngạc nhiên thấy chẳng có gì gượng gạo	REG FIX	"ngượng ngùng" is a person's shyness, not an awkward silence; "which surprises you" folded in natively.
+ch_07.002	lúc mười một giờ mười lăm một tối thứ Ba	lúc mười một giờ mười lăm đêm thứ Ba	REG FIX	"mười lăm một" stumbles as a number; 11:15 pm is "đêm" in Vietnamese.
+ch_07.002	và anh giơ lại hai ngón	và anh giơ hai ngón đáp lại	REG NIT	"giơ lại" can read "raise again"; the gesture is returned.
+ch_07.003	Cô bước đi với chiếc áo khoác vắt trên tay, vẫn thế,	Cô vẫn vắt chiếc áo khoác trên tay mà đi,	REG FIX	"bước đi với" calques "walks with her coat over her arm"; "vẫn" carries "still".
+ch_07.009	Có bao giờ anh rời đi không?	Có bao giờ anh tính chuyện rời đi không?	REG FIX	as written it asks "Have you ever left?"; the English is the hypothetical "Would you ever leave?", which his piano answer needs.
+ch_07.013	bay lên con phố vắng rồi không quay lại	vang đi dọc con phố vắng rồi không vọng lại	REG FIX	"up the street" is along it, not upward ("bay lên"); a laugh that doesn't come back is "không vọng lại".
+ch_07.014	Rồi anh đã ở ngay bên dưới nó.	Rồi hai người đã ở ngay bên dưới nó.	MOD	BT: only he stands under the horse; both walked there
+ch_07.014	để dù anh đứng hướng nào cũng có một con đang lao về phía anh.	để dù đứng ở hướng nào cũng có một con đang lao về phía mình.	MOD	BT: EN 'whichever way you're facing' is generic
+ch_07.014	nó là bốn mươi bộ đèn neon đỏ	nó là một khối đèn neon đỏ cao bốn mươi bộ	REG BLOCK	"bốn mươi bộ đèn" reads as "forty sets of lights" ("bộ đèn" = a fixture); the feet must be a height.
+ch_07.019	Nếu tôi bay đến.	Nếu tôi lái máy bay đến.	REG NIT	she has just flown in as a passenger; "If I were flying in" means at the controls, like the 1934 pilots.
+ch_08.002	ở tầng hai mươi hai với rèm cửa để mở	ở tầng hai mươi hai, rèm cửa để mở	REG FIX	"với" + noun calques "with the curtains open"; the detail stands as a comma phrase.
+ch_08.003	nghiêng trên cái bánh xe của nó	nghiêng trên cái bánh gãy	REG NIT	"của nó" is the English "its"; naming the broken wheel lets IV.003 echo.
+ch_08.006	trên ghế, một lần nhìn chiếc va li, một lần nhìn đôi tay mình	trên ghế, và một lần nhìn chiếc va li, và một lần nhìn đôi tay mình	REG NIT	the English "once…, and once…, and once…" is the author's "and" chain, flattened to commas here.
+ch_08.007	với con ngựa đang quay và thành phố	con ngựa vẫn quay và thành phố	REG FIX	"với" + clause calques "with the horse going round"; the absolute phrase reads natively and keeps the refrain sentence clean.
+ch_09.002	Đêm chẳng dịu đi chút nào.	Đêm chẳng mát đi chút nào.	MOD	BT: 'dịu' (soften) is vague; EN 'the night hasn't cooled at all'
+ch_09.003	Anh hạ cửa kính xuống nữa.	Anh cũng hạ cửa kính xuống.	MOD	BT: 'nữa' reads 'further' (as if already half down); EN 'too'
+ch_09.003	rồi tiếng ù ù của xa lộ	và tiếng ù ù của xa lộ	REG NIT	the English "and…, and…, and…" chain; "rồi" breaks it into a sequence.
+ch_09.004	hồ Bachman với toàn bộ đèn bật sáng	hồ Bachman, đèn đóm sáng trưng	REG NIT	"với toàn bộ đèn bật sáng" is the English "with everything lit"; "đèn đóm sáng trưng" is the native image.
+ch_09.005	Chẳng có gì trong chuyện đó là buồn, nói cho đúng.	Chuyện đó, nói cho đúng, chẳng có gì buồn.	REG FIX	"Chẳng có gì trong … là buồn" copies "None of that is sad"; Vietnamese predicates the adjective directly.
+ch_09.006	mà anh đã phân loại	anh đã phân biệt	REG FIX	two "mà" in one clause ("mà anh đã phân loại … mà chưa một lần"); drop the first; "phân biệt" lets "sorted" point back to I.011 "Anh phân biệt được chúng" (as II.016).
+ch_10.003	lần lượt là 79, 71, 64, 57 °F trong bốn mươi phút	lần lượt tụt xuống 79, 71, 64, 57 °F trong vòng bốn mươi phút	REG FIX	"goes" is a fall over time; "lần lượt là … trong" is a static, translated frame
+ch_10.003	đang lần lượt được báo, bằng một giọng điềm tĩnh, rằng	đang lần lượt được một giọng điềm tĩnh báo rằng	REG FIX	English interpolation between verb and "rằng"; Vietnamese puts the agent inside "được … báo"
+ch_10.004	anh nhìn cô làm việc đó thật giỏi	anh nhìn cô xoay xở thật khéo giữa chốn ấy	MOD	BT: 'làm việc đó' has no clear referent (and leans toward a euphemism); EN 'watched her be good at it'
+ch_10.004	Thứ Tư lúc bảy giờ, hai người	Bảy giờ sáng thứ Tư, hai người	REG FIX	English time order; bare "bảy giờ" reads as evening and makes the nine o'clock council an evening one
+ch_10.004	cái lỗ từng nằm	lỗ hổng từng nằm	REG FIX	the gap in the work is "lỗ hổng"; "cái lỗ" is a physical hole
+ch_10.004	đặt sẵn lúc bảy giờ mười lăm	đặt sẵn đón lúc bảy giờ mười lăm	REG NIT	"đặt sẵn lúc" can read as the time of booking; "đón" matches .011
+ch_10.010	trong giá lạnh	trong cái lạnh	REG NIT	55 °F is cold, not "giá lạnh" (bitter, freezing)
+ch_10.013	Anh đã quyết định chuyện này từ hôm thứ Ba	Từ hôm thứ Ba anh cứ đắn đo mãi chuyện này	REG BLOCK	"You've been deciding" is ongoing; "đã quyết định" says it was already decided and kills the turn "you decided it some time ago"
+ch_10.014	Ở dưới tầng hầm.	Ở tầng dưới.	MOD	EN 'It's downstairs': the understatement (45 floors) is the joke; 'tầng hầm' gives P4 away early
+ch_10.017	– Thế thì không phải là không.	– Câu đó đâu phải là “không”.	MOD	BT: the double negative reads two ways; EN 'That's not a no' (the answer is not a no)
+ch_11.002	chiếc xe của chính anh, nó mở khóa	chiếc xe của chính anh, xe tự mở khóa	REG FIX	", nó + verb" standing in for English "which" is translationese
+ch_11.002	và sau đó là một hành lang	và phía sau là một hành lang	REG FIX	"sau đó" reads as "afterwards"; the corridor is behind the door
+ch_11.002	Nó dài hơn mức đáng lẽ phải dài	Nó dài hơn lẽ ra phải thế	REG NIT	the doubled "dài" is clumsy
+ch_11.007	Không đúng về nguyên tử.	Về nguyên tử thì không.	REG FIX	calque of "Not about atoms"; topic-comment keeps the hint that he was right about something else
+ch_11.009	cô chờ một tiếng gầm và chẳng nhận được gì	cô chờ nghe một tiếng gầm mà chẳng thấy đâu	REG FIX	one does not "nhận được" a sound; calque of "not getting one"
+ch_11.009	và, dán lên tường phía trên màn hình, một tờ giấy ghi một cột số bằng chữ tay của anh mà anh chưa cập nhật từ tháng Tám	và một tờ giấy dán trên tường phía trên màn hình, ghi một cột số anh tự tay viết và chưa cập nhật từ tháng Tám	REG FIX	English parenthetical; "mà anh chưa cập nhật" attaches to "chữ tay" (his handwriting not updated since August)
+ch_11.013	có một cái sóng đôi cách đó một quãng ngắn	có một cái khác làm cặp cách đó một quãng ngắn	REG FIX	"sóng đôi" is not a noun for "partner"
+ch_11.018	Nó không biết mình đang ở trong tám mảnh.	Nó không biết mình đang nằm thành tám mảnh.	REG FIX	"ở trong tám mảnh" calques "in eight pieces"
+ch_11.020	ở một nhiệt độ mà ở đó mọi thứ	ở một nhiệt độ mà mọi thứ	REG FIX	"mà ở đó" calques "at which"
+ch_11.025	Đó là cái giá của việc tồn tại.	Đó là cái giá để nó tồn tại.	REG NIT	"của việc + verb" is bookish in his mouth; the plain form keeps both readings
+ch_11.026	Sao điều đó đáng	Sao cái đó đáng	REG NIT	"điều đó" is written register in speech, and .046 repeats the line with "cái đó"
+ch_11.027	nó tốn đúng bằng tầm mà chuyện đó lan tới	nó tốn đúng bằng tầm với của chuyện đó	MOD	BT: awkward, clear only on a second read; 'tầm với' is XVI's 'computed by reach'
+ch_11.034	ở trên lầu	ở trên kia	REG FIX	"lầu" is Southern for an upper floor (charter §2: no regional words)
+ch_11.040	Nó có trong lịch dưới tên tôi.	Nó có trong lịch, đứng tên tôi.	REG FIX	"dưới tên tôi" calques "under my name"; the idiom is "đứng tên"
+ch_11.045	Cô không nói gì về điều đó, và anh thấy biết ơn.	Cô không nói gì thêm, và anh thầm biết ơn cô vì thế.	REG FIX	"say anything to that" is "nói gì thêm", not "về điều đó"; "thấy biết ơn" is flat
+ch_12.003	vốn chiếm gần hết, đến một ngày nào đó.	vốn chiếm gần hết, rồi dừng ở một ngày.	REG FIX	"một ngày nào đó" reads as "someday"; he scrolls to a particular date
+ch_12.005	cái sóng đôi của nó	cái làm cặp với nó	REG FIX	"sóng đôi" is not a noun for "partner"; matches the ch_11.013 fix and .094 "không có cặp"
+ch_12.005	Đó là một sự ra đời.	Đó là lúc một thứ ra đời.	REG NIT	"một sự + verb" is translationese in speech
+ch_12.009	Nó không có một từ nào cho nó.	Nó không có từ nào để gọi tên.	REG FIX	two "nó" with different referents in one clause
+ch_12.034	nó có thể nghĩ ngược lại mà.	nó có thể nghĩ ngược chiều mà.	MOD	BT: 'nghĩ ngược lại' is the idiom 'think the opposite'; EN 'think backward'
+ch_12.040	Gợn sóng chạy lùi vào cái rìa nó đã đến,	Gợn sóng chạy lùi về cái rìa nơi nó bắt đầu,	MOD	BT: reads 'the edge it had come to'; EN 'the edge it came from'
+ch_12.046	Nó sẽ là một tấm ghi những gì tôi nghĩ.	Nó sẽ là một tấm ghi lại những gì tôi nghĩ.	MOD	BT: 'tấm ghi' is not a word; 'tấm ghi lại' = a sheet that records
+ch_12.046	nó là một tấm ghi những gì đã xảy ra.	nó là một tấm ghi lại những gì đã xảy ra.	MOD	as above
+ch_12.046	Toàn bộ cuộc đặt cược là ở chỗ	Cả ván cược nằm ở chỗ	REG FIX	calque of "The whole bet is that"; stiff in speech
+ch_12.051	rồi anh nghe nó sắp đến và dừng lại	rồi anh nghe thấy nó sắp tuôn ra và dừng lại	REG FIX	"sắp đến" is the refrain's word, otherwise used only at the refrain sites; here it makes a false echo, and the explanation "tuôn ra", it does not arrive
+ch_12.060	Anh mở một đoạn ghi lại:	Anh mở một đoạn ghi hình:	REG FIX	"mở … lại" reads as "reopens"; .064 then says "đoạn ghi"
+ch_12.061	Đó là nửa ngủ trong cách nó học.	Đó là một nửa cách nó học, nửa lúc ngủ.	MOD	BT: 'nửa ngủ' reads as the idiom 'half-asleep'; EN 'the sleep half of how it learns'
+ch_12.061	Không có nội dung, có chủ ý.	Cố ý để không có nội dung.	REG FIX	next to "Không có nội dung", "có chủ ý" reads as "it has intent"
+ch_12.064	Nó có mơ thấy những chiếc không đến không?	Những chiếc không đến thì nó có mơ thấy không?	REG NIT	"không đến không?" stumbles; topic-first is the natural question
+ch_12.088	cô để nó đứng đó	cô để câu ấy lơ lửng	REG NIT	"let it stand" calqued; "lơ lửng" is the idiom (and "nó" here is not the machine)
+ch_12.090	nổi lên và ở nguyên trên đó	nổi lên và cứ thế không hạ xuống	REG FIX	"ở nguyên trên đó" is a physical place; the fans keep spinning up (the chapter's word for spin-down is "hạ xuống")
+ch_12.105	nó sẽ mọc ra một sự phân biệt cho nó.	nó sẽ mọc ra một sự phân biệt riêng cho trường hợp ấy.	REG FIX	two "nó" with different referents in one clause ("chuyện đó" is already the sentence's subject)
+ch_13.002	rồi bảo người đó cứ về nhà.	rồi bảo cứ về nhà đi.	MOD	BT: 'người đó' for the driver is stiff; Vietnamese drops the object
+ch_13.002	mùi bụi bị đốt cháy	mùi bụi cháy	REG NIT	"dust burning off" needs no passive "bị đốt"
+ch_13.011	Con đang lái xe đấy à.	Con đang lái xe đấy.	REG NIT	the father states it (English full stop); "à" with a full stop sits between question and statement
+ch_13.028	Việc của người khuân hành lý	Việc của nhân viên khuân hành lý	REG FIX	charter §8 term for "bellman", and the echo of ch_05 where "Một nhân viên khuân hành lý" took this suitcase
+ch_13.040	Cô gọi tên anh thêm một lần nữa	Cô gọi tên anh một lần nữa	REG NIT	the doubled "thêm" blunts the locked "thêm một âm tiết" that follows
+ch_14.003	và đường chân trời hiện lên phía trước	và đường chân trời thành phố hiện lên phía trước	REG FIX	bare "đường chân trời" is the horizon; ch_05 set the skyline as "đường chân trời thành phố", and this line echoes it
+ch_14.004	khi chúng ru nó ngủ sau lưng anh.	khi chúng ru văn phòng ngủ sau lưng anh.	MOD	BT: 'nó' has no clear referent; I .003 'ru văn phòng ngủ sau lưng anh', so the echo lands
+ch_14.005	cho tấm hiện lên	cho tấm màu hiện lên	REG FIX	first mention in the chapter; a bare "tấm" at the end of a clause reads as a stray classifier ("tấm màu" as in XI and XII)
+ch_14.008	trong hàng kiên nhẫn của chúng	nối thành một hàng kiên nhẫn	REG NIT	possessive "của chúng" calques "in their patient line"
+ch_14.009	theo cách những chiếc hạng nặng vẫn thế	như những chiếc hạng nặng vẫn thế	REG FIX	"theo cách … vẫn thế" mixes two constructions ("theo cách … vẫn làm" / "như … vẫn thế")
+ch_14.009	một dòng đã khép lại	một dòng đã đóng lại	REG FIX	echo lost; the locked XII line is "một dự kiến chưa đóng lại", and this row is that expectation closing
+ch_14.011	có một thứ hạng nặng đã cất cánh lên về phía đông bắc	có một thứ nặng đã cất lên về phía đông bắc	REG FIX	echoes XII .023 "Nó biết có một thứ nặng…" and XI .036 "cất lên"; the field has no "hạng nặng" category, and "cất cánh lên" is redundant
+ch_14.012	Hôm nay là thứ Sáu. Đêm cuối cùng của tuần lệch.	Đó là một ngày thứ Sáu. Đó là đêm cuối cùng của tuần lệch.	REG FIX	echo lost; IX's close is "Đó là một ngày thứ Ba. Đó là tuần cuối cùng…", the "Cứ cho đó là" frame turned fact
+ch_16.002	mọi ô có ý nghĩa, phần lớn những ô không	tất cả những ô có ý nghĩa, phần lớn những ô không	MOD	BT: parses first as a clause ('every cell has meaning'); 'tất cả những ô' forces EN's noun phrase 'every cell that mattered'
+ch_16.002	viết (quy tắc 3)	được viết (quy tắc 3)	MOD	BT: bare 'viết' reads as a command; EN 'written (rule 3)'
+ch_16.003	(anh ấy nói với nó thì có quan trọng)	(theo anh ấy, với nó thì có quan trọng)	MOD	BT: 'nói với nó' reads 'told it'; EN 'he said it'd matter to it' (VI's line, carried whole)
+ch_16.003	không gì viết ở đây được khắc	không gì viết ở đây khắc được	MOD	BT meaning reversal: 'được khắc' = 'gets carved'; EN 'nothing written here can carve'
+ch_18.002	bản dựng	bản tái hiện	MOD	BT: 'bản dựng' reads as a software build or a film cut; EN 'rendering' (a re-creation of her)
+ch_18.003	Tôi đã giữ phía tay mình trong một cái bắt tay dài vừa đúng,	Tôi đã giữ trọn phần mình trong một cái bắt tay dài vừa đúng,	MOD	BT: 'phía tay mình' is not idiomatic; EN 'held my end of a handshake'
+ch_18.006	và anh ấy nói là với tôi thì có quan trọng.	và theo anh ấy, với tôi thì có quan trọng.	MOD	BT: 'nói … với tôi' reads 'tells me'; EN 'he says it would matter to me' (charter §12: me = Iris)

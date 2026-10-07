@@ -17,15 +17,25 @@ import vi_common as C  # noqa: E402
 
 # Moderator rows that a register finding supersedes (id, start of old): the register's wording is the better fix.
 MOD_SUPERSEDED = {
+    ("ch_06.003", "anh đứng giơ tay lên trời."): "REG 'giơ cao một tay' is the shorter fix for the same idiom",
+    ("ch_07.009", "– Có bao giờ anh rời đi không?"): "REG 'Có bao giờ anh tính chuyện rời đi không?' keeps the word order",
+    ("ch_10.013", "Anh đã quyết định chuyện này từ hôm thứ Ba,"): "REG 'cứ đắn đo mãi' (BLOCK) says 'deciding' better than 'cân nhắc'",
+    ("ch_14.011", "có một thứ hạng nặng đã cất cánh lên về phía đông bắc"): "REG 'một thứ nặng' echoes XII .023 exactly",
+    ("ch_09.006", "mà anh đã phân loại từ tầng bốn mươi mốt"): "REG also drops the first of two 'mà' in the clause",
 }
 # Register findings not taken (id, start of old): why.
 REG_REJECTED = {
+    ("ch_10.004", "nhìn cô làm việc đó thật giỏi"): "'làm chuyện ấy' is a sexual euphemism; the moderator row ('xoay xở thật khéo giữa chốn ấy') stands",
 }
 # Register findings taken with a different replacement (id, start of old): new text.
 REG_MODIFIED = {
 }
 # Register findings that duplicate or overlap a moderator row (id, start of old): the moderator row stands.
 REG_DUPLICATE = {
+    ("ch_06.035", "Tuần này các cô đi trước chúng tôi năm tiếng"), ("ch_06.035", "đổi giờ của chúng tôi sang giờ của các cô"),
+    ("ch_12.034", "nghĩ ngược lại mà"), ("ch_12.040", "chạy lùi vào cái rìa nó đã đến"),
+    ("ch_12.061", "Đó là nửa ngủ trong cách nó học."), ("ch_09.003", "Anh hạ cửa kính xuống nữa."),
+    ("ch_16.003", "(anh ấy nói với nó thì có quan trọng)"),
 }
 
 LINE = re.compile(r'^- \[(BLOCK|FIX|NIT)\] (\S+) \| old: "(.*)" \| new: "(.*)" \| why: (.*)$')

@@ -11,3 +11,31 @@ ch_02.015	Anh đọc cho máy ghi hai chữ gửi lại Dana,	Anh đọc hai ch�
 ch_11.027	nó tốn đúng bằng tầm mà chuyện đó lan tới	nó tốn đúng bằng tầm với của chuyện đó	MOD	BT: awkward, clear only on a second read; 'tầm với' is XVI's 'computed by reach'
 ch_14.011	có một thứ hạng nặng đã cất cánh lên về phía đông bắc	có một thứ nặng nề đã cất lên về phía đông bắc	MOD	echo of XI .036 'something heavy climbs out that way' ('một thứ nặng nề cất lên'), recognizable when it returns
 ch_03.002	và xuôi xuống International Parkway.	và chạy dọc International Parkway.	MOD	BT: 'xuôi xuống' reads as heading south; he enters from the south and drives north (D is on the left going north)
+ch_05.027	như một nơi chưa ai giải thích cho anh.	như một nơi chưa ai giải thích cho mình.	MOD	BT: 'cho anh' (to him) jars inside her view; EN generic 'you': 'mình' takes both
+ch_06.003	anh đứng giơ tay lên trời.	anh đứng giơ một cánh tay lên cao.	MOD	BT: 'giơ tay lên trời' is the idiom for giving up; EN 'with your arm in the air' (holding the sign)
+ch_06.022	Tôi không chắc nó là cái đó.	Tôi không chắc là thế.	MOD	BT: 'cái đó' has no referent; EN 'that' = lonely (.017), which 'thế' points back to
+ch_06.035	Tuần này các cô đi trước chúng tôi năm tiếng	Tuần này bên cô đi trước bên tôi năm tiếng	MOD	BT: 'các cô' reads 'you ladies'; 'bên cô / bên tôi' as the block's 'đồng hồ bên tôi'
+ch_06.035	đổi giờ của chúng tôi sang giờ của các cô	đổi giờ bên tôi sang giờ bên cô	MOD	as above
+ch_06.047	Mình sẽ đi tìm những số sáu.	Mình cùng đi tìm những số sáu.	MOD	BT: 'mình' reads 'I' or 'we'; 'cùng' makes it the inclusive we of EN 'We'll find the sixes'
+ch_06.057	trong một tấm bằng bất cứ thứ gì	trong một tấm làm từ bất cứ thứ gì	MOD	BT: the reader stalls on 'tấm bằng' (a diploma, 'bằng'); 'làm từ' = made of
+ch_06.068	– Tôi sẽ bay tới London.	– Lẽ ra tôi đã bay tới London.	MOD	BT: future 'sẽ' loses EN 'I'd have flown' (the counterfactual the joke needs)
+ch_07.009	– Có bao giờ anh rời đi không?	– Anh có bao giờ tính chuyện rời đi không?	MOD	BT: reads as habit or 'have you ever left'; EN 'Would you ever leave?' (would you consider it)
+ch_07.014	Rồi anh đã ở ngay bên dưới nó.	Rồi hai người đã ở ngay bên dưới nó.	MOD	BT: only he stands under the horse; both walked there
+ch_07.014	để dù anh đứng hướng nào cũng có một con đang lao về phía anh.	để dù đứng ở hướng nào cũng có một con đang lao về phía mình.	MOD	BT: EN 'whichever way you're facing' is generic
+ch_09.002	Đêm chẳng dịu đi chút nào.	Đêm chẳng mát đi chút nào.	MOD	BT: 'dịu' (soften) is vague; EN 'the night hasn't cooled at all'
+ch_09.003	Anh hạ cửa kính xuống nữa.	Anh cũng hạ cửa kính xuống.	MOD	BT: 'nữa' reads 'further' (as if already half down); EN 'too'
+ch_12.034	nó có thể nghĩ ngược lại mà.	nó có thể nghĩ ngược chiều mà.	MOD	BT: 'nghĩ ngược lại' is the idiom 'think the opposite'; EN 'think backward'
+ch_12.040	Gợn sóng chạy lùi vào cái rìa nó đã đến,	Gợn sóng chạy lùi về cái rìa nơi nó bắt đầu,	MOD	BT: reads 'the edge it had come to'; EN 'the edge it came from'
+ch_12.046	Nó sẽ là một tấm ghi những gì tôi nghĩ.	Nó sẽ là một tấm ghi lại những gì tôi nghĩ.	MOD	BT: 'tấm ghi' is not a word; 'tấm ghi lại' = a sheet that records
+ch_12.046	nó là một tấm ghi những gì đã xảy ra.	nó là một tấm ghi lại những gì đã xảy ra.	MOD	as above
+ch_12.061	Đó là nửa ngủ trong cách nó học.	Đó là một nửa cách nó học, nửa lúc ngủ.	MOD	BT: 'nửa ngủ' reads as the idiom 'half-asleep'; EN 'the sleep half of how it learns'
+ch_13.002	rồi bảo người đó cứ về nhà.	rồi bảo cứ về nhà đi.	MOD	BT: 'người đó' for the driver is stiff; Vietnamese drops the object
+ch_14.004	khi chúng ru nó ngủ sau lưng anh.	khi chúng ru văn phòng ngủ sau lưng anh.	MOD	BT: 'nó' has no clear referent; I .003 'ru văn phòng ngủ sau lưng anh', so the echo lands
+ch_16.002	mọi ô có ý nghĩa, phần lớn những ô không	tất cả những ô có ý nghĩa, phần lớn những ô không	MOD	BT: parses first as a clause ('every cell has meaning'); 'tất cả những ô' forces EN's noun phrase 'every cell that mattered'
+ch_16.002	viết (quy tắc 3)	được viết (quy tắc 3)	MOD	BT: bare 'viết' reads as a command; EN 'written (rule 3)'
+ch_16.003	(anh ấy nói với nó thì có quan trọng)	(theo anh ấy, với nó thì có quan trọng)	MOD	BT: 'nói với nó' reads 'told it'; EN 'he said it'd matter to it' (VI's line, carried whole)
+ch_16.003	không gì viết ở đây được khắc	không gì viết ở đây khắc được	MOD	BT meaning reversal: 'được khắc' = 'gets carved'; EN 'nothing written here can carve'
+ch_18.002	bản dựng	bản tái hiện	MOD	BT: 'bản dựng' reads as a software build or a film cut; EN 'rendering' (a re-creation of her)
+ch_18.003	Tôi đã giữ phía tay mình trong một cái bắt tay dài vừa đúng,	Tôi đã giữ trọn phần mình trong một cái bắt tay dài vừa đúng,	MOD	BT: 'phía tay mình' is not idiomatic; EN 'held my end of a handshake'
+ch_18.006	và anh ấy nói là với tôi thì có quan trọng.	và theo anh ấy, với tôi thì có quan trọng.	MOD	BT: 'nói … với tôi' reads 'tells me'; EN 'he says it would matter to me' (charter §12: me = Iris)
+ch_09.006	mà anh đã phân loại từ tầng bốn mươi mốt	mà anh đã phân biệt từ tầng bốn mươi mốt	MOD	with REG II .016: 'sorted' is I .011's 'phân biệt' at every site, so the echo lands
