@@ -1,0 +1,13 @@
+id	old	new	source	why
+ch_01.007	dòng này nối dòng kia những lần	dòng này nối dòng kia, những lần	MOD	BT: two phrases run together; a comma before the subject of the second
+ch_01.015	Anh chưa chạm vào gì, màn hình đã đoán trước:	Anh chưa kịp chạm vào gì thì màn hình đã đoán trước:	MOD	BT: comma splice; chưa kịp … thì … đã is the Vietnamese 'before you have'
+ch_10.004	anh nhìn cô làm việc đó thật giỏi	anh nhìn cô xoay xở thật khéo giữa chốn ấy	MOD	BT: 'làm việc đó' has no clear referent (and leans toward a euphemism); EN 'watched her be good at it'
+ch_10.013	Anh đã quyết định chuyện này từ hôm thứ Ba,	Từ hôm thứ Ba anh đã cân nhắc chuyện này,	MOD	BT meaning drift: EN 'you have been deciding this since Tuesday' (weighing it), not 'decided'
+ch_10.014	Ở dưới tầng hầm.	Ở tầng dưới.	MOD	EN 'It's downstairs': the understatement (45 floors) is the joke; 'tầng hầm' gives P4 away early
+ch_10.017	– Thế thì không phải là không.	– Câu đó đâu phải là “không”.	MOD	BT: the double negative reads two ways; EN 'That's not a no' (the answer is not a no)
+ch_02.006	một dải xanh trải ra phía trước	một dải xanh dương trải ra phía trước	MOD	BT: 'xanh' reads green or blue; EN 'a blue ribbon', fixed at its first site (later 'dải xanh' as the registry has it)
+ch_02.010	Rồi màn hình kêu một tiếng.	Rồi màn hình kêu “ting” một tiếng.	MOD	EN 'the screen chimes': a chime, not a bare noise
+ch_02.015	Anh đọc cho máy ghi hai chữ gửi lại Dana,	Anh đọc hai chữ trả lời Dana,	MOD	BT: 'máy ghi' suggests a tape recorder; EN 'you dictate two words back to Dana'
+ch_11.027	nó tốn đúng bằng tầm mà chuyện đó lan tới	nó tốn đúng bằng tầm với của chuyện đó	MOD	BT: awkward, clear only on a second read; 'tầm với' is XVI's 'computed by reach'
+ch_14.011	có một thứ hạng nặng đã cất cánh lên về phía đông bắc	có một thứ nặng nề đã cất lên về phía đông bắc	MOD	echo of XI .036 'something heavy climbs out that way' ('một thứ nặng nề cất lên'), recognizable when it returns
+ch_03.002	và xuôi xuống International Parkway.	và chạy dọc International Parkway.	MOD	BT: 'xuôi xuống' reads as heading south; he enters from the south and drives north (D is on the left going north)
