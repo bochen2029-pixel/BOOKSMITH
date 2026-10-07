@@ -932,3 +932,27 @@ from the container image, which is built from `git archive HEAD`. To ship a gate
 commit it, stage the public tree, rebuild both images, push, bump image + instance
 suffix together, deploy. Prove the behaviour *inside* the image before pushing
 (`docker run --rm booksmith-cf:aNN python -c ...`) rather than trusting the file copy.
+
+## 23. BOOK TRANSLATION LESSONS (2026-10-07, *Five Hours Apart* in zh-Hant-TW, zh-Hans and es-419; method: docs/BOOK_TRANSLATION_METHOD_v3.md; ship reports in each `book_workspace/five_hours_apart_*` workspace)
+
+### 23.1 Symptom: a locked line comes back reworded at its second site
+**Cause.** The charter states the lock as a sentence, nothing gates it, and whoever translates the later unit
+(the moderator who wrote the charter included) re-renders the line from the English when it recurs. In es-419
+three drifted: the father's "—Un pesado, del sur.", the handshake's "de la duración exacta" / "el tiempo exacto",
+and I/XIV's freeway line. Only a native reviewer reading the charter against the text caught them.
+**Fix.** At P1, every locked line with two or more sites becomes a registry row (English regex → the target form),
+so the per-unit gate fails the drift the moment it is written; mutation-test each row.
+
+### 23.2 Symptom: an echo check fails on a fixed-width log row whose quote wraps
+**Cause.** The row's other columns sit between the two halves of the quoted line, so a substring check never sees
+the line whole. **Fix.** Rejoin wrapped row quotes before the term and echo checks (`_tools_es/gate_es.py`,
+`row_quotes`), and keep a battery case that breaks a wrapped quote.
+
+### 23.3 Two QA lenses, little overlap: run both
+Blind back-translation diffed against the English finds ambiguity (elided subjects, two-way pronouns, regional
+words, a calque that reads two ways). A native register read finds grammar, calques and drift from the key. In
+es-419 they overlapped on 8 of about 110 findings.
+
+### 23.4 Reviewers write one file per unit
+A background reviewer that writes each unit's report as it finishes loses nothing to a quota limit or a refused
+final write (the es register SUMMARY came back as text and was saved by the moderator).

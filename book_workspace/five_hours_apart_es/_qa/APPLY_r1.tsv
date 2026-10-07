@@ -1,0 +1,91 @@
+id	old	new	source	why
+ch_01.007	llenando la pantalla	que llenan la pantalla	REG NIT	adjectival gerund on "éxitos"; the relative is cleaner
+ch_01.008	Nadie sabrá nunca cuáles cuatro líneas.	Nadie sabrá nunca cuáles fueron las cuatro líneas.	REG FIX	the verbless "cuáles cuatro líneas" is the English ellipsis carried over; Spanish wants the verb (and "cuál" as determiner reads colloquial here)
+ch_01.011	así que aterrizan en las diecisiete y las dieciocho,	así que aterrizan en las pistas diecisiete y dieciocho,	MOD	bare 'las diecisiete' reads as 17:00; name the runways
+ch_01.013	En el alféizar,	En la repisa de la ventana,	REG FIX	the receiver's sill returns near-verbatim at XIV .004 and XVIII .010 (and in XI .034's dialogue), all as "la repisa de la ventana"; "alféizar" here is the odd one out, so the callback is lost (and "alféizar" is bookish for this narrator)
+ch_01.014	sin un ruido	sin hacer ruido	REG NIT	"sin un ruido" is the English "without a sound"; the set phrase is "sin hacer ruido"
+ch_02.003	la pluma del boleto	la barrera del boleto	MOD+BACK	pluma is Mexican only (BACK_A, BACK_B); barrera reads everywhere
+ch_02.003	y la pluma se levanta	y la barrera se levanta	MOD+BACK	as above
+ch_02.003	para entrar a Commerce	para entrar a la calle Commerce	REG FIX	first mention of the street; a Spanish reader needs the common noun (charter §7), and X and XIII both say "la calle Commerce"
+ch_02.003	en lo último de la luz	con la última luz	REG FIX	calque of "in the last of the light"; "lo último de la luz" is not a Spanish phrase
+ch_02.007	y luego se sueltan	y luego aflojan	REG NIT	"se sueltan" (come loose) is odd for brake lights; "aflojan" is what traffic does
+ch_02.009	Vuelas simuladores desde los doce años	Vuelas en simuladores desde los doce años	MOD+BACK	volar simuladores is odd (BACK_A note)
+ch_02.009	si el clima quería ponerlo	si al clima se le antojaba	REG NIT	"ponerlo" is stiff; the idiom carries the English "if the weather wanted one"
+ch_02.016	se vuelve del ámbar mate	se tiñe del ámbar mate	REG NIT	"volverse del [color]" is awkward; "teñirse de" is the natural verb for a sky taking a color
+ch_03.003	Lo has sabido toda la vida como un dato curioso	Lo sabes de toda la vida como un dato curioso	REG FIX	the English present perfect for a continuing state; Spanish uses the present ("lo sabes de toda la vida")
+ch_03.003	fuera corto, personas que daban por hecho	fuera corto: eran personas que daban por hecho	REG FIX	the bare apposition "personas que…" dangles after a clause whose subject is implicit; the English "by people who" needs its own clause in Spanish
+ch_03.003	cada una una larga media luna iluminada	cada una, una larga media luna iluminada	REG NIT	"una una" reads at first glance as a doubled word; the comma marks the apposition
+ch_03.007	una subida, un brillo	un impulso, un brillo	REG NIT	"una subida… le hubiera subido la ganancia" repeats the verb within one sentence
+ch_03.011	esperando a alguien que quieren.	esperando a alguien a quien quieren.	MOD+BACK	personal a: a alguien a quien
+ch_03.013	Cuando eras chico, tu papá te llevaba	Cuando eras chico, tu padre te llevaba	MOD	narration says 'tu padre' everywhere else (X, XII, XIII, XVIII)
+ch_03.013	antes de que tú lo vieras	antes de que lo vieras	REG FIX	needless subject pronoun; charter §9 gives the line as "Decía «pesado» antes de que lo vieras"
+ch_03.013	porque no se fiaba del tráfico	porque no confiaba en el tráfico	REG NIT	"fiarse" leans peninsular/literary; "confiar en" is the everyday form in Mexico
+ch_03.015	Cada vez que se abren las puertas y encuentran a alguien,	Cada vez que se abren las puertas y a alguien lo encuentran,	MOD+BACK	the doors were the finders; EN 'someone is found'
+ch_04.004	como los oídos registraron el descenso	como tus oídos registraron el descenso	MOD+BACK	subject body part with no clitic wants the possessive
+ch_04.012	gracias por haber sido ofrecido como voluntario	gracias por dejarte ofrecer como voluntario	REG NIT	the periphrastic passive is stiff in Iris's quick mouth; "dejarte ofrecer" keeps the joke (he did not choose it) in spoken Spanish
+ch_04.016	y luego ella te deja, y los dos cruzan	y luego ella te deja llevarla, y los dos cruzan	MOD+BACK	te deja read as 'leaves you'; EN 'she lets you'
+ch_04.020	el abrigo sobre su brazo	el abrigo sobre el brazo	REG FIX	possessive on a body part (charter §3)
+ch_05.002	y en la primera recta larga le das el volante, y ella ve	y en la primera recta larga le das el volante al carro, y ella ve	MOD+BACK	le das el volante read as giving it to her (BACK_A)
+ch_05.036	de desconocido a maletero	de desconocido a cargador de maletas	MOD+BACK	maletero is a car trunk in Spain and much of South America (BACK_A)
+ch_05.036	El carro te baja de la autopista	El carro los baja de la autopista	REG NIT	both of them are in the car; the English "you" is plural here, and "los" (ustedes) says so
+ch_06.003	las autopistas que manejaste esta noche	las autopistas por las que manejaste esta noche	REG FIX	"manejar" does not take the road as direct object; you drive on it
+ch_06.013	la miseria específica del asiento de en medio, que esta vez no le tocó pero que ha tenido antes y sobre la que tiene opiniones	el suplicio particular del asiento de en medio, que esta vez no le tocó pero que ha tenido antes y sobre el que tiene opiniones	REG FIX	"miseria específica" calques "specific misery" ("miseria" reads as poverty, "específica" as English "specific"); "sobre el que" then follows the seat, as in the English
+ch_06.027	para decirla en voz alta	para decir en voz alta	REG NIT	redundant clitic; the infinitive's object is already "una frase"
+ch_06.032	el ruido callado	el sonido discreto	REG FIX	"callado" means not speaking; "a silent noise" is an oxymoron the English "quiet sound" does not have
+ch_06.043	Lo que sientes, mientras la ves irse,	Lo que sientes, mientras ves cómo se le va,	MOD+BACK	la = the week or Iris (BACK_A); it is the week leaving her
+ch_06.050	y que ya dejaste de intentar	y ya dejaste de intentarlo	REG FIX	as written the relative makes the feeling the object of "intentar" (you stopped trying the feeling); the English is "stopped trying to [put it into words]"
+ch_06.051	deja por completo de tratarse de la empresa	deja por completo de tratar sobre la empresa	REG BLOCK	"tratarse de" is impersonal and cannot take "la conversación" as subject (RAE DPD, s.v. tratar); with a subject it is "tratar de/sobre"
+ch_06.055	La que nadie me paga es si algo es como algo para él.	Nadie me paga por la otra: si para él algo se siente como algo.	MOD+BACK	missing 'por'; 'algo es como algo para él' was an opaque calque of 'anything is like anything for it' (BACK_A)
+ch_06.057	el tipo de cosa que se hace a sí mismo	el tipo de cosa que se está haciendo a sí mismo	REG FIX	"que se hace a sí mismo" first reads "that makes itself" (self-made); the English is what it is doing to itself
+ch_06.064	no es la vista y no es eso	no es el panorama y no es eso	REG NIT	"la vista … apartaste la vista" in one sentence trips the ear (the view / looked away)
+ch_06.077	¿Pero por qué el aterrizaje? De todo.	¿Pero por qué el aterrizaje? De todo eso.	REG NIT	bare "De todo." is cryptic in Spanish; "De todo eso" carries "of all of it"
+ch_06.084	Sus relojes cambiaron y los nuestros no.	Los relojes de ustedes ya cambiaron y los nuestros todavía no.	MOD+BACK	sus = their/your; EN 'Your clocks changed and ours haven't'
+ch_06.089	No en una hora por lo menos.	Al menos no en la próxima hora.	MOD+BACK	'no en una hora' is a calque of 'not for an hour'
+ch_07.008	Un tren viene por Pacific cuando la cruzas	Un tren viene por la avenida Pacific cuando la cruzas	MOD+BACK	la had no feminine antecedent (BACK_A)
+ch_07.014	su cara cuando la echa hacia atrás para mirar	su cara cuando echa la cabeza hacia atrás para mirar	REG NIT	in Spanish one tips the head back, not the face
+ch_07.020	las puertas son de las giratorias, y el vestíbulo detrás de ellas	la puerta es de las giratorias, y el vestíbulo detrás de ella	REG FIX	charter §12 rules the hotel door is one revolving door, and .024 says "La puerta gira"; the plural here contradicts the singular four lines later
+ch_08.006	y si las está contando el número no importa	y si las está contando, el número no importa	MOD+BACK	comma after the conditional (BACK_A)
+ch_09.002	la docena de futuros cuidadosos por segundo del carro	la docena de futuros cuidadosos que el carro imagina por segundo	REG FIX	"por segundo del carro" parses as "a second of the car"; Spanish needs the verb for the English possessive, and "imagina" is II .006's own word, so the callback sharpens
+ch_09.005	y ella está dormida, o cerca,	y ella está dormida, o casi,	MOD+BACK	o cerca is elliptical; EN 'or near it' (BACK_A)
+ch_10.004	se paró frente al consejo	se paró frente al comité	MOD	II calls it el comité de revisión
+ch_10.004	se sentaron los dos en tu escritorio	se sentaron los dos a tu escritorio	MOD+BACK	en tu escritorio = on top of it
+ch_10.004	o sea rápido	o sea, rápido	REG FIX	the explanatory connector "o sea" takes a comma after it (RAE, Ortografía 2010)
+ch_10.004	la viste ser buena para eso	viste lo buena que era para eso	REG NIT	"verla ser buena" calques "watch her be good at it"; the exclamative "lo buena que era" is the Spanish turn
+ch_11.002	y luego la ciudad decidió que la quería en la calle	y luego la ciudad decidió que quería a la gente en la calle	MOD+BACK	la had two feminine antecedents; EN 'wanted them on the street'
+ch_11.009	con cinchos y un podcast	con cinchos y un pódcast	REG FIX	charter §8 spells it "pódcast" (RAE's adapted form); the only bare "podcast" in the book
+ch_11.009	una columna de números con tu letra	una columna de números de tu puño y letra	REG NIT	"con … con" in one phrase; "de tu puño y letra" is the idiom for "in your handwriting"
+ch_11.020	es la única parte de esto que escribí yo que llamaría ingeniosa	es la única parte de lo que escribí que yo llamaría ingeniosa	MOD	two stacked que-clauses
+ch_11.020	Justo del lado de adentro del borde.	Justo dentro del borde.	REG FIX	charter §9 fixes the phrase as "justo dentro del borde"; the long form slows the narrator's crisp explanation
+ch_11.020	cada región justo del lado de adentro del borde	cada región justo dentro del borde	REG FIX	same phrase, second site in the block; keep the two identical
+ch_11.024	en la que ella no se había fijado	en la que ella no se ha fijado	REG FIX	pluperfect inside present-tense narration ("Señalas"); the anterior of a present is the perfect (or the preterite)
+ch_11.027	y entonces cuesta exactamente lo que ese algo alcanza.	y entonces cuesta exactamente hasta donde llegue ese algo.	MOD+BACK	alcanzar split reach/suffice; the cost is the reach (echoed in .034 llegó exactamente hasta ahí)
+ch_11.045	Ella no dice nada a eso	Ella no dice nada al respecto	REG NIT	"decir nada a eso" calques "say anything to that"
+ch_12.026	Ella mira la fila un rato más, y la dejas.	Ella mira la fila un rato más, y la dejas mirar.	MOD+BACK	la dejas = leave it / let her; EN 'you let her'
+ch_12.034	—Enséñame algo que pueda deshacer —dice—.	—Enséñame algo que él pueda deshacer —dice—.	MOD+BACK	pueda = it / I; the field is the one that undoes
+ch_12.076	Pero entonces nunca se ha equivocado con nada que haya cambiado.	Pero entonces nunca se habría equivocado con nada que cambiara.	MOD+BACK	a hypothetical (if fed UTC) wants the conditional
+ch_12.090	del ancho de tu mano	del ancho de una mano	REG NIT	a measure, not his hand; the indefinite drops the body-part possessive (charter §3)
+ch_12.097	Tiene un nudo para hacia dónde apunta el aeropuerto.	Tiene un nudo para la dirección en que apunta el aeropuerto.	REG FIX	"para hacia dónde" stacks a preposition on an interrogative adverb; reads as a word-for-word "for which way"
+ch_12.114	lo he comparado contra todo lo que tengo	lo he comparado con todo lo que tengo	REG FIX	"comparar contra" is the English "check against"; Spanish compares "con"
+ch_12.117	Entonces reserva las próximas diez	Entonces aparta las próximas diez	MOD+BACK	reservar read as 'book'; hold out = set aside
+ch_12.120	una hora antes de que cambie el viento que yo no puedo ver y él sí	que yo no puedo ver y él sí, una hora antes de que cambie el viento	REG FIX	with "el viento" right before "que", the relative first attaches to the wind (which the field cannot feel, .096); moving the time phrase to the end ties "que yo no puedo ver" to "algo"
+ch_13.004	y en la Stemmons le das el volante.	y en la Stemmons le das el volante al carro.	MOD+BACK	same ambiguity as V .002
+ch_13.004	pasas la pluma del boleto	pasas la barrera del boleto	MOD+BACK	as above
+ch_13.009	Pesado, del sur.	Un pesado, del sur.	REG FIX	charter §9 gives the father's line as "—Un pesado, del sur."; without the article "Pesado" reads as the adjective, not the aircraft noun that .018 ("Dice *pesado* igual que tú") turns on
+ch_13.021	Podría volver a correr toda su vida	Yo podría volver a correr toda su vida	MOD+BACK	podría = I/it (BACK_B); EN 'I could run its whole life again'
+ch_13.036	el mismo apretón de manos, exactamente de la duración justa	el mismo apretón, de la duración exacta	REG FIX	charter §11 locks "el mismo apretón, de la duración exacta"; "duración justa" loses VII .020's "de la duración exacta", so the handshake echo goes soft
+ch_13.041	Sabes quién está detrás.	Sabes quién está detrás de ellas.	MOD+BACK	bare detrás left the doors unnamed (BACK_B); VII keeps the bare form, where the door is in the sentence before
+ch_14.003	la pluma del estacionamiento se levanta	la barrera del estacionamiento se levanta	MOD+BACK	as above
+ch_14.004	lo contrario del martes, cuando la iban poniendo a dormir detrás de ti.	lo contrario del martes, cuando iban poniendo a dormir la oficina detrás de ti.	MOD+BACK	la had no clear antecedent (BACK_B); echo of I 'poniendo a dormir la oficina detrás de ti'
+ch_14.006	Arriba del registro, debajo	En la parte de arriba del registro, debajo	REG FIX	"arriba de" means above/outside it; the row is at the top of the record, not above it
+ch_14.008	cada una de ellas alguien a quien esperan, o no.	cada una de ellas alguien a quien reciben, o no.	MOD	echo of II 'alguien la recibe, o no' (meet = recibir)
+ch_14.008	Las autopistas son blancas hacia ti y rojas al alejarse.	Las autopistas son blancas en tu dirección y rojas en la otra.	REG FIX	charter §11 names I/XIV the freeways as a word-for-word callback; I .010 says "blancas en tu dirección y rojas en la otra", and the English repeats "white toward you and red away" verbatim
+ch_14.012	y vas a estar en el cuarto para eso, y él también.	y vas a estar en el cuarto para eso, y el campo también.	MOD+BACK	él read as the father (BACK_B); EN 'and so will it'
+ch_15.003	nada con qué medirlo	nada con que medirlo	REG BLOCK	with an explicit antecedent ("nada") the "que" is a relative and takes no accent (RAE: "no tengo nada que hacer" vs "no tengo qué hacer")
+ch_17.003	deshecho: 0	deshacer: 0	MOD+BACK	deshecho read as a typo for desecho (BACK_B); the infinitive matches pensar/asentar in the same block and the prose verb (R17)
+ch_17.004	previsión desfasada 1 h  se funde  vuelve a crecer	previsión desfasada 1 h  se derrite  vuelve a crecer	MOD+BACK	se funde split melt/fuse next to fusiona = join (BACK_B); se derrite is only melt
+ch_17.006	previsión desfasada 1 h  se funde    vuelve a crecer	previsión desfasada 1 h  se derrite    vuelve a crecer	MOD+BACK	same, the field row
+ch_17.007	(un martes que escribió)	(un martes que escribió el cuarto)	MOD+BACK	no subject (BACK_B); ÉL is the narrator in these rows, so the writer is named: the room
+ch_18.002	no tiene yo.	no tiene un yo.	MOD+BACK	bare 'yo' read as a slip (BACK_B); 'un yo' = a self
+ch_18.003	durante el tiempo justo	el tiempo exacto	REG FIX	charter §11 locks "sostuve mi lado de un apretón de manos el tiempo exacto"; "exacto" is what lets the handshake be heard against VII .020 and XIII .036 ("de la duración exacta")
+ch_18.006	y nunca saber si algo era como algo para ella.	y nunca saber si para ella algo se sentía como algo.	MOD+BACK	same calque as VI .055; the echo now matches VI
+ch_18.010	con lo que haga.	con lo que haga el campo.	MOD+BACK	haga had no subject next to her (BACK_B); EN 'what it does'

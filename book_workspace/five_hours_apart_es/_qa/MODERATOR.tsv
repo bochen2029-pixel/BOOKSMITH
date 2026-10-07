@@ -1,0 +1,51 @@
+id	old	new	source	why
+ch_01.008	Nadie sabrá nunca cuáles cuatro líneas.	Nadie sabrá nunca qué cuatro líneas.	MOD	cuáles + noun reads as a calque; qué
+ch_01.011	así que aterrizan en las diecisiete y las dieciocho,	así que aterrizan en las pistas diecisiete y dieciocho,	MOD	bare 'las diecisiete' reads as 17:00; name the runways
+ch_02.009	si el clima quería ponerlo	si el clima quería uno	MOD	EN 'if the weather wanted one'; ponerlo is stiff
+ch_03.013	Cuando eras chico, tu papá te llevaba	Cuando eras chico, tu padre te llevaba	MOD	narration says 'tu padre' everywhere else (X, XII, XIII, XVIII)
+ch_10.004	se paró frente al consejo	se paró frente al comité	MOD	II calls it el comité de revisión
+ch_11.020	es la única parte de esto que escribí yo que llamaría ingeniosa	es la única parte de lo que escribí que yo llamaría ingeniosa	MOD	two stacked que-clauses
+ch_14.008	cada una de ellas alguien a quien esperan, o no.	cada una de ellas alguien a quien reciben, o no.	MOD	echo of II 'alguien la recibe, o no' (meet = recibir)
+ch_14.004	En la repisa de la ventana el receptor	En el alféizar el receptor	MOD	narration names the windowsill alféizar (I); same object
+ch_18.010	En la repisa de una ventana del centro, un receptor negro	En un alféizar del centro, un receptor negro	MOD	echo of I 'En el alféizar, un receptor negro del tamaño de un pulgar'
+ch_02.009	Vuelas simuladores desde los doce años	Vuelas en simuladores desde los doce años	MOD+BACK	volar simuladores is odd (BACK_A note)
+ch_02.016	la oscuridad se vuelve del ámbar mate	la oscuridad se tiñe del ámbar mate	MOD+BACK	se vuelve del ámbar is awkward (BACK_A note)
+ch_03.003	Las construyeron en medio círculo para que el camino del carro a la puerta de embarque fuera corto, personas que daban por hecho que todos iban a llegar siempre manejando.	Quienes las construyeron en medio círculo, para que el camino del carro a la puerta de embarque fuera corto, daban por hecho que todos iban a llegar siempre manejando.	MOD+BACK	the trailing apposition hung loose (BACK_A note)
+ch_03.011	esperando a alguien que quieren.	esperando a alguien a quien quieren.	MOD+BACK	personal a: a alguien a quien
+ch_03.015	Cada vez que se abren las puertas y encuentran a alguien,	Cada vez que se abren las puertas y a alguien lo encuentran,	MOD+BACK	the doors were the finders; EN 'someone is found'
+ch_04.016	y luego ella te deja, y los dos cruzan	y luego ella te deja llevarla, y los dos cruzan	MOD+BACK	te deja read as 'leaves you'; EN 'she lets you'
+ch_04.004	como los oídos registraron el descenso	como tus oídos registraron el descenso	MOD+BACK	subject body part with no clitic wants the possessive
+ch_10.004	se sentaron los dos en tu escritorio	se sentaron los dos a tu escritorio	MOD+BACK	en tu escritorio = on top of it
+ch_11.002	y luego la ciudad decidió que la quería en la calle	y luego la ciudad decidió que quería a la gente en la calle	MOD+BACK	la had two feminine antecedents; EN 'wanted them on the street'
+ch_11.027	y entonces cuesta exactamente lo que ese algo alcanza.	y entonces cuesta exactamente hasta donde llegue ese algo.	MOD+BACK	alcanzar split reach/suffice; the cost is the reach (echoed in .034 llegó exactamente hasta ahí)
+ch_12.026	Ella mira la fila un rato más, y la dejas.	Ella mira la fila un rato más, y la dejas mirar.	MOD+BACK	la dejas = leave it / let her; EN 'you let her'
+ch_12.034	—Enséñame algo que pueda deshacer —dice—.	—Enséñame algo que él pueda deshacer —dice—.	MOD+BACK	pueda = it / I; the field is the one that undoes
+ch_12.076	Pero entonces nunca se ha equivocado con nada que haya cambiado.	Pero entonces nunca se habría equivocado con nada que cambiara.	MOD+BACK	a hypothetical (if fed UTC) wants the conditional
+ch_12.117	Entonces reserva las próximas diez	Entonces aparta las próximas diez	MOD+BACK	reservar read as 'book'; hold out = set aside
+ch_05.002	y en la primera recta larga le das el volante, y ella ve	y en la primera recta larga le das el volante al carro, y ella ve	MOD+BACK	le das el volante read as giving it to her (BACK_A)
+ch_05.036	de desconocido a maletero	de desconocido a cargador de maletas	MOD+BACK	maletero is a car trunk in Spain and much of South America (BACK_A)
+ch_06.055	La que nadie me paga es si algo es como algo para él.	Nadie me paga por la otra: si para él algo se siente como algo.	MOD+BACK	missing 'por'; 'algo es como algo para él' was an opaque calque of 'anything is like anything for it' (BACK_A)
+ch_06.050	y que ya dejaste de intentar.	y que ya dejaste de intentar nombrar.	MOD+BACK	dangling 'intentar' (BACK_A); EN 'have stopped trying to'
+ch_06.043	Lo que sientes, mientras la ves irse,	Lo que sientes, mientras ves cómo se le va,	MOD+BACK	la = the week or Iris (BACK_A); it is the week leaving her
+ch_06.084	Sus relojes cambiaron y los nuestros no.	Los relojes de ustedes ya cambiaron y los nuestros todavía no.	MOD+BACK	sus = their/your; EN 'Your clocks changed and ours haven't'
+ch_06.089	No en una hora por lo menos.	Al menos no en la próxima hora.	MOD+BACK	'no en una hora' is a calque of 'not for an hour'
+ch_13.004	y en la Stemmons le das el volante.	y en la Stemmons le das el volante al carro.	MOD+BACK	same ambiguity as V .002
+ch_13.041	Sabes quién está detrás.	Sabes quién está detrás de ellas.	MOD+BACK	bare detrás left the doors unnamed (BACK_B); VII keeps the bare form, where the door is in the sentence before
+ch_13.021	Podría volver a correr toda su vida	Yo podría volver a correr toda su vida	MOD+BACK	podría = I/it (BACK_B); EN 'I could run its whole life again'
+ch_14.004	lo contrario del martes, cuando la iban poniendo a dormir detrás de ti.	lo contrario del martes, cuando iban poniendo a dormir la oficina detrás de ti.	MOD+BACK	la had no clear antecedent (BACK_B); echo of I 'poniendo a dormir la oficina detrás de ti'
+ch_14.006	Arriba del registro, debajo de la fila	En lo más reciente del registro, debajo de la fila	MOD+BACK	arriba ... debajo read as a contradiction (BACK_B); EN 'at the top of the record' = the newest end
+ch_14.012	y vas a estar en el cuarto para eso, y él también.	y vas a estar en el cuarto para eso, y el campo también.	MOD+BACK	él read as the father (BACK_B); EN 'and so will it'
+ch_18.006	y nunca saber si algo era como algo para ella.	y nunca saber si para ella algo se sentía como algo.	MOD+BACK	same calque as VI .055; the echo now matches VI
+ch_02.003	la pluma del boleto	la barrera del boleto	MOD+BACK	pluma is Mexican only (BACK_A, BACK_B); barrera reads everywhere
+ch_02.003	y la pluma se levanta	y la barrera se levanta	MOD+BACK	as above
+ch_13.004	pasas la pluma del boleto	pasas la barrera del boleto	MOD+BACK	as above
+ch_14.003	la pluma del estacionamiento se levanta	la barrera del estacionamiento se levanta	MOD+BACK	as above
+ch_07.008	Un tren viene por Pacific cuando la cruzas	Un tren viene por la avenida Pacific cuando la cruzas	MOD+BACK	la had no feminine antecedent (BACK_A)
+ch_08.006	y si las está contando el número no importa	y si las está contando, el número no importa	MOD+BACK	comma after the conditional (BACK_A)
+ch_09.005	y ella está dormida, o cerca,	y ella está dormida, o casi,	MOD+BACK	o cerca is elliptical; EN 'or near it' (BACK_A)
+ch_17.003	deshecho: 0	deshacer: 0	MOD+BACK	deshecho read as a typo for desecho (BACK_B); the infinitive matches pensar/asentar in the same block and the prose verb (R17)
+ch_17.004	previsión desfasada 1 h  se funde  vuelve a crecer	previsión desfasada 1 h  se derrite  vuelve a crecer	MOD+BACK	se funde split melt/fuse next to fusiona = join (BACK_B); se derrite is only melt
+ch_17.006	previsión desfasada 1 h  se funde    vuelve a crecer	previsión desfasada 1 h  se derrite    vuelve a crecer	MOD+BACK	same, the field row
+ch_17.007	(un martes que escribió)	(un martes que escribió el cuarto)	MOD+BACK	no subject (BACK_B); ÉL is the narrator in these rows, so the writer is named: the room
+ch_18.002	no tiene yo.	no tiene un yo.	MOD+BACK	bare 'yo' read as a slip (BACK_B); 'un yo' = a self
+ch_18.010	con lo que haga.	con lo que haga el campo.	MOD+BACK	haga had no subject next to her (BACK_B); EN 'what it does'
