@@ -165,7 +165,7 @@ FORBID = [
     (r"\.“,", "full stop and comma around the closing quote: „…“, sagt sie (charter §5)"),
     (r"(?:^|\s)“\w", "an English opening quote “ (German opens with „)"), (r"„\s", "a space after „"),
     (r"\s“", "a space before the closing “"), (r"\w„", "no space before „"),
-    (r"\b(?:the|and|you|with|that|she|his|her|they|this|what|have)\b", "English left in the German"),
+    (r"\b(?:the|and|you|with|that|she|his|they|this|what|have)\b", "English left in the German (not her: German has her)"),
 ]
 WARN = [
     (r"\bSinn mach", "'Sinn machen' calques 'make sense' (Sinn ergeben)"), (r"\brealisier", "'realisieren' for 'realize'?"),
