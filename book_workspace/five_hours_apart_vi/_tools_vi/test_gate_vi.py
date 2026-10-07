@@ -7,10 +7,11 @@ BEHAVE).
 Takes one unit that PASSES (the clean control), then mutates it one defect at a time and asserts the gate FAILS
 each: an ASCII quote, «», "...", the dialogue dash in narration, a dash without its spaces in speech, a speech
 paragraph without its dash, an em dash in prose, a decomposed accent, the other tone-mark style, a dated name, English
-left behind, a broken heading, merged blocks,
-a dropped machine token, a dropped row line, a shifted row, a removed locked form. Then the book checks on a copy
-of the whole edition: a broken locked line inside a wrapped row quote, a broken echo, a dropped refrain, a closing
-row that no longer matches the opening row. Exit 1 if any case misbehaves.
+left behind, the refrain's words outside the refrain, the euphemism, the Southern "lầu", a broken heading, merged
+blocks, a dropped machine token, a dropped row line, a shifted row, a removed locked form. Then the book checks on a
+copy of the whole edition: a broken locked line inside a wrapped row quote, a broken echo, a dropped refrain, a
+closing row that no longer matches the opening row, a drifted prose echo, and drifted R.likeanything, R.hole,
+R.sorted and R.bellman forms. Exit 1 if any case misbehaves.
 """
 import io
 import os
@@ -39,6 +40,9 @@ BOOK_DEFECTS = [
     ("closing row off the opening", "ch_18", "trên mặt nước  mở", "trên mặt nước  mở ra"),
     ("prose echo drifted", "ch_14", "Các xa lộ trắng về phía anh", "Các xa lộ sáng trắng về phía anh"),
     ("one wording drifted (R.likeanything)", "ch_18", "có cái gì mang cảm giác gì không", "có gì giống gì không"),
+    ("the flaw drifted (R.hole)", "ch_10", "ở đúng chỗ lỗ hổng từng nằm", "ở đúng chỗ cái lỗ từng nằm"),
+    ("the bellman drifted (R.bellman)", "ch_08", "ở chỗ nhân viên khuân hành lý để lại", "ở chỗ người khuân hành lý để lại"),
+    ("sorted drifted (R.sorted)", "ch_09", "anh đã phân biệt từ", "anh đã phân loại từ"),
 ]
 
 
@@ -108,6 +112,9 @@ def main():
     cases.append(("new-style tone mark hoà", with_block(pi, bl[pi] + " Hoà bình."), 1))
     cases.append(("dated name Luân Đôn", with_block(pi, bl[pi] + " Ở Luân Đôn."), 1))
     cases.append(("English left behind", with_block(pi, bl[pi] + " and the rest."), 1))
+    cases.append(("refrain words outside the refrain", with_block(pi, bl[pi] + " Chuyến bay sắp đến."), 1))
+    cases.append(("euphemism làm chuyện ấy", with_block(pi, bl[pi] + " Cô làm chuyện ấy thật khéo."), 1))
+    cases.append(("regional lầu", with_block(pi, bl[pi] + " Ở trên lầu."), 1))
     cases.append(("broken heading", with_block(0, bl[0] + "x"), 1))
     cases.append(("merged blocks (parity)", "\n\n".join(bl[:pi] + [bl[pi] + "\n" + bl[pi + 1]] + bl[pi + 2:]) + "\n", 1))
     if code:

@@ -139,5 +139,7 @@ ch_16.002	viết (quy tắc 3)	được viết (quy tắc 3)	MOD	BT: bare 'viế
 ch_16.003	(anh ấy nói với nó thì có quan trọng)	(theo anh ấy, với nó thì có quan trọng)	MOD	BT: 'nói với nó' reads 'told it'; EN 'he said it'd matter to it' (VI's line, carried whole)
 ch_16.003	không gì viết ở đây được khắc	không gì viết ở đây khắc được	MOD	BT meaning reversal: 'được khắc' = 'gets carved'; EN 'nothing written here can carve'
 ch_18.002	bản dựng	bản tái hiện	MOD	BT: 'bản dựng' reads as a software build or a film cut; EN 'rendering' (a re-creation of her)
-ch_18.003	Tôi đã giữ phía tay mình trong một cái bắt tay dài vừa đúng,	Tôi đã giữ trọn phần mình trong một cái bắt tay dài vừa đúng,	MOD	BT: 'phía tay mình' is not idiomatic; EN 'held my end of a handshake'
+ch_18.003	Tôi đã giữ phía tay mình trong	Tôi đã làm tròn phần mình trong	REG FIX	"phía tay mình" calques "my end"; the idiom for holding up your end is "làm tròn phần mình" (the locked "một cái bắt tay dài vừa đúng" is untouched)
 ch_18.006	và anh ấy nói là với tôi thì có quan trọng.	và theo anh ấy, với tôi thì có quan trọng.	MOD	BT: 'nói … với tôi' reads 'tells me'; EN 'he says it would matter to me' (charter §12: me = Iris)
+ch_18.007	Tôi đang sửa một định nghĩa	Lúc ấy tôi đang sửa một định nghĩa	REG NIT	bare "đang" after the past "tôi đã bảo" can read as present; the locked wording is kept
+ch_18.011	Trên mặt nước, ở ghế cạnh cửa sổ	Phía trên mặt nước, ở ghế cạnh cửa sổ	REG FIX	sentence-initial "Trên mặt nước" reads "on the water" and jars with "đang ở trên không" at the close; "mặt nước" still echoes the rows

@@ -22,6 +22,7 @@ MOD_SUPERSEDED = {
     ("ch_10.013", "Anh đã quyết định chuyện này từ hôm thứ Ba,"): "REG 'cứ đắn đo mãi' (BLOCK) says 'deciding' better than 'cân nhắc'",
     ("ch_14.011", "có một thứ hạng nặng đã cất cánh lên về phía đông bắc"): "REG 'một thứ nặng' echoes XII .023 exactly",
     ("ch_09.006", "mà anh đã phân loại từ tầng bốn mươi mốt"): "REG also drops the first of two 'mà' in the clause",
+    ("ch_18.003", "Tôi đã giữ phía tay mình trong một cái bắt tay dài vừa đúng,"): "REG 'làm tròn phần mình' is the idiom",
 }
 # Register findings not taken (id, start of old): why.
 REG_REJECTED = {

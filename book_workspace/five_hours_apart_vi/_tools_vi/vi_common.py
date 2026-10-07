@@ -161,6 +161,9 @@ FORBID = [
     (r"[oO][èéẻẽẹ](?!%s)" % _W, "tone mark style: khỏe, not khoẻ (charter §6)"),
     (r"(?<![qQ])[uU][ỳýỷỹỵ](?!%s)" % _W, "tone mark style: thủy, not thuỷ (charter §6)"),
     (r"\bLuân Đôn\b", "London (charter §7)"),
+    (r"(?<!chẳng có gì )sắp đến", "the refrain's words outside the refrain (charter R16)"),
+    (r"\blàm chuyện ấy\b", "a sexual euphemism (charter R16)"), (r"\bcác cô\b", "plural 'you ladies' (charter R16)"),
+    (r"\bcái sóng đôi\b", "'sóng đôi' is not a noun (charter R16)"), (r"\blầu\b", "Southern 'lầu' (charter §2, R16)"),
     (r"\b(?:the|and|you|with|that|was|she|his|her|they|this|what|have)\b", "English left in the Vietnamese"),
 ]
 WARN = [

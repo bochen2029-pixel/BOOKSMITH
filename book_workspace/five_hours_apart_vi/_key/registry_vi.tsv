@@ -182,3 +182,6 @@ R.council	H	\bcouncil\b	hội đồng
 R.heavysouth	H	\bHeavy, out of the south\b	Hạng nặng, từ phía nam	
 R.handshakeexact	H	\bhandshake\b	vừa đúng	VII/XIII/XVIII 'dài vừa đúng'
 R.likeanything	H	\banything (?:is|was) like anything\b	có cái gì mang cảm giác gì không	VI .055, XVIII .006: one wording (charter §12)
+R.hole	H	\bhole\b	lỗ hổng	VI .026, X .004: the flaw in the work (R16)
+R.sorted	H	\bsorted\b	phân biệt	II .016, IX .006: I .011's verb (R16)
+R.bellman	H	\bbellman\b	nhân viên khuân hành lý	V .036, VIII .003, XIII .028: one term (charter §8, R16)

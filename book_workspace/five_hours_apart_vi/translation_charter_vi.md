@@ -138,7 +138,7 @@ XIV's close looks forward; XII .017 "hold one open" (an expectation, "dự kiế
 after "She looks at you"; VIII "where he pointed" is a source defect, translated as written ("nơi anh đã chỉ");
 III/IX the tired arm is one phrase ("mỏi tay, anh đổi tay" / "mỏi tay, đổi tay"); VI .042 "a little appalled" →
 "hơi hoảng"; VII .012 "Fondly." → "– Trìu mến."; VI .089 "Could I see the horse?" → "Tôi xem con ngựa được không?";
-I .007 the tower is a building at dusk; III .013 the father's present tense ("Bố anh bảo là tại mắt"); the train is
+I .007 the tower is a building at dusk; III .013 the father's present tense ("Bố bảo là tại mắt"); the train is
 a light-rail train ("tàu điện"); the hotel door is one revolving door ("cửa xoay"); "the council" (X) is II's review
 council; the windowsill is "bậu cửa sổ" at every site; "anything is like anything for it" (VI .055, XVIII .006) is
 one wording: "liệu với nó, có cái gì mang cảm giác gì không" (es R18: the literal form is opaque; say it plainly; the
@@ -176,3 +176,4 @@ reader for the final pass is recommended (D-row).
 | R13 | 2026-10-07 | Locked lines as §11. |
 | R14 | 2026-10-07 | Language-neutral meaning rulings imported as §12. |
 | R15 | 2026-10-07 | The moderator translates all units; QA by independent agents (§14). |
+| R16 | 2026-10-07 | QA round 1 (`_qa/merge_r1.py`, 144 edits in 16 units + 3 follow-ups: X .017 back to the locked "không phải", VIII .003 the bellman, VIII .002 "Ở trên cao" for the Southern "Trên lầu"). Rows: "nothing written here can carve" → "không gì viết ở đây khắc được" (active; "được khắc" read as "gets carved"), "rendering" → "bản tái hiện", the XVI cell list → "tất cả những ô có ý nghĩa, phần lớn những ô không", "written (rule 3)" → "được viết (quy tắc 3)". XVI rule 2 and XVIII .006 report the father's line as "theo anh ấy, với nó / với tôi thì có quan trọng" ("nói với nó" reads "told it"). Gated terms: the flaw is "lỗ hổng" (R.hole), "sorted" is I .011's "phân biệt" (R.sorted), the bellman is "nhân viên khuân hành lý" (R.bellman). FORBID: "sắp đến" outside the refrain, the euphemism "làm chuyện ấy", plural "các cô", the noun "cái sóng đôi", the Southern "lầu". |
