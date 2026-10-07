@@ -162,7 +162,8 @@ _tools/cover_compose_drdj.py
 # Word + PDF), life digests and voice feedback; private, never in the public tree
 _family_holistic_*/
 
-# --- five_hours_apart: the English source workspace + its two translated editions (2026-10-06) ---
+# --- five_hours_apart: the English source workspace + its translated editions (zh 2026-10-06, es 2026-10-07) ---
 !book_workspace/five_hours_apart/
 !book_workspace/five_hours_apart_zht/
 !book_workspace/five_hours_apart_zhs/
+!book_workspace/five_hours_apart_es/
