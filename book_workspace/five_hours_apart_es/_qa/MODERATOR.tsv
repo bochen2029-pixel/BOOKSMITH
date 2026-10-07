@@ -43,3 +43,9 @@ ch_14.003	la pluma del estacionamiento se levanta	la barrera del estacionamiento
 ch_07.008	Un tren viene por Pacific cuando la cruzas	Un tren viene por la avenida Pacific cuando la cruzas	MOD+BACK	la had no feminine antecedent (BACK_A)
 ch_08.006	y si las está contando el número no importa	y si las está contando, el número no importa	MOD+BACK	comma after the conditional (BACK_A)
 ch_09.005	y ella está dormida, o cerca,	y ella está dormida, o casi,	MOD+BACK	o cerca is elliptical; EN 'or near it' (BACK_A)
+ch_17.003	deshecho: 0	deshacer: 0	MOD+BACK	deshecho read as a typo for desecho (BACK_B); the infinitive matches pensar/asentar in the same block and the prose verb (R17)
+ch_17.004	previsión desfasada 1 h  se funde  vuelve a crecer	previsión desfasada 1 h  se derrite  vuelve a crecer	MOD+BACK	se funde split melt/fuse next to fusiona = join (BACK_B); se derrite is only melt
+ch_17.006	previsión desfasada 1 h  se funde    vuelve a crecer	previsión desfasada 1 h  se derrite    vuelve a crecer	MOD+BACK	same, the field row
+ch_17.007	(un martes que escribió)	(un martes que escribió el cuarto)	MOD+BACK	no subject (BACK_B); ÉL is the narrator in these rows, so the writer is named: the room
+ch_18.002	no tiene yo.	no tiene un yo.	MOD+BACK	bare 'yo' read as a slip (BACK_B); 'un yo' = a self
+ch_18.010	con lo que haga.	con lo que haga el campo.	MOD+BACK	haga had no subject next to her (BACK_B); EN 'what it does'
