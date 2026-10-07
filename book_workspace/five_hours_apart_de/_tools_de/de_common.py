@@ -123,7 +123,7 @@ ROWS = [
     (r"\basleep\b", r"\bschläft\b"), (r"\bwatching\b", r"\bschaut zu\b"), (r"\bIRIS +up\b", r"IRIS +wach"),
     (r"\breads it\b", r"liest sie"), (r"\boff 1 h\b", r"versetzt 1 h"), (r"\bmelt\b", r"\bschmilzt\b"),
     (r"\bregrow\b", r"wächst nach"), (r"\bseen\. +not had\.", r"gesehen\. +nicht erlebt\."),
-    (r"\bwhy: no row\b", r"warum: keine Zeile"), (r"\bslice\b", r"\bScheibe\b"), (r"\bpast the midpoint\b", r"über der Mitte"),
+    (r"\bwhy: no row\b", r"warum: keine Zeile"), (r"\bslice\b", r"\bZeitscheibe\b"), (r"\bpast the midpoint\b", r"über die Mitte hinaus"),
     (r"\bnot computed\b", r"nicht berechnet"), (r"\bOCEAN\b", r"\bOZEAN\b"), (r"\bgap 5 h\b", r"Abstand 5 h"),
     (r"\(stays\)", r"\(bleibt\)"), (r"\bfall back\b", r"Zeitumstellung"), (r"\bnot reached\b", r"nicht erreicht"),
     (r"\bstir\b", r"\bregt sich\b"), (r"\bdreaming\b", r"\bträumt\b"), (r"\bnorth Dallas\b", r"Nord-Dallas"),
@@ -138,8 +138,8 @@ ROWS = [
     (r"\bhe is kept, not copied\b", r"er wird bewahrt, nicht kopiert"), (r"\bthere is someone there\b", r"da ist jemand"),
     (r"\bnothing written here can carve\b", r"nichts hier Geschriebenes kann prägen"), (r"\bstill open\b", r"noch offen"),
     (r"\bwritten \(rule 3\)", r"geschrieben \(Regel 3\)"), (r"\bthink reversible\b", r"denken umkehrbar"),
-    (r"\bconclude erase\b", r"folgern löscht"), (r"\bwhat it authors cannot carve it\b", r"was es schreibt, kann es nicht prägen"),
-    (r"\bfrom a label strip, a door, P4\b", r"von einem Etikettstreifen, einer Tür, P4"),
+    (r"\bconclude erase\b", r"folgern löscht"), (r"\bwhat it authors cannot carve it\b", r"Selbstgeschriebenes prägt nicht"),
+    (r"\bfrom a label strip, a door, P4\b", r"von einem Etikettenstreifen, einer Tür, P4"),
     (r"\bas P4, ocean to glass of water\b", r"wie P4, Ozean zu Wasserglas"),
     (r"\bknots in a sheet, held at the edge\b", r"Knoten in einer Fläche, am Rand gehalten"),
     (r"\bit does not know\b", r"es weiß es nicht"), (r"\bevery transponder\b", r"jeder Transponder"),
@@ -166,6 +166,12 @@ FORBID = [
     (r"(?:^|\s)“\w", "an English opening quote “ (German opens with „)"), (r"„\s", "a space after „"),
     (r"\s“", "a space before the closing “"), (r"\w„", "no space before „"),
     (r"\b(?:the|and|you|with|that|she|his|they|this|what|have)\b", "English left in the German (not her: German has her)"),
+    # QA round 1 (R16): idiom collisions and misreadings found by the back-translation and the register review
+    (r"\bvor der Wende\b", "idiom: 'vor der Wende' is before 1989 (XII.117: bevor der Flughafen umdreht)"),
+    (r"\bbis hierhin und nicht weiter\b", "idiom: a rebuke that sets a limit (X.021: Weiter runter geht es nicht)"),
+    (r"\bwer dahinter ist\b", "leans on 'wer dahintersteckt' (VII.024, XIII.041: wer hinter den Türen ist)"),
+    (r"\beigenen Rechnungen\b", "Rechnungen read as invoices (II.012, XII.117: Berechnungen)"),
+    (r"\baus dem Nichts\b", "idiom: out of nowhere (XI.030: von nichts zu etwas)"),
 ]
 WARN = [
     (r"\bSinn mach", "'Sinn machen' calques 'make sense' (Sinn ergeben)"), (r"\brealisier", "'realisieren' for 'realize'?"),

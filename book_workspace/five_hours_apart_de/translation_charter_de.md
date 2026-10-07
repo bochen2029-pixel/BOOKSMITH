@@ -48,7 +48,8 @@ is plain, exact, dry, warm underneath; the long "and…, and…" chains are the 
 
 ## §6. Numbers, units, time (R9)
 
-- Fahrenheit kept and named: IV "einundsiebzig Grad Fahrenheit", X "79, 71, 64, 57 °F"; then bare "Grad". Feet
+- Fahrenheit kept and named: IV "einundsiebzig Grad Fahrenheit", X "von 79 auf 71, 64, 57 °F" and Iris's „Fünfundfünfzig
+  Grad Fahrenheit.“ (R16: a bare "Grad" is read as Celsius); then bare "Grad". Feet
   "Fuß", miles "Meilen", yards "Yards", dollars "Dollar". Clock times as the English writes them: digits where it uses
   digits ("um 6:52", "8:10"), words where it uses words ("acht Minuten vor acht", "Viertel nach sieben", "zwanzig vor
   fünf"). Days and months as in German ("Dienstag", "Oktober").
@@ -107,7 +108,7 @@ gate can rejoin them), carrying the prose line word for word.
 | That's awful. / It wasn't. | IV, XVI, XVIII | „Wie furchtbar.“ / „War es nicht“ |
 | a handshake of exactly the right length | VII, XIII, XVIII | ein Händedruck, genau richtig lang |
 | one more syllable | IV, XIII | eine Silbe mehr |
-| This time you know who's behind it / them | VII, XIII | Diesmal weißt du, wer dahinter ist. / Du weißt, wer dahinter ist. |
+| This time you know who's behind it / them | VII, XIII | Diesmal weißt du, wer hinter den Türen ist. / Du weißt, wer hinter den Türen ist. (R16: not "dahinter", which leans on "dahinterstecken") |
 | It's eleven. And eleven is busy. | VI, XVI | „Es ist elf. Und um elf ist viel los.“ |
 | Would it matter? / It'd matter to it. | VI, XVI, XVIII | „Wäre das wichtig?“ / „Ihm wäre es wichtig.“ |
 | It's something. / I'm something. | VI, XII | „Es ist irgendwas.“ / „Ich bin irgendwas.“ |
@@ -134,7 +135,7 @@ gate can rejoin them), carrying the prose line word for word.
 XVIII .005 "There isn't a row for it." → "Dafür gibt es keine Zeile."; XVIII .006 reported speech ("he says it would
 matter to me": me = Iris); XII .024 "It was there before you were." is presence, not arrival → „Es war vor dir da.“;
 XIV's close looks forward; XII .017 "hold one open" (an expectation); XIII .021 the narrator keeps speaking after "She
-looks at you"; VIII "where he pointed" is a source defect, translated as written ("wohin er gezeigt hat"); III/IX the
+looks at you"; VIII "where he pointed" is a source defect, translated as written, with "vorhin" so that "er" is the man and not the freeway ("wohin er vorhin gezeigt hat", R16); III/IX the
 tired arm is one phrase; VI .042 "a little appalled" → "ein bisschen entsetzt"; VII .012 "Fondly." → „Liebevoll.“;
 VI .089 "Could I see the horse?" → „Kann ich das Pferd sehen?“; I .007 the tower is a building at dusk; III .013 the
 father's present tense ("Er sagt, es liegt an den Augen"); the train is a light-rail train ("die Stadtbahn"); the
@@ -178,3 +179,4 @@ are reserved (23.8).
 | R13 | 2026-10-07 | Locked lines as §11. |
 | R14 | 2026-10-07 | Language-neutral meaning rulings imported as §12. |
 | R15 | 2026-10-07 | The moderator translates all units; QA by independent agents (§14). |
+| R16 | 2026-10-07 | QA round 1 (blind back-translation in two halves diffed English against English; native register review in two halves), merged in `_qa/merge_r1.py`. Rulings: the copy motif starts in I ("eine blasse Kopie von dir"); "schon" wherever the English says "has since" / "your whole life"; a pronoun is replaced where German gender or case offers an antecedent the English never had (I .015 the screen is "er"; VI .064 "auch das"; VIII .004 "vorhin"; IX .004 "die letzte Maschine"; XI .002, .034 "das hier"; XIII .002, .008 "die Flieger", .021); idiom collisions removed and forbidden in the gate ("vor der Wende", "bis hierhin und nicht weiter", "wer dahinter ist" → "wer hinter den Türen ist" (registry R.behind), "Rechnungen" → "Berechnungen" (II/XII echo), "aus dem Nichts"); Fahrenheit named at X .008; XII .080 "In der Nacht zum Sonntag" (the hour repeats at two on Sunday morning; VI's "Sonntagnacht" is the night into Monday, after London's change, and stays); XII .044 the passive "Geformt wird es nur von dem, was es nicht selbst geschrieben hat" and XV's rule row "Selbstgeschriebenes prägt nicht" (subject and object no longer both "es"); XIV .006 "Am Ende des Protokolls" (source oddity S5: "At the top of the record, under the row"); XIV .011 „Du auch nicht.“; XVII rows "Zeitscheibe", "über die Mitte hinaus". Echo guards added: II/XII her own math, VII/XIII the doors, III/IX the tired arm. Follow-up (`_qa/APPLY_r2.tsv`, from register B's decision list): XI .003 "ein Streifen aus dem Etikettendrucker" and XV's row "von einem Etikettenstreifen" (the standard compound; the echo kept); XII .097 "dass der London-Flug mit ihm dreht" ("ein Flug dreht um" is a flight turning back). XIII .005 „Sie haben umgedreht“ stays: it is Iris's word, and he answers „Der Wind hat gedreht.“ |

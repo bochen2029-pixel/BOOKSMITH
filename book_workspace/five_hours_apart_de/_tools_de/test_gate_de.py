@@ -40,6 +40,13 @@ BOOK_DEFECTS = [
     ("sorted drifted (R.sorted)", "ch_09", "vom einundvierzigsten Stock aus sortiert hast", "vom einundvierzigsten Stock aus geordnet hast"),
     ("the flaw drifted (R.hole)", "ch_10", "wo das Loch gewesen war", "wo die Lücke gewesen war"),
     ("the bellman drifted (R.bellman)", "ch_08", "wo der Page ihn abgestellt hat", "wo der Hotelangestellte ihn abgestellt hat"),
+    # QA round 1 (R16): the fixes must not regress
+    ("idiom back (vor der Wende)", "ch_12", "Leg die Vorhersage fest, bevor der Flughafen umdreht.", "Leg die Vorhersage vor der Wende fest."),
+    ("idiom back (bis hierhin)", "ch_10", "„Weiter runter geht es nicht.", "„Bis hierhin und nicht weiter."),
+    ("doors drifted (R.behind)", "ch_13", "Du weißt, wer hinter den Türen ist.", "Du weißt, wer dahinter ist."),
+    ("her own math back to invoices", "ch_12", "die ihre eigenen Berechnungen nachprüft", "die ihre eigenen Rechnungen nachprüft"),
+    ("tired arm echo broken", "ch_09", "der Arm wird müde, und er wechselt den Arm", "der Arm ermüdet, er wechselt den Arm"),
+    ("rule row back to two-way es", "ch_15", "Selbstgeschriebenes prägt nicht", "was es schreibt, kann es nicht prägen"),
 ]
 
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""apply_es.py: apply a round of accepted QA edits as ONE count-asserted patch per unit (method v3: append-only drafts,
+"""apply_de.py: apply a round of accepted QA edits as ONE count-asserted patch per unit (method v3: append-only drafts,
 every change asserted before it is written).
 
-  python3 _tools_de/apply_es.py _qa/APPLY_r1.tsv [--dry-run]
+  python3 _tools_de/apply_de.py _qa/APPLY_r1.tsv [--dry-run]
 
 The TSV has a header and the columns id, old, new, source, why (id = unit.NNN, the block numbering of show_blocks.py).
 Every edit must find `old` exactly once inside its block, or the whole round is refused before anything is written.

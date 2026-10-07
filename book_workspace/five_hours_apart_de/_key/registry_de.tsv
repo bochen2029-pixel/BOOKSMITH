@@ -148,7 +148,7 @@ R.itsasign	H	\bIt's a sign\b	ein Schild
 R.thatsme	H	\bThat's me\b	Das bin ich	
 R.forthesign	H	\bFor the sign\b	Für das Schild	
 R.fortheroom	H	\bFor the room\b	Für den Raum	
-R.behind	H	\bwho's behind them\b	wer dahinter ist	
+R.behind	H	\bwho's behind them\b	wer hinter den Türen ist	
 R.correcting	H	\bcorrecting a definition in a draft\b	eine Definition in einem Entwurf	
 R.mildly	H	\bmildly\b	sanft	
 R.decide	H	\bdecide,? (?:again, )?(?:that )?she's right\b	dass sie recht hat	

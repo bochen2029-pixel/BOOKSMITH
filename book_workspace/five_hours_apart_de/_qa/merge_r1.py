@@ -17,15 +17,29 @@ import de_common as C  # noqa: E402
 
 # Moderator rows that a register finding supersedes (id, start of old): the register's wording is the better fix.
 MOD_SUPERSEDED = {
+    ("ch_09.006", "hält ein Handy mit einem Namen darauf hoch"):
+        "register BLOCK 'der Arm wird müde, und er wechselt den Arm' keeps III's phrase closer",
+    ("ch_09.006", "und niemand wartet, und sagt sich"):
+        "register BLOCK 'ohne dass auf ihn gewartet wird' echoes 'Auf jemanden … wird gewartet'",
+    ("ch_14.011", "Mehr weiß es nicht. Du auch."):
+        "register BLOCK 'Du auch nicht.' is the terse German for 'So do you' after the negative",
 }
 # Register findings not taken (id, start of old): why.
 REG_REJECTED = {
 }
 # Register findings taken with a different replacement (id, start of old): new text.
 REG_MODIFIED = {
+    ("ch_03.008", "Internationale Ankünfte kommen"): "Wer aus dem Ausland landet, kommt unten heraus",
+    ("ch_05.035", "hatte ich nichts als Brezeln"): "habe ich nichts als Brezeln gegessen",
+    ("ch_07.002", "und du hebst zwei zurück"): "und du hebst auch zwei",
+    ("ch_11.034", "Auf meinem Fensterbrett oben"): "Auf meinem Fensterbrett da oben ist ein Empfänger.",
 }
 # Register findings that duplicate or overlap a moderator row (id, start of old): the moderator row stands.
 REG_DUPLICATE = {
+    ("ch_08.006", "Sie versucht nicht zu schlafen."),
+    ("ch_13.008", "„Hast du sie gehört?“"),
+    ("ch_11.002", "dass sie sie auf der Straße"),
+    ("ch_17.006", "über der Mitte"),
 }
 
 LINE = re.compile(r'^- \[(BLOCK|FIX|NIT)\] (\S+) \| old: "(.*)" \| new: "(.*)" \| why: (.*)$')

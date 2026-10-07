@@ -37,6 +37,9 @@ ECHOES = [
     ("ch_14", "ch_01", "weiß auf dich zu und rot von dir weg"),
     ("ch_18", "ch_01", "in der letzten Oktoberwoche, der schrägen Woche"),
     ("ch_18", "ch_12", "im kleinsten Raum, den die Firma mietet"),
+    # QA round 1 (R16): II/XII her own math, VII/XIII the doors, III/IX the tired arm
+    ("ch_12", "ch_02", "die ihre eigenen Berechnungen nachprüft"), ("ch_13", "ch_07", "wer hinter den Türen ist"),
+    ("ch_09", "ch_03", "Arm wird müde, und"),
 ]
 
 
