@@ -1,0 +1,187 @@
+id	tier	EN	vi	note
+heading.front	H	=	# Fünf Stunden Abstand	
+heading.part_1	H	=	# Erster Teil · Fünf Stunden Abstand	
+heading.ch_01	H	=	## I. Einundvierzig	
+heading.ch_02	H	=	## II. Stemmons	
+heading.ch_03	H	=	## III. International Parkway	
+heading.ch_04	H	=	## IV. Die Türen	
+heading.ch_05	H	=	## V. Carpenter Freeway	
+heading.ch_06	H	=	## VI. Achtundvierzig	
+heading.ch_07	H	=	## VII. Elm Street	
+heading.ch_08	H	=	## VIII. Vier Uhr morgens	
+heading.ch_09	H	=	## IX. Stemmons, noch einmal	
+heading.part_2	H	=	# Zweiter Teil · Nichts steht an	
+heading.ch_10	H	=	## X. Nordwind	
+heading.ch_11	H	=	## XI. Der kleinste Raum	
+heading.ch_12	H	=	## XII. Das Band	
+heading.ch_13	H	=	## XIII. Abflug	
+heading.ch_14	H	=	## XIV. Einundvierzig, noch einmal	
+heading.part_3	H	=	# Dritter Teil · Sagen wir	
+heading.ch_15	H	=	## XV. Körper	
+heading.ch_16	H	=	## XVI. Raum	
+heading.ch_17	H	=	## XVII. Zahnräder	
+heading.ch_18	H	=	## XVIII. Offen	
+P.iris	H	=\bIris\b	Iris	
+P.wren	H	=\bWren\b	Wren	
+P.dana	H	=\bDana\b	Dana	
+P.kelvin	H	\bKelvin\b	Kelvin	
+P.kosterlitz	H	\bKosterlitz\b	Kosterlitz	
+P.thouless	H	\bThouless\b	Thouless	
+P.berezinskii	H	\bBerezinskii\b	Berezinskii	
+G.dallas	H	\bDallas\b	Dallas	
+G.euless	H	\bEuless\b	Euless	
+G.irving	H	\bIrving\b	Irving	
+G.arlington	H	\bArlington\b	Arlington	
+G.grapevine	H	\bGrapevine\b	Grapevine	
+G.lascolinas	H	\bLas Colinas\b	Las Colinas	
+G.deepellum	H	\bDeep Ellum\b	Deep Ellum	
+G.midcities	H	\bMid-Cities\b	Mid-Cities	
+G.fortworth	H	\bFort Worth\b	Fort Worth	
+G.heathrow	H	\bHeathrow\b	Heathrow	
+G.london	H	\bLondon\b	London	
+G.leeds	H	\bLeeds\b	Leeds	
+G.ireland	H	\bIreland\b	Irland	
+G.channel	H	\bthe Channel\b	Ärmelkanal	
+G.atlantic	H	\bAtlantic\b	Atlantik	
+G.singapore	H	\bSingapore\b	Singapur	
+G.manhattan	H	\bManhattan\b	Manhattan	
+G.lovefield	H	\bLove Field\b	Love Field	
+G.dfw	H	=\bDFW\b	DFW	
+G.terminald	H	\bTerminal D\b	Terminal D	
+G.stemmons	H	\bStemmons\b	Stemmons	
+G.carpenter	H	\bCarpenter\b	Carpenter	
+G.intlparkway	H	\bInternational Parkway\b	International Parkway	
+G.commerce	H	=\bCommerce\b	Commerce	
+G.elm	H	=\bElm\b	Elm	
+G.pacific	H	=\bPacific\b	Pacific	
+G.reunion	H	=\bReunion\b	Reunion	
+G.trinity	H	\bTrinity\b	Trinity	
+G.magnolia	H	\bMagnolia\b	Magnolia	
+G.pegasus	H	\bPegasus\b	Pegasus	
+G.bachman	H	\bBachman\b	Bachman	
+G.design	H	\bDesign District\b	Design District	
+G.westend	H	\bWest End\b	West End	
+G.metroplex	H	\bMetroplex\b	Metroplex	
+G.texas	H	=\bTexas\b	Texas	
+G.texan	H	\bTexan\b	texanisch	
+G.grok	H	\bGrok\b	Grok	
+G.ultra	H	\bUltra Sunrise\b	Ultra Sunrise	
+G.convention	H	\bconvention center\b	Kongresszentrum	
+G.irissign	H	=\bIRIS WREN\b	IRIS WREN	
+G.home	H	=\bHOME\b	ZUHAUSE	the car screen's HOME
+R.hypothetical	H	\bA hypothetical, in three parts\b	Ein Gedankenspiel, in drei Teilen	
+R.say	H	=\bSay (?:it's|the)\b	Sagen wir	R3
+R.oddweek	H	\bthe odd week\b	schräge Woche|schrägen Woche	
+R.nothingdue	H	\bnothing(?:'s| is) due\b	nichts steht an|steht nichts an	R5
+R.heavy	H	\bheav(?:y|ier|ies)\b	Heavy|schwer	R6: Heavy for the aircraft (ATC jargon), schwer for the machine
+R.keep	H	\bearn(?:ed|s)? its keep\b	bezahlt	
+R.rent	H	\bpays? rent\b	Miete	
+R.stoppedpaying	H	\bstopped paying\b	zahl	
+R.sign	H	\bsigns?\b	Schild	
+R.click	H	\bclick\b	Klick	
+R.secondhand	H	\bsecondhand\b	aus zweiter Hand	
+R.borrowed	H	\ba borrowed share\b	geliehen	
+R.handshake	H	\bhandshake\b	Händedruck	
+R.syllable	H	\bsyllable\b	Silbe	
+R.knot	H	\bknots?\b	Knoten	
+R.sheet	H	\bsheet\b ;; @except ch_11.009	Fläche	the paper on the wall is ein Blatt
+R.field	H	\bthe field\b ;; @except ch_03.003,ch_12.102,ch_13.005	Feld	
+R.frontier	H	\bfrontier\b	Front	
+R.lane	H	\blanes?\b	Spur	
+R.row	H	\brows?\b	Zeile	
+R.record	M	\bthe record\b	Protokoll	
+R.tape	H	\btape\b	Band	
+R.settle	H	\bsettle[sd]?\b	setz|rast	sich setzen / einrasten
+R.carve	H	\bcarve[sd]?\b	präg	prägen
+R.fork	H	\bfork(?:ed|s)?\b	zweig	Zweig / abzweigen
+R.rewind	H	\brewind\b	spul	
+R.discard	H	\bdiscard\b	verw	
+R.expectation	H	\bexpectation\b	Erwartung	R7
+R.waiting	H	\bThat's waiting\b|\bthat was waiting\b	ist Warten|sei Warten	R7: Warten (people) against Erwartung (the machine)
+R.doesntwait	H	\bIt doesn't wait\b	Es wartet nicht	
+R.quietsmall	H	=\*Quiet\b	Still	
+R.receiver	H	\breceiver\b	Empfänger	
+R.badge	H	=\bbadge\b	Ausweis	
+R.keeper	H	\bkeeper\b	Hüter	
+R.sandbox	H	\bsandbox\b	Sandbox	
+R.hash	H	\bhash\b	Hash	
+R.ears	H	\bears\b	Ohren	
+R.amber	H	\bamber\b	bernstein	
+R.patientline	H	\bpatient lines?\b	geduldig	
+R.landinglights	H	\blanding lights\b	Landescheinwerfer	
+R.arm	H	\bswitch(?:ing)? arms\b	den Arm	
+R.sixes	H	\bsixes\b	Sechsen	
+R.speech	H	\bspeech\b	Rede	
+R.bookkeeping	H	\bbookkeeping\b	Buchhaltung	
+R.bleak	H	\bbleak\b	trostlos	
+R.pond	H	\bpond\b	Teich	
+R.lavalamp	H	\blava lamp\b	Lavalampe	
+R.stereogram	H	\bstereogram\b	Stereogramm	
+R.pinwheel	H	\bpinwheels?\b	Windr	
+R.compass	H	\bcompass needles?\b	Kompassnadel	
+R.edge	H	\bedges?\b ;; @except ch_02.009	Rand|Ränder	the desk's edge is a Kante
+R.horse	H	\bhorse\b	Pferd	
+R.doors	M	\bdoors\b	Tür	
+R.lamp	H	\blamps?\b	Lampe	
+R.matter	H	\bmatter to (?:it|me)\b	wichtig	
+R.pleased	H	\bI'm something\b	irgend	
+R.itssomething	H	\bIt's something\b	irgend	
+R.notnothing	H	\bnot nothing\b	nicht nichts	
+R.texanthing	H	\bmost Texan thing\b	texanisch	
+R.secret	H	\bIs it a secret\b	Geheimnis	
+R.notano	H	\bThat's not a no\b	kein Nein	
+R.bigger	H	\bbigger from down here\b	größer	
+R.mostthings	H	\bMost things are\b	Das meiste	
+R.goinground	H	\b(?:going|gone) round\b	dreh	
+R.listofnotes	H	\ba list of notes is true about a song\b	Liste von Noten	
+R.nightson	H	\bNight, son\b	Gute Nacht, Junge	
+R.nightdad	H	\bNight, Dad\b	Gute Nacht, Papa	
+R.alwaysdo	H	\bYou always do\b	jedes Mal	
+R.somebody	H	\bSomebody has to\b	Einer muss	
+R.exactlylike	H	\bIt's exactly like this\b	genau so	
+R.tellanyway	H	\bTell her anyway\b	trotzdem	
+R.beup	H	\bI'll be up\b	Ich bin wach	
+R.awful	H	\bawful\b	furchtbar	
+R.wasnt	H	=\bIt wasn't\b	War es nicht	
+R.phone	H	\bIt's a phone\b	ein Handy	
+R.itsasign	H	\bIt's a sign\b	ein Schild	
+R.thatsme	H	\bThat's me\b	Das bin ich	
+R.forthesign	H	\bFor the sign\b	Für das Schild	
+R.fortheroom	H	\bFor the room\b	Für den Raum	
+R.behind	H	\bwho's behind them\b	wer hinter den Türen ist	
+R.correcting	H	\bcorrecting a definition in a draft\b	eine Definition in einem Entwurf	
+R.mildly	H	\bmildly\b	sanft	
+R.decide	H	\bdecide,? (?:again, )?(?:that )?she's right\b	dass sie recht hat	
+R.fourlines	H	\bThe fix is four lines\b	vier Zeilen	
+R.oneline	H	\bThe fix is one line\b	eine Zeile	
+R.fourteen	H	\bFourteen sixes\b	Vierzehn Sechsen	
+R.findits	H	\bLet it find its own\b	finden	
+R.nothingweek	H	\bNothing this week\b	Diese Woche nichts	
+R.whylanding	H	\bYou asked why the landing\b	warum die Landung	
+R.glowingnoone	H	\bglowing for no one\b	für niemanden	
+R.litempty	H	\blit and empty\b	leer	
+R.eleven	H	\beleven is busy\b	um elf ist viel los	
+R.overwater	H	\bover (?:the )?water\b	Wasser	
+R.windowseat	H	\bwindow seat\b	Fensterplatz	
+R.blindup	H	\bblind up\b	Rollo	
+R.northdallas	H	\bnorth Dallas\b	Nord-Dallas	
+R.ninedollars	H	\bnine dollars\b	Neun Dollar	
+R.lullaby	H	\blullaby\b	Schlaflied	
+R.blueribbon	H	\bblue ribbon\b	blaue Streifen|blauen Streifen|blauer Streifen	Band is the tape; the route is a Streifen
+R.onit	H	=\bOn it\b	Mach ich	
+R.whatwelearned	H	\bWhat we learned\b	Was wir gelernt haben	
+R.thereearly	H	\bIt was there before you were\b	vor dir da	
+R.norowforit	H	\bThere isn't a row for it\b	Dafür gibt es keine Zeile	
+R.pointed	H	\bwhere he pointed\b	gezeigt	source defect S1
+R.fondly	H	=\bFondly\b	Liebevoll	
+R.appalled	H	\bappalled\b	entsetzt	
+R.seethehorse	H	\bCould I see the horse\b	das Pferd sehen	
+R.hiseyes	H	\bHe says it's his eyes\b	Augen	
+R.windowsill	H	\bwindowsill\b	Fensterbrett	
+R.council	H	\bcouncil\b	Gremium	
+R.heavysouth	H	\bHeavy, out of the south\b	Ein Heavy, von Süden	
+R.handshakeexact	H	\bhandshake\b	genau richtig lang	VII/XIII/XVIII 'genau richtig lang'
+R.likeanything	H	\banything (?:is|was) like anything\b	irgendetwas nach irgendetwas	VI .055, XVIII .006: one wording
+R.hole	H	\bhole\b	Loch	VI .026, X .004: the flaw in the work
+R.sorted	H	\bsorted\b	sortiert	II .016, IX .006
+R.bellman	H	\bbellman\b	Page	V .036, VIII .003, XIII .028: one term

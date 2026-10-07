@@ -1,0 +1,4 @@
+id	old	new	source	why
+ch_11.003	Sie hat einen Etikettstreifen, leicht schief aufgeklebt	Sie hat einen Streifen aus dem Etikettendrucker, leicht schief aufgeklebt	MOD (register B, decision)	"Etikettstreifen" is not standard German (Etiketten-), and the English names the label maker; the XV row keeps the echo as "Etikettenstreifen"
+ch_15.005	von einem Etikettstreifen, einer Tür, P4	von einem Etikettenstreifen, einer Tür, P4	MOD (register B, decision)	standard compound (Etiketten-), echo of XI.003; ROWS token changed with it
+ch_12.097	dass der London-Flug mit ihm umdreht	dass der London-Flug mit ihm dreht	MOD (register B, decision)	"ein Flug dreht um" is a flight turning back; the London flight changes direction with the airport (as XII.094 "Jeder Anflug hat gedreht")

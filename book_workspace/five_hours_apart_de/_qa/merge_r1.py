@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+"""merge_r1.py: QA round 1 of the de-DE edition, the moderator's merge. Reads the moderator's own findings
+(_qa/MODERATOR.tsv: the full read plus the English-against-English diff of the blind back-translations) and the
+register review (_qa/register/<unit>.md), applies the decisions recorded below, and writes _qa/APPLY_r1.tsv for
+_tools_de/apply_de.py. Prints every decision so the ship report can count them.
+
+  python3 _qa/merge_r1.py
+"""
+import os
+import re
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+WS = os.path.dirname(HERE)
+sys.path.insert(0, os.path.join(WS, "_tools_de"))
+import de_common as C  # noqa: E402
+
+# Moderator rows that a register finding supersedes (id, start of old): the register's wording is the better fix.
+MOD_SUPERSEDED = {
+    ("ch_09.006", "hält ein Handy mit einem Namen darauf hoch"):
+        "register BLOCK 'der Arm wird müde, und er wechselt den Arm' keeps III's phrase closer",
+    ("ch_09.006", "und niemand wartet, und sagt sich"):
+        "register BLOCK 'ohne dass auf ihn gewartet wird' echoes 'Auf jemanden … wird gewartet'",
+    ("ch_14.011", "Mehr weiß es nicht. Du auch."):
+        "register BLOCK 'Du auch nicht.' is the terse German for 'So do you' after the negative",
+}
+# Register findings not taken (id, start of old): why.
+REG_REJECTED = {
+}
+# Register findings taken with a different replacement (id, start of old): new text.
+REG_MODIFIED = {
+    ("ch_03.008", "Internationale Ankünfte kommen"): "Wer aus dem Ausland landet, kommt unten heraus",
+    ("ch_05.035", "hatte ich nichts als Brezeln"): "habe ich nichts als Brezeln gegessen",
+    ("ch_07.002", "und du hebst zwei zurück"): "und du hebst auch zwei",
+    ("ch_11.034", "Auf meinem Fensterbrett oben"): "Auf meinem Fensterbrett da oben ist ein Empfänger.",
+}
+# Register findings that duplicate or overlap a moderator row (id, start of old): the moderator row stands.
+REG_DUPLICATE = {
+    ("ch_08.006", "Sie versucht nicht zu schlafen."),
+    ("ch_13.008", "„Hast du sie gehört?“"),
+    ("ch_11.002", "dass sie sie auf der Straße"),
+    ("ch_17.006", "über der Mitte"),
+}
+
+LINE = re.compile(r'^- \[(BLOCK|FIX|NIT)\] (\S+) \| old: "(.*)" \| new: "(.*)" \| why: (.*)$')
+
+
+def match(table, sid, old):
+    for (i, start), v in (table.items() if isinstance(table, dict) else ((k, True) for k in table)):
+        if i == sid and old.startswith(start):
+            return v
+    return None
+
+
+def main():
+    out, log = [], []
+    with open(os.path.join(HERE, "MODERATOR.tsv"), encoding="utf-8") as f:
+        for line in f.read().split("\n")[1:]:
+            if not line.strip():
+                continue
+            sid, old, new, src, why = line.split("\t")
+            sup = match(MOD_SUPERSEDED, sid, old)
+            if sup:
+                log.append(("MOD", "superseded", sid, old, sup))
+                continue
+            out.append((sid, old, new, src, why))
+            log.append(("MOD", "applied", sid, old, why))
+    reg_dir = os.path.join(HERE, "register")
+    for u in C.UNITS:
+        p = os.path.join(reg_dir, u + ".md")
+        if not os.path.exists(p):
+            log.append(("REG", "MISSING", u, "", "no register report for this unit"))
+            continue
+        for line in C.read(p).split("\n"):
+            m = LINE.match(line.strip())
+            if not m:
+                continue
+            sev, sid, old, new, why = m.groups()
+            rej = match(REG_REJECTED, sid, old)
+            if rej:
+                log.append(("REG " + sev, "rejected", sid, old, rej))
+                continue
+            if match(REG_DUPLICATE, sid, old):
+                log.append(("REG " + sev, "duplicate", sid, old, "the moderator row covers it"))
+                continue
+            mod = match(REG_MODIFIED, sid, old)
+            if mod:
+                new = mod
+                log.append(("REG " + sev, "modified", sid, old, "new: " + mod))
+            else:
+                log.append(("REG " + sev, "applied", sid, old, why))
+            out.append((sid, old, new, "REG " + sev, why))
+    with open(os.path.join(HERE, "APPLY_r1.tsv"), "w", encoding="utf-8") as f:
+        f.write("id\told\tnew\tsource\twhy\n")
+        for row in sorted(out, key=lambda r: (C.UNITS.index(r[0].rpartition(".")[0]), r[0])):
+            f.write("\t".join(row) + "\n")
+    counts = {}
+    for src, verdict, *_ in log:
+        counts[(src, verdict)] = counts.get((src, verdict), 0) + 1
+    for (src, verdict), n in sorted(counts.items()):
+        print("%-10s %-11s %3d" % (src, verdict, n))
+    for src, verdict, sid, old, why in log:
+        if verdict not in ("applied",):
+            print("  %-10s %-11s %-10s %s | %s" % (src, verdict, sid, old[:60], why))
+    print("APPLY_r1.tsv: %d edits" % len(out))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -933,7 +933,7 @@ commit it, stage the public tree, rebuild both images, push, bump image + instan
 suffix together, deploy. Prove the behaviour *inside* the image before pushing
 (`docker run --rm booksmith-cf:aNN python -c ...`) rather than trusting the file copy.
 
-## 23. BOOK TRANSLATION LESSONS (2026-10-07, *Five Hours Apart* in zh-Hant-TW, zh-Hans and es-419; method: docs/BOOK_TRANSLATION_METHOD_v3.md; ship reports in each `book_workspace/five_hours_apart_*` workspace)
+## 23. BOOK TRANSLATION LESSONS (2026-10-07, *Five Hours Apart* in zh-Hant-TW, zh-Hans, es-419, vi-VN and de-DE; method: docs/BOOK_TRANSLATION_METHOD_v3.md; ship reports in each `book_workspace/five_hours_apart_*` workspace)
 
 ### 23.1 Symptom: a locked line comes back reworded at its second site
 **Cause.** The charter states the lock as a sentence, nothing gates it, and whoever translates the later unit
@@ -956,3 +956,49 @@ es-419 they overlapped on 8 of about 110 findings.
 ### 23.4 Reviewers write one file per unit
 A background reviewer that writes each unit's report as it finishes loses nothing to a quota limit or a refused
 final write (the es register SUMMARY came back as text and was saved by the moderator).
+
+### 23.5 Locked lines as registry rows from P1 work (vi-VN confirms 23.1)
+The vi-VN key wrote every multi-site locked line as a registry row before the first unit was drafted, and no locked
+line drifted (es-419 had three). The one locked-form slip came from the moderator's own QA fix (X .017), and the
+per-unit gate failed it inside the round.
+
+### 23.6 Symptom: a literal choice that is also a fixed idiom reverses or skews the meaning
+**Cause.** In an isolating language such as Vietnamese, a word-for-word phrase often coincides with a set expression,
+and the reader takes the idiom's meaning: "nghĩ ngược lại" (think the opposite, for "think backward"), "nửa ngủ"
+(half-asleep, for "the sleep half"), "giơ tay lên trời" (give up, for an arm in the air), "được khắc" (gets carved,
+for "can carve"). **Fix.** Run the blind back-translation: the back-translator writes the idiom's meaning down, so
+the English-against-English diff shows it. Then gate the ruling where it can regress (a ROWS token, a registry row).
+de-DE confirms the pattern in an inflected language: "vor der Wende" (before 1989), "bis hierhin und nicht weiter" (a
+rebuke), "es war sehr warm" (the weather), "der Flug dreht um" (turns back), "dahinterstecken", "Rechnungen"
+(invoices); each is now a FORBID line.
+
+### 23.7 A reviewer's replacement can carry its own trap
+One register reviewer proposed "làm chuyện ấy" (a sexual euphemism) to fix "làm việc đó". The moderator reads every
+replacement, not only every finding, before the merge, and records a declined fix with its reason
+(`_qa/merge_r1.py` REG_REJECTED).
+
+### 23.8 Gate the refrain's words, not just the refrain
+"chẳng có gì sắp đến" was counted, but "sắp đến" crept into ordinary prose (XII .051) and made a false echo. A
+FORBID line for the refrain's key words outside the refrain catches it.
+
+### 23.9 Symptom: a pronoun picks up an antecedent the English never had (de-DE)
+**Cause.** English "it", "she" and "they" carry no gender or case; German "es", "sie" and "er" do, so a pronoun copied
+across lands on the nearest noun of the same gender ("dass sie auf der Liste steht" read as Iris, not the pleasure;
+"sagt es" after "der Bildschirm"; "sein ganzes Leben" after "in seinem Schreibtisch"), and two neuter "es" swap
+subject and object ("Nur was es nicht selbst geschrieben hat, darf es formen" reads both ways). **Fix.** Run the blind
+back-translation: the back-translator writes down the referent it took, so the English-against-English diff shows the
+wrong one. Name the noun, use "das hier" or a passive, and gate a rule row whose meaning depends on it (ROWS token).
+
+### 23.10 Symptom: the moderator's paraphrase loses to the native's plain fix on a key line
+XIV .011 „Mehr weiß es nicht. Du auch.“ was a polarity error. The moderator wrote „Du weißt genauso viel.“; the
+register reader wrote „Du auch nicht.“, which is shorter, native and keeps the line's echo of XII. Record both in the
+merge (MOD_SUPERSEDED) and take the plain one.
+
+### 23.11 A reviewer may withdraw a right finding to protect an echo
+The German register reader dropped its fix for the non-standard compound "Etikettstreifen" (XI) because the same word
+sits in a row of XV. Change both sites in one patch instead; the echo and the fix both survive.
+
+### 23.12 German typography gate that worked
+FORBID the English opening “ at a word start, a space after „ or before “, a comma before the closing quote and ".“,"
+(German puts the comma after: „Das bin ich“, sagt sie.), and every dash in prose; count „ against “ per unit. Inside
+the fixed-width log rows the quotes are “…” (as in the other editions), so the counts are kept apart.
