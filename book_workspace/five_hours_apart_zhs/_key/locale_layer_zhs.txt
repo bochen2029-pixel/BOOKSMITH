@@ -1,0 +1,203 @@
+# locale_layer_zhs.txt — the mainland locale layer (BOOK_TRANSLATION_METHOD_v3 §6.2, §8.4), applied by convert_zhs.py
+# AFTER OpenCC tw2sp and the registry pass, in FILE ORDER. Lines: tw<TAB>hans ; 're:<regex><TAB>repl' ; 'forbid:<regex><TAB>why'
+# (a residue the gate fails on). Keys may be written in either script (normalised through tw2s); where tw2sp has ALREADY
+# rewritten a word, the key is the tw2sp output (设置档, 投视频, 拷贝, 领台, 柜台, 调度, 演示文稿, 数组, 杂讯, 笔电 …).
+# Evidence: _notes/GT_ZHS_LOCALE.md (OpenCC runs, 兩岸常用詞典, 新华社 dictionaries), GT_TERMS, GT_CANON.
+#
+# --- tw2sp residues and over-conversions (observed; GT_ZHS §d) ---
+投视频	幻灯片
+設置档	配置文件
+设置档	配置文件
+拷贝	复制
+领台	领位员
+柜台	前台
+演示文稿	汇报
+超导体数组	超导体阵列
+内核区	核心区
+re:(?<![\w])调度上	排期上
+甚么	什么
+智能型手机	智能手机
+re:(?<!蚊)帐(?!篷)	账
+re:纪录(?!片)	记录
+作梦	做梦
+妳	你
+牠	它
+祂	他
+# --- aviation (tw2sp has no aviation dictionary) ---
+航廈	航站楼
+空橋	廊桥
+最後進場	最后进近
+進場	进近
+證照查驗	边检
+登機門	登机口
+降落燈	着陆灯
+可以落地	可以着陆
+班機	航班
+航管	空管
+呎	英尺
+手機等候停車場	手机等候停车场
+應答機	应答机
+接駁車	摆渡车
+圍籬	围栏
+# --- cars, roads ---
+後照鏡	后视镜
+雙黃燈	双闪
+儀表板	仪表盘
+re:(?<![\w])柵欄	道闸
+re:(?<![\w])栅栏	道闸
+煞車	刹车
+後車廂	后备箱
+交流道	匝道
+# --- hotel, food, everyday Taiwan words a mainland editor strikes ---
+飯店	酒店
+櫃檯	前台
+領檯	领位员
+服務生	服务员
+磨石子地板	水磨石地面
+磨石子	水磨石
+自動販賣機	自动售货机
+易開罐	易拉罐
+鋁罐	易拉罐
+捐血	献血
+警衛	保安
+保全	保安
+公車	公交车
+捷運	地铁
+塑膠	塑料
+大頭貼	头像
+鐵捲門	卷帘门
+廂型車	商务车
+橘色	橙色
+一則空白的備忘錄	一个空白的备忘录
+透過	通过
+尖峰	高峰
+桌巾	桌布
+領錢	拿钱
+保險桿	保险杠
+行李提領區	行李提取处
+噴射機	喷气机
+感應器	传感器
+# --- the office and the machine ---
+助理	助手
+簡報	汇报
+投影片	幻灯片
+螢幕	屏幕
+顯示卡	显卡
+筆電	笔记本电脑
+硬碟	硬盘
+記憶體	内存
+雜訊	噪声
+杂讯	噪声
+雜湊	哈希
+位元組	字节
+位元	比特
+分頁表	页表
+迴圈	循环
+# 時窗 stays 时窗 (a two-character row token; mainland aerospace usage), no rule
+沙盒	沙箱
+矽	硅
+束帶	扎带
+空調箱	空调机组
+識別證	工牌
+搆	够
+刷證	刷卡
+管線	管道
+核心进程	内核
+排程	排期
+傳訊息	发消息
+傳訊	发消息
+# the registry pass (O.text 訊→消息) runs before this layer, so 傳訊 and 傳訊息 arrive here as 传消息
+传消息	发消息
+訊息	消息
+簡訊	短信
+想像	想象
+重播	回放
+Podcast	播客
+# --- names and places that differ beyond script (the registry pass carries the rest) ---
+艾瑞絲	艾丽丝
+黛娜	达娜
+克耳文	开尔文
+科斯特利茲	科斯特利茨
+沃斯堡	沃思堡
+希斯洛	希思罗
+里茲	利兹
+德州	得州
+史坦蒙斯	斯特蒙斯
+卡本特	卡彭特
+達拉斯北區	达拉斯北部
+會議中心	会展中心
+葡萄藤	格雷普韦恩
+三一河	特里尼蒂河
+重聚塔	重逢塔
+Deep Ellum	深艾勒姆
+Las Colinas	拉斯科利纳斯
+LAS COLINAS	拉斯科利纳斯
+# --- numbers ---
+十兆年	十万亿年
+# --- residue the gate must fail on ---
+forbid:伫列	the plain t2s residue of 佇列; mainland says 队列
+forbid:航厦	航站楼
+forbid:空桥	廊桥
+forbid:饭店	酒店 (饭店 means a restaurant on the mainland)
+forbid:捐血	献血
+forbid:程式	程序
+forbid:软体	软件
+forbid:资讯	信息
+forbid:杂凑	哈希
+forbid:位元	比特
+forbid:萤幕	屏幕
+forbid:显示卡	显卡
+forbid:呎	英尺
+forbid:十兆	十万亿
+forbid:妳	你
+forbid:牠	它
+forbid:(?<!蚊)帐(?!篷)	账 (money); 帐 is only for tents and curtains
+forbid:纪录(?!片)	记录
+forbid:投视频	幻灯片 (an OpenCC bug)
+forbid:拷贝	复制
+forbid:设置档	配置文件
+forbid:领台	领位员
+forbid:甚么	什么
+forbid:笔电	笔记本电脑
+forbid:杂讯	噪声
+forbid:识别证	工牌
+forbid:束带	扎带
+forbid:登机门	登机口
+forbid:进场	进近 (approach); 进场 on the mainland is entering a venue
+forbid:艾瑞丝	艾丽丝
+forbid:黛娜	达娜
+forbid:克耳文	开尔文
+forbid:沃斯堡	沃思堡
+forbid:希斯洛	希思罗
+forbid:里兹	利兹
+forbid:德州	得州
+# --- mainland review 2026-10-07 (_qa/MAINLAND.md): measure words, Taiwan colloquialisms, the UI verb for scrolling ---
+整台车	整辆车
+另一台车	另一辆车
+一支手机	一部手机
+一支电量剩	一部电量只剩
+一颗硬盘	一块硬盘
+一颗气球	一个气球
+一间餐厅	一家餐厅
+那间酒店	那家酒店
+最近有找到什么好的吗	最近有没有找到什么好的
+就被资遣	就被辞退
+喀	咔嗒
+七〇年代	七十年代
+re:卷(?=动|过|到)	滚
+re:往(上|下)卷	往\1滚
+灯号一变	信号灯一变
+re:有差(?!别)	有区别
+排期上用我的名字	排期表上用的是我的名字
+forbid:艾丽斯	艾丽丝 (Xinhua's 艾丽斯 is Alice)
+forbid:有差(?!别)	有区别 (有差 is Taiwan colloquial)
+forbid:台车	辆车 (a car takes 辆)
+forbid:支手机	部手机
+forbid:颗(?=硬盘|气球)	块 / 个
+forbid:(?<=[一那这])间(?=餐厅|酒店)	家
+forbid:(?<!没)有找到	有没有找到 / 找到了
+forbid:资遣	辞退
+forbid:喀	咔嗒
+forbid:〇年代	十年代
+forbid:卷(?=动|过|到)	滚 (scrolling)
+forbid:灯号	信号灯

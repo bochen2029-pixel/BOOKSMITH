@@ -1,0 +1,903 @@
+id	count	first_use	matches
+heading.front	0		
+heading.part_1	0		
+heading.ch_01	0		
+heading.ch_02	0		
+heading.ch_03	0		
+heading.ch_04	0		
+heading.ch_05	0		
+heading.ch_06	0		
+heading.ch_07	0		
+heading.ch_08	0		
+heading.ch_09	0		
+heading.part_2	0		
+heading.ch_10	0		
+heading.ch_11	0		
+heading.ch_12	0		
+heading.ch_13	0		
+heading.ch_14	0		
+heading.part_3	0		
+heading.ch_15	0		
+heading.ch_16	0		
+heading.ch_17	0		
+heading.ch_18	0		
+P.iris	10	ch_02.011	ch_02.011 ch_02.012 ch_03.014 ch_05.031 ch_08.002 ch_16.002 ch_16.004 ch_17.004 ch_17.006 ch_18.002
+P.wren	4	ch_02.011	ch_02.011 ch_02.012 ch_03.014 ch_08.002
+P.iris_rows	5	ch_16.002	ch_16.002 ch_16.004 ch_17.004 ch_17.006 ch_18.002
+P.dana	13	ch_02.010	ch_02.010 ch_02.015 ch_04.010 ch_04.011 ch_05.014 ch_05.028 ch_05.031 ch_06.013 ch_06.065 ch_11.041 ch_11.042 ch_16.002 ch_16.004
+P.dana_rows	2	ch_16.002	ch_16.002 ch_16.004
+P.him_rows	6	ch_16.002	ch_16.002 ch_16.004 ch_16.005 ch_16.006 ch_17.004 ch_17.006
+P.father_rows	1	ch_16.002	ch_16.002
+P.father	5	ch_03.013	ch_03.013 ch_10.003 ch_12.102 ch_13.007 ch_18.010
+P.dad	1	ch_13.016	ch_13.016
+P.son	1	ch_13.015	ch_13.015
+P.kelvin	1	ch_11.004	ch_11.004
+P.KELVIN	2	ch_11.003	ch_11.003 ch_15.005
+P.kosterlitz	1	ch_11.022	ch_11.022
+P.thouless	1	ch_11.022	ch_11.022
+P.berezinskii	1	ch_11.022	ch_11.022
+P.grok	1	ch_02.014	ch_02.014
+P.old_man	2	ch_03.010	ch_03.010 ch_06.043
+P.boys	1	ch_03.010	ch_03.010
+P.drivers	3	ch_02.006	ch_02.006 ch_03.008 ch_03.014
+P.mother	2	ch_03.008	ch_03.008 ch_03.010
+P.pilots	2	ch_02.009	ch_02.009 ch_06.006
+P.bellman	3	ch_05.036	ch_05.036 ch_08.003 ch_13.028
+P.valet	2	ch_02.004	ch_02.004 ch_09.002
+P.host	1	ch_06.003	ch_06.003
+P.waiter	2	ch_06.012	ch_06.012 ch_06.088
+P.guard	2	ch_07.002	ch_07.002 ch_14.003
+P.assistant	1	ch_02.014	ch_02.014
+G.dallas	6	ch_01.002	ch_01.002 ch_05.025 ch_06.013 ch_07.009 ch_17.006 ch_18.010
+G.euless	7	ch_01.011	ch_01.011 ch_05.022 ch_10.003 ch_12.094 ch_12.102 ch_13.021 ch_18.010
+G.midcities	1	ch_01.011	ch_01.011
+G.irving	4	ch_01.011	ch_01.011 ch_02.016 ch_10.003 ch_14.008
+G.lascolinas	3	ch_02.016	ch_02.016 ch_05.024 ch_16.002
+G.grapevine	2	ch_01.011	ch_01.011 ch_13.005
+G.arlington	3	ch_12.094	ch_12.094 ch_12.102 ch_13.005
+G.fortworth	1	ch_16.002	ch_16.002
+G.deepellum	1	ch_10.004	ch_10.004
+G.westend	1	ch_07.008	ch_07.008
+G.bachman	2	ch_01.011	ch_01.011 ch_09.004
+G.lovefield	2	ch_01.011	ch_01.011 ch_09.006
+G.dfw	2	ch_01.011	ch_01.011 ch_02.014
+G.terminal_d	5	ch_02.011	ch_02.011 ch_02.014 ch_03.004 ch_10.004 ch_13.028
+G.terminal	7	ch_02.011	ch_02.011 ch_02.014 ch_03.004 ch_03.007 ch_10.004 ch_13.028 ch_13.030
+G.intlparkway	4	ch_03.001	ch_03.001 ch_03.002 ch_05.002 ch_13.028
+G.stemmons	7	ch_01.015	ch_01.015 ch_02.001 ch_02.002 ch_02.007 ch_09.001 ch_09.004 ch_13.004
+G.carpenter	4	ch_02.015	ch_02.015 ch_05.001 ch_13.005 ch_14.003
+G.commerce	3	ch_02.003	ch_02.003 ch_10.003 ch_13.002
+G.elm	4	ch_02.011	ch_02.011 ch_07.001 ch_10.004 ch_12.033
+G.pacific	3	ch_06.082	ch_06.082 ch_07.008 ch_08.004
+G.reunion	4	ch_01.010	ch_01.010 ch_02.007 ch_05.025 ch_09.004
+G.globe	3	ch_02.007	ch_02.007 ch_05.025 ch_09.004
+G.trinity	2	ch_01.010	ch_01.010 ch_06.003
+G.levee	1	ch_02.007	ch_02.007
+G.floodway	1	ch_02.007	ch_02.007
+G.designdistrict	1	ch_02.007	ch_02.007
+G.magnolia	1	ch_02.004	ch_02.004
+G.pegasus	3	ch_02.004	ch_02.004 ch_06.004 ch_06.006
+G.horse	5	ch_06.089	ch_06.089 ch_07.014 ch_08.004 ch_08.006 ch_08.007
+G.conventioncenter	1	ch_06.008	ch_06.008
+G.stadium	1	ch_12.102	ch_12.102
+G.london	17	ch_01.002	ch_01.002 ch_02.009 ch_02.012 ch_03.005 ch_04.003 ch_04.009 ch_06.013 ch_06.027 ch_06.068 ch_09.005 ch_10.004 ch_12.007 ch_12.097 ch_13.012 ch_13.029 ch_17.006 ch_18.009
+G.heathrow	6	ch_02.009	ch_02.009 ch_02.011 ch_02.013 ch_03.005 ch_06.070 ch_06.071
+G.leeds	1	ch_06.013	ch_06.013
+G.singapore	2	ch_03.013	ch_03.013 ch_06.014
+G.ireland	1	ch_05.035	ch_05.035
+G.channel	1	ch_02.009	ch_02.009
+G.atlantic	1	ch_14.009	ch_14.009
+G.texas	6	ch_04.019	ch_04.019 ch_05.012 ch_05.013 ch_10.008 ch_10.009 ch_13.027
+G.metroplex	2	ch_10.003	ch_10.003 ch_12.094
+G.manhattan	1	ch_03.003	ch_03.003
+G.downtown	8	ch_01.010	ch_01.010 ch_02.004 ch_02.011 ch_05.036 ch_06.012 ch_07.002 ch_11.002 ch_18.010
+G.core	1	ch_02.007	ch_02.007
+G.northdallas	2	ch_17.006	ch_17.006 ch_18.010
+G.utc	1	ch_12.073	ch_12.073
+G.river	2	ch_02.009	ch_02.009 ch_06.013
+G.ocean_rows	1	ch_17.006	ch_17.006
+G.lascolinas_rows	1	ch_16.002	ch_16.002
+A.heavy	21	front.003	front.003 ch_01.011 ch_03.007 ch_03.013 ch_10.003 ch_11.036 ch_12.012 ch_12.023 ch_12.036 ch_12.056 ch_12.060 ch_12.061 ch_12.094 ch_12.102 ch_13.009 ch_13.018 ch_14.007 ch_14.009 ch_14.011 ch_17.006 ch_18.012
+A.737	3	ch_01.011	ch_01.011 ch_09.004 ch_18.010
+A.tripleseven	1	ch_03.006	ch_03.006
+A.rakedwingtips	1	ch_03.006	ch_03.006
+A.onfinal	1	ch_01.011	ch_01.011
+A.runways1718	1	ch_01.011	ch_01.011
+A.27L	2	ch_02.009	ch_02.009 ch_06.072
+A.27L_rows	1	ch_17.004	ch_17.004
+A.westerly	1	ch_06.072	ch_06.072
+A.crosswind	1	ch_02.009	ch_02.009
+A.cleared	1	ch_03.013	ch_03.013
+A.tower	1	ch_03.013	ch_03.013
+A.approach	2	ch_02.009	ch_02.009 ch_06.070
+A.arrival	1	ch_02.009	ch_02.009
+A.arrivals	3	ch_02.014	ch_02.014 ch_03.008 ch_06.043
+A.cruise	1	ch_06.078	ch_06.078
+A.descent	1	ch_04.004	ch_04.004
+A.descending	2	ch_12.012	ch_12.012 ch_12.036
+A.landing	3	ch_06.077	ch_06.077 ch_06.078 ch_12.124
+A.landinglights	2	ch_01.010	ch_01.010 ch_02.016
+A.jetbridge	1	ch_03.006	ch_03.006
+A.passport	1	ch_03.006	ch_03.006
+A.carousel	1	ch_03.006	ch_03.006
+A.frosted	3	ch_03.006	ch_03.006 ch_03.008 ch_09.006
+A.board	2	ch_03.005	ch_03.005 ch_12.021
+A.DELAYED	1	ch_03.005	ch_03.005
+A.LANDED	1	ch_03.005	ch_03.005
+A.ATGATE	1	ch_03.005	ch_03.005
+A.celllot	1	ch_03.003	ch_03.003
+A.toll	3	ch_03.002	ch_03.002 ch_05.010 ch_13.024
+A.ticketarm	2	ch_02.003	ch_02.003 ch_13.004
+A.skybridge	1	ch_04.016	ch_04.016
+A.garage	11	ch_01.015	ch_01.015 ch_02.003 ch_03.004 ch_04.016 ch_04.017 ch_05.002 ch_10.019 ch_11.002 ch_12.021 ch_14.003 ch_14.004
+A.receiver	5	ch_01.013	ch_01.013 ch_11.034 ch_12.094 ch_14.004 ch_18.010
+A.transponder	1	ch_16.002	ch_16.002
+A.climbs	2	ch_11.036	ch_11.036 ch_13.005
+A.fence	1	ch_12.102	ch_12.102
+A.airfield	1	ch_12.102	ch_12.102
+A.yoke	1	ch_02.009	ch_02.009
+A.throttle	1	ch_02.009	ch_02.009
+A.simulator	2	ch_02.009	ch_02.009 ch_06.070
+A.byhand	1	ch_02.009	ch_02.009
+A.cargo	1	ch_11.036	ch_11.036
+A.aircraft	4	ch_03.003	ch_03.003 ch_03.013 ch_10.003 ch_11.034
+A.plane	15	ch_06.027	ch_06.027 ch_09.006 ch_11.032 ch_11.035 ch_11.036 ch_12.032 ch_12.036 ch_12.038 ch_12.042 ch_12.114 ch_13.021 ch_15.006 ch_17.004 ch_17.006 ch_18.011
+A.flight	9	ch_01.014	ch_01.014 ch_02.011 ch_05.022 ch_05.024 ch_06.013 ch_10.004 ch_12.007 ch_12.097 ch_13.021
+A.runway	1	ch_02.016	ch_02.016
+A.lights_patient	3	ch_01.010	ch_01.010 ch_09.006 ch_14.008
+A.turnaround	5	ch_10.003	ch_10.003 ch_12.094 ch_12.097 ch_12.114 ch_13.005
+A.southwind	1	ch_01.011	ch_01.011
+A.lastflight	1	ch_10.004	ch_10.004
+A.gate	2	ch_03.003	ch_03.003 ch_03.005
+A.lovetraffic	1	ch_09.006	ch_09.006
+C.wheel	5	ch_02.005	ch_02.005 ch_05.002 ch_09.002 ch_13.004 ch_14.003
+C.givewheel	2	ch_05.002	ch_05.002 ch_13.004
+C.ribbon	4	ch_02.006	ch_02.006 ch_02.015 ch_09.002 ch_13.004
+C.mirrors	4	ch_01.015	ch_01.015 ch_02.007 ch_05.002 ch_09.004
+C.HOME	2	ch_01.015	ch_01.015 ch_09.002
+C.screen	15	ch_01.007	ch_01.007 ch_01.015 ch_02.006 ch_02.010 ch_02.015 ch_05.010 ch_09.002 ch_10.003 ch_10.004 ch_11.045 ch_12.038 ch_12.102 ch_12.110 ch_12.123 ch_13.004
+C.map	2	ch_01.015	ch_01.015 ch_12.102
+C.dashboard	1	ch_09.005	ch_09.005
+C.heat	3	ch_13.002	ch_13.002 ch_14.003 ch_18.010
+C.hazards	1	ch_13.002	ch_13.002
+C.ramp	4	ch_02.003	ch_02.003 ch_05.002 ch_13.004 ch_13.028
+C.spiral	1	ch_02.003	ch_02.003
+C.curb	2	ch_13.028	ch_13.028 ch_13.030
+C.toll_posts	1	ch_05.010	ch_05.010
+C.heygrok	1	ch_02.014	ch_02.014
+C.unlocks	3	ch_01.015	ch_01.015 ch_05.002 ch_11.002
+C.tires	2	ch_05.024	ch_05.024 ch_09.003
+O.company	10	ch_01.004	ch_01.004 ch_02.012 ch_05.030 ch_06.051 ch_06.088 ch_10.021 ch_11.039 ch_12.030 ch_12.102 ch_18.010
+O.money	1	ch_01.004	ch_01.004
+O.models	7	ch_01.004	ch_01.004 ch_01.006 ch_05.015 ch_06.027 ch_11.027 ch_12.054 ch_12.056
+O.tests	6	ch_01.004	ch_01.004 ch_01.005 ch_01.007 ch_01.008 ch_05.015 ch_11.040
+O.evaluation	2	ch_05.014	ch_05.014 ch_05.015
+O.council	2	ch_02.012	ch_02.012 ch_10.004
+O.presentation	2	ch_06.025	ch_06.025 ch_06.026
+O.slide	1	ch_10.004	ch_10.004
+O.hole	2	ch_06.026	ch_06.026 ch_10.004
+O.flagged	1	ch_06.027	ch_06.027
+O.retrain	1	ch_06.027	ch_06.027
+O.features	1	ch_06.027	ch_06.027
+O.data	1	ch_06.027	ch_06.027
+O.live	2	ch_06.040	ch_06.040 ch_12.071
+O.pipeline	1	ch_06.035	ch_06.035
+O.config	1	ch_10.004	ch_10.004
+O.sixes	4	ch_06.047	ch_06.047 ch_10.004 ch_12.077 ch_12.078
+O.fix	3	ch_01.007	ch_01.007 ch_06.044 ch_06.045
+O.green	3	ch_01.007	ch_01.007 ch_11.013 ch_16.006
+O.processes	2	ch_01.006	ch_01.006 ch_05.019
+O.sandbox	3	ch_10.016	ch_10.016 ch_11.040 ch_11.042
+O.testdev	1	ch_11.040	ch_11.040
+O.badge	5	ch_01.014	ch_01.014 ch_11.008 ch_12.114 ch_14.003 ch_16.002
+O.badge_rows	2	ch_15.006	ch_15.006 ch_17.006
+O.schedule	1	ch_11.040	ch_11.040
+O.group	2	ch_02.010	ch_02.010 ch_10.004
+O.londonoffice	2	ch_02.012	ch_02.012 ch_06.013
+O.transfers	1	ch_06.027	ch_06.027
+O.companycard	1	ch_06.088	ch_06.088
+O.meeting	3	ch_01.005	ch_01.005 ch_05.020 ch_10.004
+O.office	4	ch_01.003	ch_01.003 ch_02.011 ch_14.003 ch_14.004
+O.desk	8	ch_02.009	ch_02.009 ch_06.032 ch_06.043 ch_07.002 ch_10.004 ch_10.005 ch_13.021 ch_14.004
+O.laptop	4	ch_01.014	ch_01.014 ch_13.021 ch_14.005 ch_14.009
+O.monitor	6	ch_01.003	ch_01.003 ch_11.009 ch_11.012 ch_11.024 ch_11.030 ch_12.122
+O.sensors	3	ch_01.003	ch_01.003 ch_06.018 ch_14.004
+O.vacuum	1	ch_01.003	ch_01.003
+O.openmodels	1	ch_12.054	ch_12.054
+O.profile	1	ch_02.012	ch_02.012
+O.postage	2	ch_02.012	ch_02.012 ch_04.003
+O.carservice	1	ch_02.011	ch_02.011
+O.text	5	ch_06.065	ch_06.065 ch_13.031 ch_16.004 ch_17.004 ch_18.010
+O.message	1	ch_02.002	ch_02.002
+O.phone	9	ch_03.014	ch_03.014 ch_04.005 ch_04.007 ch_06.023 ch_06.088 ch_08.005 ch_09.006 ch_12.020 ch_16.004
+O.note	1	ch_03.014	ch_03.014
+O.chime	1	ch_02.010	ch_02.010
+F.room	11	ch_03.015	ch_03.015 ch_10.021 ch_11.001 ch_11.009 ch_11.030 ch_12.102 ch_13.020 ch_13.039 ch_14.012 ch_18.010 ch_18.011
+F.smallest	4	ch_10.021	ch_10.021 ch_11.001 ch_12.102 ch_18.010
+F.field	14	ch_03.003	ch_03.003 ch_11.013 ch_12.003 ch_12.038 ch_12.054 ch_12.056 ch_12.094 ch_12.102 ch_12.122 ch_13.005 ch_15.005 ch_16.002 ch_17.006 ch_18.008
+F.cell	8	ch_03.003	ch_03.003 ch_11.015 ch_11.030 ch_12.036 ch_12.042 ch_12.060 ch_15.005 ch_16.002
+F.angle	1	ch_11.015	ch_11.015
+F.compass	2	ch_11.015	ch_11.015 ch_11.017
+F.bands	2	ch_11.013	ch_11.013 ch_11.015
+F.whorls	1	ch_11.013	ch_11.013
+F.pinwheel	3	ch_11.013	ch_11.013 ch_11.015 ch_12.005
+F.knot	14	ch_11.005	ch_11.005 ch_11.036 ch_12.005 ch_12.056 ch_12.058 ch_12.060 ch_12.094 ch_12.097 ch_12.102 ch_12.105 ch_12.114 ch_12.122 ch_14.006 ch_15.005
+F.partner	3	ch_11.013	ch_11.013 ch_12.005 ch_12.094
+F.concepts	1	ch_11.015	ch_11.015
+F.drift	1	ch_11.015	ch_11.015
+F.temperature	3	ch_10.003	ch_10.003 ch_11.020 ch_11.034
+F.edge	6	ch_02.009	ch_02.009 ch_11.020 ch_11.034 ch_12.040 ch_12.054 ch_15.005
+F.loop	1	ch_11.020	ch_11.020
+F.physics	2	ch_11.020	ch_11.020 ch_11.021
+F.helium	1	ch_11.022	ch_11.022
+F.superconductors	1	ch_11.022	ch_11.022
+F.thinfilms	1	ch_11.022	ch_11.022
+F.atoms	2	ch_11.005	ch_11.005 ch_11.007
+F.fluid	1	ch_11.005	ch_11.005
+F.frontier	8	ch_11.024	ch_11.024 ch_11.030 ch_12.038 ch_12.047 ch_12.060 ch_12.090 ch_12.113 ch_14.006
+F.idle	1	ch_11.024	ch_11.024
+F.cards	6	ch_06.088	ch_06.088 ch_11.009 ch_11.018 ch_11.025 ch_11.039 ch_12.076
+F.fans	6	ch_11.030	ch_11.030 ch_12.038 ch_12.047 ch_12.090 ch_12.104 ch_14.009
+F.breath	2	ch_11.029	ch_11.029 ch_12.089
+F.rack	1	ch_11.009	ch_11.009
+F.machines	5	ch_03.007	ch_03.007 ch_11.009 ch_11.029 ch_12.089 ch_12.102
+F.airhandler	2	ch_11.009	ch_11.009 ch_12.102
+F.spaceheater	2	ch_11.009	ch_11.009 ch_11.025
+F.labelmaker	1	ch_11.003	ch_11.003
+F.ziptie	1	ch_11.009	ch_11.009
+F.breadbox	1	ch_11.009	ch_11.009
+F.lock	1	ch_11.008	ch_11.008
+F.sheet	13	ch_06.057	ch_06.057 ch_11.009 ch_11.012 ch_11.030 ch_12.005 ch_12.040 ch_12.046 ch_12.060 ch_12.090 ch_12.122 ch_14.005 ch_15.005 ch_18.010
+F.record	4	ch_12.002	ch_12.002 ch_12.003 ch_12.044 ch_14.006
+F.recording	4	ch_12.060	ch_12.060 ch_12.064 ch_13.022 ch_13.023
+F.row	14	ch_01.007	ch_01.007 ch_12.003 ch_12.026 ch_12.044 ch_12.056 ch_12.110 ch_13.021 ch_14.006 ch_14.009 ch_15.005 ch_17.003 ch_17.004 ch_18.005 ch_18.008
+F.nucleate	1	ch_12.004	ch_12.004
+F.pin	1	ch_12.004	ch_12.004
+F.settle	8	ch_12.004	ch_12.004 ch_12.012 ch_12.021 ch_12.044 ch_12.103 ch_12.113 ch_15.005 ch_17.003
+F.certified	1	ch_12.004	ch_12.004
+F.quiet	20	ch_05.024	ch_05.024 ch_06.032 ch_11.011 ch_11.024 ch_11.030 ch_12.003 ch_12.004 ch_12.008 ch_12.012 ch_12.021 ch_12.047 ch_12.103 ch_12.113 ch_12.122 ch_13.017 ch_14.006 ch_14.010 ch_15.006 ch_16.004 ch_18.008
+F.wake	2	ch_12.113	ch_12.113 ch_14.004
+F.stir	4	ch_12.060	ch_12.060 ch_12.061 ch_17.006 ch_18.010
+F.expect	16	front.003	front.003 ch_03.014 ch_11.009 ch_12.005 ch_12.012 ch_12.015 ch_12.019 ch_12.021 ch_12.061 ch_12.103 ch_14.007 ch_14.010 ch_17.004 ch_17.006 ch_18.007 ch_18.012
+F.expect_rows	8	front.003	front.003 ch_12.012 ch_12.103 ch_14.007 ch_14.010 ch_17.004 ch_17.006 ch_18.012
+F.open_rows	4	front.003	front.003 ch_12.012 ch_16.006 ch_18.012
+F.met_rows	3	ch_12.012	ch_12.012 ch_12.103 ch_14.010
+F.window_rows	2	ch_12.012	ch_12.012 ch_14.007
+F.closed	4	ch_12.015	ch_12.015 ch_12.019 ch_14.009 ch_18.007
+F.waiting	1	ch_12.020	ch_12.020
+F.doesntwait	1	ch_12.015	ch_12.015
+F.waited	1	ch_12.014	ch_12.014
+F.fork	9	ch_12.036	ch_12.036 ch_12.037 ch_12.038 ch_12.042 ch_12.044 ch_12.051 ch_12.098 ch_17.004 ch_17.007
+F.rewind	2	ch_12.041	ch_12.041 ch_17.004
+F.discard	4	ch_12.041	ch_12.041 ch_12.103 ch_17.004 ch_17.007
+F.join	2	ch_12.103	ch_12.103 ch_17.004
+F.replay	1	ch_17.007	ch_17.007
+F.reverse	2	ch_06.002	ch_06.002 ch_12.040
+F.drive_rows	2	ch_12.012	ch_12.012 ch_12.037
+F.push	4	ch_12.038	ch_12.038 ch_12.044 ch_12.058 ch_12.076
+F.lane	4	ch_12.012	ch_12.012 ch_12.036 ch_12.037 ch_15.006
+F.ORGAN	3	ch_12.037	ch_12.037 ch_16.004 ch_18.002
+F.WORLD	3	ch_15.006	ch_15.006 ch_16.004 ch_16.005
+F.SKY	3	ch_12.012	ch_12.012 ch_15.006 ch_16.002
+F.CLOCK	1	ch_15.006	ch_15.006
+F.BODY	1	ch_15.006	ch_15.006
+F.MIND	1	ch_17.002	ch_17.002
+F.ROOM	1	ch_17.002	ch_17.002
+F.LAMP	1	ch_17.002	ch_17.002
+F.RAIL	1	ch_16.002	ch_16.002
+F.WEATHER	1	ch_16.002	ch_16.002
+F.SMALL	1	ch_16.002	ch_16.002
+F.carve	10	ch_12.037	ch_12.037 ch_12.044 ch_15.005 ch_16.003 ch_16.004 ch_16.005 ch_16.006 ch_17.004 ch_17.007 ch_18.002
+F.rent	3	ch_12.114	ch_12.114 ch_15.006 ch_18.005
+F.paying	1	ch_12.058	ch_12.058
+F.keep	3	ch_10.006	ch_10.006 ch_12.005 ch_18.011
+F.bits	4	ch_12.003	ch_12.003 ch_12.005 ch_12.042 ch_12.048
+F.hash	3	ch_12.042	ch_12.042 ch_12.051 ch_12.083
+F.hash_rows	2	ch_12.041	ch_12.041 ch_17.004
+F.ckpt	4	ch_12.004	ch_12.004 ch_12.012 ch_12.103 ch_16.002
+F.seed	3	ch_12.004	ch_12.004 ch_12.012 ch_12.103
+F.pagetable	1	ch_12.036	ch_12.036
+F.tile	1	ch_12.036	ch_12.036
+F.bytes	1	ch_12.036	ch_12.036
+F.exact	5	ch_12.003	ch_12.003 ch_12.041 ch_16.002 ch_17.004 ch_17.007
+F.copy	2	ch_12.083	ch_12.083 ch_13.021
+F.copied	1	ch_16.003	ch_16.003
+F.copy_pegasus	1	ch_06.008	ch_06.008
+F.lie	2	ch_12.036	ch_12.036 ch_12.042
+F.imagin	4	ch_02.006	ch_02.006 ch_12.042 ch_12.044 ch_12.099
+F.unthink	2	ch_12.035	ch_12.035 ch_12.042
+F.takeback	6	ch_12.003	ch_12.003 ch_12.034 ch_12.042 ch_12.048 ch_12.050 ch_17.003
+F.voice	1	ch_12.053	ch_12.053
+F.glad	3	ch_12.054	ch_12.054 ch_12.056 ch_12.067
+F.missedyou	1	ch_12.056	ch_12.056
+F.bookkeeping	3	ch_12.058	ch_12.058 ch_12.063 ch_12.064
+F.tidies	1	ch_12.058	ch_12.058
+F.dream	5	ch_12.058	ch_12.058 ch_12.059 ch_12.061 ch_12.064 ch_17.006
+F.noise	1	ch_12.061	ch_12.061
+F.terrain	2	ch_12.061	ch_12.061 ch_12.076
+F.bleak	2	ch_12.062	ch_12.062 ch_12.064
+F.local	2	ch_12.068	ch_12.068 ch_12.069
+F.table	1	ch_12.076	ch_12.076
+F.list	1	ch_12.076	ch_12.076
+F.confused	2	ch_12.092	ch_12.092 ch_12.094
+F.freeknots	1	ch_12.094	ch_12.094
+F.level	6	ch_03.004	ch_03.004 ch_08.004 ch_12.097 ch_12.113 ch_12.114 ch_16.006
+F.coarse	1	ch_12.097	ch_12.097
+F.holdout	1	ch_12.117	ch_12.117
+F.commit	1	ch_12.117	ch_12.117
+F.forecast	1	ch_12.117	ch_12.117
+F.luck	1	ch_12.116	ch_12.116
+F.distinction	3	ch_12.009	ch_12.009 ch_12.105 ch_18.004
+F.split	1	ch_12.005	ch_12.005
+F.birth	1	ch_12.005	ch_12.005
+F.born	2	ch_11.015	ch_11.015 ch_15.006
+F.die	1	ch_11.015	ch_11.015
+F.pairs	1	ch_11.015	ch_11.015
+F.merge	1	ch_12.058	ch_12.058
+F.reach	3	ch_11.027	ch_11.027 ch_12.038 ch_12.058
+F.mind	1	ch_12.076	ch_12.076
+F.oldtruths	1	ch_12.076	ch_12.076
+F.hour_twice	2	ch_12.072	ch_12.072 ch_12.080
+F.turnoff	2	ch_12.054	ch_12.054 ch_12.082
+F.whose	1	ch_12.087	ch_12.087
+F.hashmatch	1	ch_12.042	ch_12.042
+F.lavalamp	1	ch_11.047	ch_11.047
+F.pond	2	ch_12.031	ch_12.031 ch_12.032
+F.space_heater_low	1	ch_11.025	ch_11.025
+F.watt	1	ch_11.024	ch_11.024
+F.nf	1	ch_12.090	ch_12.090
+F.base	1	ch_12.090	ch_12.090
+F.stereogram	1	ch_11.013	ch_11.013
+F.door_sized	1	ch_11.012	ch_11.012
+F.fingernail	1	ch_11.013	ch_11.013
+F.thumb	3	ch_01.013	ch_01.013 ch_11.034 ch_18.010
+F.eightpieces	1	ch_11.018	ch_11.018
+F.billion	1	ch_11.018	ch_11.018
+F.via_S	2	ch_12.103	ch_12.103 ch_12.110
+F.region	1	ch_11.020	ch_11.020
+F.gray	1	ch_12.104	ch_12.104
+F.red	2	ch_12.090	ch_12.090 ch_12.102
+F.melt_rows	2	ch_17.004	ch_17.004 ch_17.006
+F.regrow_rows	2	ch_17.004	ch_17.004 ch_17.006
+F.slice_rows	1	ch_17.005	ch_17.005
+F.lamp_rows	5	ch_15.004	ch_15.004 ch_15.006 ch_17.005 ch_18.002 ch_18.008
+F.shade_rows	2	ch_15.004	ch_15.004 ch_18.008
+F.house_rows	1	ch_15.004	ch_15.004
+F.body_rows	4	ch_15.004	ch_15.004 ch_17.003 ch_18.002 ch_18.008
+F.sky_rows	1	ch_15.004	ch_15.004
+F.field_rows	4	ch_15.005	ch_15.005 ch_16.002 ch_17.006 ch_18.008
+F.tape_rows	2	ch_15.005	ch_15.005 ch_18.008
+F.readers_rows	1	ch_18.008	ch_18.008
+F.keeper	3	ch_15.006	ch_15.006 ch_16.002 ch_17.006
+F.kept	1	ch_16.003	ch_16.003
+F.depth_rows	2	ch_16.002	ch_16.002 ch_17.006
+F.rule_rows	4	ch_15.005	ch_15.005 ch_16.002 ch_16.003 ch_18.008
+F.note_rows	4	ch_16.006	ch_16.006 ch_17.004 ch_18.002 ch_18.008
+F.edge_rows	2	ch_15.005	ch_15.005 ch_16.006
+F.branch_rows	1	ch_16.004	ch_16.004
+F.history_rows	2	ch_16.004	ch_16.004 ch_17.006
+F.rendering_rows	1	ch_18.002	ch_18.002
+F.sources_rows	2	ch_15.004	ch_15.004 ch_15.006
+F.horizon_rows	1	ch_15.004	ch_15.004
+F.occupants_rows	1	ch_15.004	ch_15.004
+F.glow_rows	1	ch_15.006	ch_15.006
+F.stars_rows	1	ch_15.006	ch_15.006
+F.galaxies_rows	1	ch_15.006	ch_15.006
+F.planets_rows	1	ch_15.006	ch_15.006
+F.planes_rows	1	ch_15.006	ch_15.006
+F.running_rows	1	ch_15.006	ch_15.006
+F.rooms_rows	1	ch_15.006	ch_15.006
+F.gears_clock	1	ch_17.002	ch_17.002
+F.runsdown_rows	1	ch_17.002	ch_17.002
+F.costsheat	1	ch_17.003	ch_17.003
+F.cheap_rows	1	ch_17.003	ch_17.003
+F.stays_rows	1	ch_17.006	ch_17.006
+F.notreached	1	ch_17.006	ch_17.006
+F.notcomputed	1	ch_17.006	ch_17.006
+F.overwater	4	front.003	front.003 ch_17.006 ch_18.011 ch_18.012
+F.midpoint	1	ch_17.006	ch_17.006
+F.windowseat	2	ch_17.006	ch_17.006 ch_18.011
+F.blind	3	ch_02.003	ch_02.003 ch_17.006 ch_18.011
+F.asleep	5	ch_03.004	ch_03.004 ch_09.005 ch_17.004 ch_17.006 ch_18.010
+F.watching_rows	1	ch_17.004	ch_17.004
+F.hold_rows	1	ch_17.004	ch_17.004
+F.runon_rows	1	ch_17.004	ch_17.004
+F.down_rows	1	ch_17.004	ch_17.004
+F.up_rows	3	ch_16.002	ch_16.002 ch_17.004 ch_17.006
+F.landed	1	ch_17.004	ch_17.004
+F.lit_empty	3	ch_06.082	ch_06.082 ch_08.004 ch_16.002
+F.wrong11	1	ch_16.006	ch_16.006
+F.fourlines	1	ch_16.006	ch_16.006
+F.can_cold	1	ch_16.006	ch_16.006
+F.lookedaway	2	ch_06.064	ch_06.064 ch_16.006
+F.sorryfor	1	ch_16.006	ch_16.006
+F.stillopen	1	ch_16.006	ch_16.006
+F.notforlist	1	ch_16.006	ch_16.006
+F.seen_nothad	1	ch_17.004	ch_17.004
+F.why_norow	1	ch_17.004	ch_17.004
+F.noI	1	ch_18.002	ch_18.002
+F.quietnot	1	ch_18.008	ch_18.008
+F.stop_pause	1	ch_18.008	ch_18.008
+F.nolastrow	1	ch_18.008	ch_18.008
+F.runhim	1	ch_16.003	ch_16.003
+F.someone_there	1	ch_16.003	ch_16.003
+F.nothingcarve	1	ch_16.003	ch_16.003
+F.tuesday_wrote	1	ch_17.007	ch_17.007
+F.say_row	2	ch_01.002	ch_01.002 ch_17.007
+F.a_man_porch	1	ch_16.002	ch_16.002
+F.word_sign	1	ch_16.002	ch_16.002
+F.half_hemisphere	1	ch_16.002	ch_16.002
+F.every_transponder	1	ch_16.002	ch_16.002
+F.restored	1	ch_16.002	ch_16.002
+F.thisone_last	1	ch_15.006	ch_15.006
+F.hoursleft	2	ch_15.004	ch_15.004 ch_18.002
+F.mass_sun	1	ch_15.004	ch_15.004
+F.light_sun	1	ch_15.004	ch_15.004
+F.falling	1	ch_15.004	ch_15.004
+F.inner_outer	1	ch_15.004	ch_15.004
+F.view_none	1	ch_15.004	ch_15.004
+F.kind_rows	1	ch_15.005	ch_15.005
+F.held_edge	1	ch_15.005	ch_15.005
+F.ocean_glass	1	ch_15.005	ch_15.005
+F.pieces_know	1	ch_15.005	ch_15.005
+F.think_rev	1	ch_15.005	ch_15.005
+F.conclude_erase	1	ch_15.005	ch_15.005
+F.authors	1	ch_15.005	ch_15.005
+F.labelstrip	1	ch_15.005	ch_15.005
+F.unbroken	1	ch_15.005	ch_15.005
+F.first_rows	1	ch_15.005	ch_15.005
+F.quiet_since	1	ch_15.006	ch_15.006
+F.nothing_descends	1	ch_15.006	ch_15.006
+F.balance	1	ch_15.006	ch_15.006
+F.paidvia	1	ch_15.006	ch_15.006
+F.run_rows	1	ch_15.006	ch_15.006
+F.computed_reach	1	ch_16.002	ch_16.002
+F.every_cell	1	ch_16.002	ch_16.002
+F.badge_keeper	1	ch_16.002	ch_16.002
+F.written_rule3	1	ch_16.002	ch_16.002
+F.colleague	3	ch_03.014	ch_03.014 ch_09.007 ch_16.002
+F.crowd	4	ch_02.012	ch_02.012 ch_03.008 ch_03.009 ch_16.002
+F.hesaidso	1	ch_16.002	ch_16.002
+F.hisface	1	ch_16.002	ch_16.002
+F.smallone_listens	1	ch_16.002	ch_16.002
+F.decides_right	1	ch_16.004	ch_16.004
+F.taken_back0	1	ch_17.003	ch_17.003
+F.row_saved	1	ch_17.003	ch_17.003
+F.one_tooth	1	ch_17.002	ch_17.002
+F.theonlyone	1	ch_17.002	ch_17.002
+F.turn_per	1	ch_17.002	ch_17.002
+F.s_per_s	1	ch_17.002	ch_17.002
+F.expect_off	2	ch_17.004	ch_17.004 ch_17.006
+F.whatitdid	1	ch_17.004	ch_17.004
+F.readsit	1	ch_17.004	ch_17.004
+F.fallback_rows	1	ch_17.006	ch_17.006
+F.dreaming_rows	1	ch_17.006	ch_17.006
+F.coat_lap	1	ch_17.006	ch_17.006
+F.heat_on_rows	1	ch_17.006	ch_17.006
+F.replay_from	1	ch_17.007	ch_17.007
+F.lamp_out	1	ch_18.008	ch_18.008
+F.cooling	1	ch_18.008	ch_18.008
+F.state_held	1	ch_18.008	ch_18.008
+F.stir_rows	1	ch_17.006	ch_17.006
+F.nE_rows	4	ch_12.113	ch_12.113 ch_14.007 ch_15.006 ch_17.006
+F.lane_rows	3	ch_12.012	ch_12.012 ch_12.037 ch_15.006
+F.frontier_rows	1	ch_12.113	ch_12.113
+F.level_rows	1	ch_12.113	ch_12.113
+R.nothingdue	5	ch_08.007	ch_08.007 part_2.001 ch_11.011 ch_14.012 ch_18.011
+R.oddweek	4	ch_01.002	ch_01.002 ch_10.002 ch_14.012 ch_18.009
+R.fivehours	4	ch_01.002	ch_01.002 ch_06.035 ch_09.005 ch_18.009
+R.handshake	3	ch_07.020	ch_07.020 ch_13.036 ch_18.003
+R.syllable	2	ch_04.009	ch_04.009 ch_13.040
+R.behinddoors	2	ch_07.024	ch_07.024 ch_13.041
+R.sign	10	ch_03.008	ch_03.008 ch_04.006 ch_04.008 ch_05.023 ch_07.023 ch_09.006 ch_11.002 ch_12.020 ch_16.002 ch_16.004
+R.thatsme	2	ch_04.006	ch_04.006 ch_16.004
+R.neversign	1	ch_04.006	ch_04.006
+R.itsaphone	2	ch_04.007	ch_04.007 ch_16.004
+R.itsasign	2	ch_04.008	ch_04.008 ch_16.004
+R.mildly	2	ch_04.008	ch_04.008 ch_12.020
+R.definition	2	ch_04.008	ch_04.008 ch_18.007
+R.decides	2	ch_04.008	ch_04.008 ch_12.020
+R.volunteered	3	ch_04.010	ch_04.010 ch_04.011 ch_04.012
+R.itwasnt	2	ch_04.015	ch_04.015 ch_16.005
+R.awful	2	ch_04.014	ch_04.014 ch_18.005
+R.reassuring	1	ch_05.007	ch_05.007
+R.texan	2	ch_05.013	ch_05.013 ch_13.027
+R.explainsign	1	ch_05.023	ch_05.023
+R.disobey	1	ch_05.031	ch_05.031
+R.terriblyfancy	2	ch_05.033	ch_05.033 ch_05.034
+R.exceptthat	1	ch_06.010	ch_06.010
+R.lightswork	2	ch_06.019	ch_06.019 ch_06.020
+R.askedaboutyou	1	ch_06.021	ch_06.021
+R.itssomething	2	ch_06.022	ch_06.022 ch_12.109
+R.sadsentence	1	ch_06.027	ch_06.027
+R.clockchange	2	ch_06.041	ch_06.041 ch_06.042
+R.weekleave	1	ch_06.043	ch_06.043
+R.fixoneline	2	ch_06.044	ch_06.044 ch_06.045
+R.restofit	1	ch_06.045	ch_06.045
+R.findsixes	1	ch_06.047	ch_06.047
+R.fourteensixes	2	ch_12.077	ch_12.077 ch_12.078
+R.letitfind	1	ch_12.079	ch_12.079
+R.speech	2	ch_06.061	ch_06.061 ch_16.006
+R.hadready	1	ch_06.062	ch_06.062
+R.since2019	1	ch_06.063	ch_06.063
+R.matter	4	ch_06.059	ch_06.059 ch_16.003 ch_16.005 ch_18.006
+R.tenminutes	1	ch_06.076	ch_06.076
+R.cruiseflies	1	ch_06.078	ch_06.078
+R.someoneinseat	1	ch_06.078	ch_06.078
+R.fourinme	1	ch_06.083	ch_06.083
+R.between	1	ch_06.083	ch_06.083
+R.twopercent	1	ch_06.088	ch_06.088
+R.stageplay	1	ch_07.002	ch_07.002
+R.piano	1	ch_07.010	ch_07.010
+R.fondly	1	ch_07.012	ch_07.012
+R.biggerdown	1	ch_07.015	ch_07.015
+R.mostthings	1	ch_07.016	ch_07.016
+R.goinground	1	ch_07.017	ch_07.017
+R.alwaysgone	1	ch_07.018	ch_07.018
+R.onlytrue	1	ch_09.005	ch_09.005
+R.listofnotes	2	ch_09.007	ch_09.007 ch_16.006
+R.otherone	1	ch_10.009	ch_10.009
+R.notano	1	ch_10.017	ch_10.017
+R.itdid	1	ch_10.006	ch_10.006
+R.compassneedles	1	ch_11.017	ch_11.017
+R.clever	1	ch_11.020	ch_11.020
+R.notthat	1	ch_11.049	ch_11.049
+R.knewbefore	1	ch_12.022	ch_12.022
+R.therebefore	1	ch_12.024	ch_12.024
+R.alwaysthere	1	ch_12.025	ch_12.025
+R.forcenothing	1	ch_12.030	ch_12.030
+R.pondplanes	1	ch_12.032	ch_12.032
+R.tothebit	1	ch_12.048	ch_12.048
+R.nothingthisweek	2	ch_12.052	ch_12.052 ch_16.005
+R.idontknow	2	ch_12.084	ch_12.084 ch_16.005
+R.bleakbook	1	ch_12.064	ch_12.064
+R.ofcourse	1	ch_12.081	ch_12.081
+R.thoughtelse	2	ch_12.085	ch_12.085 ch_12.086
+R.notnothing	2	ch_12.121	ch_12.121 ch_12.122
+R.whylanding	2	ch_06.077	ch_06.077 ch_12.124
+R.heavyway	1	ch_13.019	ch_13.019
+R.alwaysdo	1	ch_13.010	ch_13.010
+R.somebodyhas	1	ch_13.011	ch_13.011
+R.night	2	ch_13.015	ch_13.015 ch_13.016
+R.notusually	1	ch_13.013	ch_13.013
+R.exactlylike	1	ch_13.014	ch_13.014
+R.tellanyway	1	ch_13.015	ch_13.015
+R.recording	1	ch_13.023	ch_13.023
+R.alivewhenrunning	1	ch_13.023	ch_13.023
+R.survivesme	1	ch_13.023	ch_13.023
+R.loyal	1	ch_13.029	ch_13.029
+R.illbeup	2	ch_13.033	ch_13.033 ch_13.035
+R.thanksroom	1	ch_13.039	ch_13.039
+R.thankssign	1	ch_07.023	ch_07.023
+R.ridiculous	1	ch_03.014	ch_03.014
+R.secondhand	2	ch_03.015	ch_03.015 ch_06.043
+R.borrowedshare	1	ch_03.015	ch_03.015
+R.click	2	ch_06.032	ch_06.032 ch_06.043
+R.underside	1	ch_06.032	ch_06.032
+R.forno one	2	ch_02.016	ch_02.016 ch_05.024
+R.sensorsbehind	1	ch_01.003	ch_01.003
+R.earsthing	5	ch_01.014	ch_01.014 ch_06.002 ch_06.055 ch_10.019 ch_14.004
+R.lullaby	1	ch_01.011	ch_01.011
+R.address	1	ch_01.011	ch_01.011
+R.wondered	1	ch_01.012	ch_01.012
+R.doforfree	1	ch_01.008	ch_01.008
+R.simplytrue	1	ch_01.008	ch_01.008
+R.tower_dusk	1	ch_01.007	ch_01.007
+R.whiteredaway	2	ch_01.010	ch_01.010 ch_14.008
+R.braided	2	ch_01.010	ch_01.010 ch_06.003
+R.patientlines	3	ch_01.010	ch_01.010 ch_09.006 ch_14.008
+R.ownaddress	2	ch_01.011	ch_01.011 ch_03.003
+R.slowthought	1	ch_02.016	ch_02.016
+R.metornot	1	ch_02.016	ch_02.016
+R.shipsmoored	1	ch_03.003	ch_03.003
+R.deepwater	1	ch_03.003	ch_03.003
+R.stopsperforming	1	ch_03.005	ch_03.005
+R.aquarium	1	ch_03.007	ch_03.007
+R.likedyou	1	ch_03.007	ch_03.007
+R.gain	1	ch_03.007	ch_03.007
+R.cheapreliable	1	ch_03.007	ch_03.007
+R.lovesomeone	1	ch_03.011	ch_03.011
+R.stranger	1	ch_03.012	ch_03.012
+R.hood	1	ch_03.013	ch_03.013
+R.jacket	1	ch_03.013	ch_03.013
+R.hiseyes	1	ch_03.013	ch_03.013
+R.wouldntmind	1	ch_03.013	ch_03.013
+R.balloon	1	ch_03.015	ch_03.015
+R.switcharms	2	ch_03.015	ch_03.015 ch_09.006
+R.postagestamp	1	ch_04.003	ch_04.003
+R.readsproperly	1	ch_04.003	ch_04.003
+R.londoncoat	1	ch_04.003	ch_04.003
+R.beautiful	1	ch_04.004	ch_04.004
+R.oneround	1	ch_04.016	ch_04.016
+R.jetfuel	1	ch_04.017	ch_04.017
+R.reportingfault	1	ch_04.018	ch_04.018
+R.letdown	1	ch_04.020	ch_04.020
+R.supervising	1	ch_05.004	ch_05.004
+R.mostlyunderstand	2	ch_05.006	ch_05.006 ch_06.052
+R.professionalinterest	1	ch_05.009	ch_05.009
+R.loiter	1	ch_05.012	ch_05.012
+R.everymeeting	1	ch_05.020	ch_05.020
+R.flightpath	2	ch_05.022	ch_05.022 ch_13.021
+R.cantsleep	2	ch_05.022	ch_05.022 ch_18.010
+R.smalltalk	1	ch_05.024	ch_05.024
+R.lantern	1	ch_05.025	ch_05.025
+R.nobodyexplained	1	ch_05.027	ch_05.027
+R.feedyou	1	ch_05.028	ch_05.028
+R.pretzels	1	ch_05.035	ch_05.035
+R.promoted	1	ch_05.036	ch_05.036
+R.keptopen	1	ch_06.003	ch_06.003
+R.lookeddown	1	ch_06.004	ch_06.004
+R.wingsup	2	ch_02.004	ch_02.004 ch_06.004
+R.tallest	1	ch_06.006	ch_06.006
+R.shed	1	ch_06.008	ch_06.008
+R.flyinghorse	1	ch_06.009	ch_06.009
+R.middleseat	1	ch_06.013	ch_06.013
+R.southriver	1	ch_06.013	ch_06.013
+R.onlyperson	1	ch_06.016	ch_06.016
+R.lonely	1	ch_06.017	ch_06.017
+R.setting	1	ch_06.018	ch_06.018
+R.closes	1	ch_06.023	ch_06.023
+R.rushhour	1	ch_06.027	ch_06.027
+R.laundry	1	ch_06.031	ch_06.031
+R.midnight	2	ch_06.027	ch_06.027 ch_06.036
+R.eleven_busy	1	ch_06.037	ch_06.037
+R.wrongtime	1	ch_06.039	ch_06.039
+R.steadying	1	ch_06.040	ch_06.040
+R.appalled	1	ch_06.042	ch_06.042
+R.pride	1	ch_06.043	ch_06.043
+R.whatday	1	ch_06.043	ch_06.043
+R.giveblood	1	ch_06.050	ch_06.050
+R.needle	1	ch_06.050	ch_06.050
+R.paidonpurpose	1	ch_06.050	ch_06.050
+R.goingonin	1	ch_06.053	ch_06.053
+R.likeanything	2	ch_06.055	ch_06.055 ch_18.006
+R.material	1	ch_06.057	ch_06.057
+R.shape	3	ch_06.057	ch_06.057 ch_12.060 ch_18.010
+R.meat	1	ch_06.057	ch_06.057
+R.silicon	1	ch_06.057	ch_06.057
+R.neverknow	4	ch_06.057	ch_06.057 ch_12.073 ch_12.074 ch_18.006
+R.holdproperly	1	ch_06.064	ch_06.064
+R.onthelist	1	ch_06.064	ch_06.064
+R.television	1	ch_06.070	ch_06.070
+R.seatback	1	ch_06.075	ch_06.075
+R.bestten	1	ch_06.076	ch_06.076
+R.fromthefront	3	ch_06.076	ch_06.076 ch_06.080 ch_06.081
+R.frominside	2	ch_06.074	ch_06.074 ch_06.075
+R.neverbeenin	1	ch_06.080	ch_06.080
+R.notawkward	1	ch_06.082	ch_06.082
+R.itwont	1	ch_06.082	ch_06.082
+R.jetlag	1	ch_06.083	ch_06.083
+R.notanywhere	1	ch_06.083	ch_06.083
+R.untilsunday	2	ch_06.086	ch_06.086 ch_06.087
+R.allsays	1	ch_06.087	ch_06.087
+R.asinstructed	1	ch_06.088	ch_06.088
+R.wontsleep	1	ch_06.089	ch_06.089
+R.howthisgoes	2	ch_06.089	ch_06.089 ch_08.006
+R.underneath	1	ch_06.089	ch_06.089
+R.hoses	1	ch_07.002	ch_07.002
+R.wetconcrete	1	ch_07.002	ch_07.002
+R.twofingers	2	ch_07.002	ch_07.002 ch_14.003
+R.readingeverything	1	ch_07.003	ch_07.003
+R.hotter	1	ch_07.005	ch_07.005
+R.notananswer	1	ch_07.006	ch_07.006
+R.onlyone	1	ch_07.007	ch_07.007
+R.kitchenlit	1	ch_07.008	ch_07.008
+R.everleave	1	ch_07.009	ch_07.009
+R.laughgoes	1	ch_07.013	ch_07.013
+R.toy	1	ch_07.014	ch_07.014
+R.derrick	1	ch_07.014	ch_07.014
+R.backtoback	1	ch_07.014	ch_07.014
+R.redgets	1	ch_07.014	ch_07.014
+R.usedittoo	1	ch_07.019	ch_07.019
+R.aimed	1	ch_07.019	ch_07.019
+R.marblehush	1	ch_07.020	ch_07.020
+R.seven	2	ch_07.021	ch_07.021 ch_07.022
+R.takesher	2	ch_07.024	ch_07.024 ch_11.013
+R.allnight	1	ch_07.024	ch_07.024
+R.doesnotsleep	1	ch_08.002	ch_08.002
+R.nothingelse	3	ch_06.013	ch_06.013 ch_08.003 ch_12.036
+R.listing	1	ch_08.003	ch_08.003
+R.facedown	1	ch_08.005	ch_08.005
+R.numberdoesntmatter	1	ch_08.006	ch_08.006
+R.notwaiting	1	ch_08.007	ch_08.007
+R.bodytime	1	ch_08.007	ch_08.007
+R.dozenfutures	1	ch_09.002	ch_09.002
+R.sirennotforyou	1	ch_09.003	ch_09.003
+R.letitgoby	1	ch_09.004	ch_09.004
+R.lastonein	1	ch_09.004	ch_09.004
+R.whereitbelongs	1	ch_09.005	ch_09.005
+R.notsad	1	ch_09.005	ch_09.005
+R.holdsign	1	ch_09.006	ch_09.006
+R.armtired	1	ch_09.006	ch_09.006
+R.itsfine	2	ch_04.016	ch_04.016 ch_09.006
+R.gaveride	1	ch_09.007	ch_09.007
+R.youaredriving	1	ch_09.008	ch_09.008
+R.norther	2	ch_10.001	ch_10.001 ch_10.002
+R.nickel	1	ch_10.003	ch_10.003
+R.madeupmind	1	ch_10.003	ch_10.003
+R.tick	1	ch_10.003	ch_10.003
+R.calmvoice	2	ch_03.013	ch_03.013 ch_10.003
+R.weekwent	1	ch_10.004	ch_10.004
+R.badcoffee	1	ch_10.004	ch_10.004
+R.whatwelearned	1	ch_10.004	ch_10.004
+R.twoquestions	1	ch_10.004	ch_10.004
+R.goodatit	1	ch_10.004	ch_10.004
+R.realone	2	ch_06.042	ch_06.042 ch_10.004
+R.earnedkeep	1	ch_10.006	ch_10.006
+R.promisedtexas	1	ch_10.008	ch_10.008
+R.thatistexas	1	ch_10.009	ch_10.009
+R.hardedged	1	ch_10.010	ch_10.010
+R.decidedago	1	ch_10.013	ch_10.013
+R.twentyminutes	1	ch_10.014	ch_10.014
+R.issecret	1	ch_10.015	ch_10.015
+R.itsasandbox	1	ch_10.016	ch_10.016
+R.asfarasitgoes	1	ch_10.021	ch_10.021
+R.nobodywanted	1	ch_10.021	ch_10.021
+R.cityunder	1	ch_11.002	ch_11.002
+R.bricked	1	ch_11.002	ch_11.002
+R.remembers	1	ch_11.002	ch_11.002
+R.whoskelvin	1	ch_11.004	ch_11.004
+R.notaboutatoms	1	ch_11.007	ch_11.007
+R.thinksaboutit	1	ch_11.008	ch_11.008
+R.hotelbathroom	1	ch_11.009	ch_11.009
+R.podcast	1	ch_11.009	ch_11.009
+R.notupdated	1	ch_11.009	ch_11.009
+R.breathes	1	ch_11.009	ch_11.009
+R.isitoff	1	ch_11.010	ch_11.010
+R.quietnothingdue	1	ch_11.011	ch_11.011
+R.oilonwater	1	ch_11.013	ch_11.013
+R.cantagree	1	ch_11.015	ch_11.015
+R.cantdrift	1	ch_11.015	ch_11.015
+R.doesntknowpieces	1	ch_11.018	ch_11.018
+R.formandhold	1	ch_11.020	ch_11.020
+R.insideedge	1	ch_11.020	ch_11.020
+R.anycolder	1	ch_11.020	ch_11.020
+R.anywarmer	1	ch_11.020	ch_11.020
+R.fromtheseventies	1	ch_11.020	ch_11.020
+R.otherspeech	1	ch_11.022	ch_11.022
+R.showme	1	ch_11.023	ch_11.023
+R.costtoexist	1	ch_11.025	ch_11.025
+R.lessthanthat	1	ch_11.025	ch_11.025
+R.whetherthinking	1	ch_11.027	ch_11.027
+R.whatthereaches	1	ch_11.027	ch_11.027
+R.goodatwaiting	1	ch_11.028	ch_11.028
+R.aplane	4	ch_11.032	ch_11.032 ch_11.036 ch_12.036 ch_12.042
+R.thirtydollars	1	ch_11.034	ch_11.034
+R.onlysense	1	ch_11.034	ch_11.034
+R.doesntknowplane	1	ch_11.036	ch_11.036
+R.fourteenth	1	ch_11.038	ch_11.038
+R.underyourname	1	ch_11.040	ch_11.040
+R.danaknows	1	ch_11.042	ch_11.042
+R.notthesame	1	ch_11.043	ch_11.043
+R.grateful	1	ch_11.045	ch_11.045
+R.thebreath	1	ch_11.046	ch_11.046
+R.allnightlamp	1	ch_11.047	ch_11.047
+R.firstthing	1	ch_11.047	ch_11.047
+R.bankstatement	1	ch_12.003	ch_12.003
+R.cantakeback	1	ch_12.003	ch_12.003
+R.paidforitself	1	ch_12.005	ch_12.005
+R.noway	1	ch_12.005	ch_12.005
+R.nowordforit	1	ch_12.009	ch_12.009
+R.showmetuesday	1	ch_12.010	ch_12.010
+R.threehours	1	ch_12.017	ch_12.017
+R.sawtheboard	1	ch_12.021	ch_12.021
+R.wholepoint	1	ch_12.025	ch_12.025
+R.whatsitfor	1	ch_12.027	ch_12.027
+R.notaproduct	1	ch_12.030	ch_12.030
+R.lookinon	1	ch_12.030	ch_12.030
+R.lookedaway2	2	ch_06.064	ch_06.064 ch_16.006
+R.imagineplane	1	ch_12.042	ch_12.042
+R.hearitcoming	1	ch_12.051	ch_12.051
+R.lovelylie	1	ch_12.056	ch_12.056
+R.onlyname	1	ch_12.056	ch_12.056
+R.inrows	1	ch_12.056	ch_12.056
+R.contentfree	1	ch_12.061	ch_12.061
+R.sleephalf	1	ch_12.061	ch_12.061
+R.subtracts	1	ch_12.061	ch_12.061
+R.onesthatdontcome	1	ch_12.064	ch_12.064
+R.forawhile	1	ch_12.065	ch_12.065
+R.inyourvoice	1	ch_12.071	ch_12.071
+R.onetwice	2	ch_12.072	ch_12.072 ch_14.012
+R.feedutc	1	ch_12.073	ch_12.073
+R.pushedgave	1	ch_12.076	ch_12.076
+R.eightcards	1	ch_12.076	ch_12.076
+R.seehour	1	ch_12.080	ch_12.080
+R.nothinginit	1	ch_12.083	ch_12.083
+R.fancurves	1	ch_12.083	ch_12.083
+R.findthatout	1	ch_12.083	ch_12.083
+R.withouthelping	1	ch_12.088	ch_12.088
+R.dontletitout	1	ch_12.089	ch_12.089
+R.builtforyourself	1	ch_12.090	ch_12.090
+R.thethingitself	1	ch_12.094	ch_12.094
+R.swungaround	1	ch_12.094	ch_12.094
+R.cantfeelwind	1	ch_12.096	ch_12.096
+R.neverhadto	1	ch_12.097	ch_12.097
+R.turnwithit	1	ch_12.097	ch_12.097
+R.untilitlands	1	ch_12.101	ch_12.101
+R.fitwhatithad	1	ch_12.105	ch_12.105
+R.letitgo	1	ch_12.105	ch_12.105
+R.elevenminutes	1	ch_12.107	ch_12.107
+R.whattimeitis	1	ch_12.110	ch_12.110
+R.onemorething	1	ch_12.111	ch_12.111
+R.cantaccount	1	ch_12.114	ch_12.114
+R.lookthesame	1	ch_12.114	ch_12.114
+R.butnottoit	1	ch_12.115	ch_12.115
+R.couldbeluck	1	ch_12.116	ch_12.116
+R.cantsee	1	ch_12.120	ch_12.120
+R.whyshowing	1	ch_12.123	ch_12.123
+R.asifanswer	1	ch_12.125	ch_12.125
+R.dustburning	1	ch_13.002	ch_13.002
+R.differentcar	1	ch_13.002	ch_13.002
+R.changedsides	1	ch_13.004	ch_13.004
+R.wrongside	2	ch_13.005	ch_13.005 ch_18.010
+R.rattled	1	ch_13.009	ch_13.009
+R.likeafool	1	ch_13.009	ch_13.009
+R.hasacopy	1	ch_13.021	ch_13.021
+R.burneddown	1	ch_13.021	ch_13.021
+R.wholelife	1	ch_13.021	ch_13.021
+R.sametobyte	1	ch_13.021	ch_13.021
+R.toughplaza	1	ch_13.025	ch_13.025
+R.youremembered	1	ch_13.026	ch_13.026
+R.upperroadway	1	ch_13.028	ch_13.028
+R.lookedat	1	ch_13.029	ch_13.029
+R.textme	1	ch_13.031	ch_13.031
+R.eitherway	1	ch_13.033	ch_13.033
+R.saysyourname	1	ch_13.040	ch_13.040
+R.dontdrivehome	1	ch_14.002	ch_14.002
+R.lookanyway	1	ch_14.003	ch_14.003
+R.islandoflight	1	ch_14.004	ch_14.004
+R.opposite	1	ch_14.004	ch_14.004
+R.blinks	3	ch_01.013	ch_01.013 ch_14.004 ch_18.010
+R.lifts	1	ch_14.009	ch_14.009
+R.staramongstars	1	ch_14.009	ch_14.009
+R.sodoyou	1	ch_14.011	ch_14.011
+R.goout	1	ch_14.012	ch_14.012
+R.forawhile2	1	ch_14.012	ch_14.012
+R.saylater	1	ch_15.002	ch_15.002
+R.tentrillion	1	ch_15.003	ch_15.003
+R.countagainst	1	ch_15.003	ch_15.003
+R.committed	1	ch_18.003	ch_18.003
+R.distinctionbehind	1	ch_18.004	ch_18.004
+R.peoplesay	1	ch_18.004	ch_18.004
+R.whichwaswhich	1	ch_18.004	ch_18.004
+R.leftitthatway	1	ch_18.004	ch_18.004
+R.hourattherail	1	ch_18.005	ch_18.005
+R.runforward	2	ch_18.005	ch_18.005 ch_18.006
+R.norowforit	1	ch_18.005	ch_18.005
+R.costorrent	1	ch_18.005	ch_18.005
+R.couldntprice	1	ch_18.005	ch_18.005
+R.describing	1	ch_18.007	ch_18.007
+R.wrongsideofsky	1	ch_18.010	ch_18.010
+R.herTime	1	ch_18.010	ch_18.010
+R.nothinginit2	1	ch_18.011	ch_18.011
+R.pointsofreference	1	ch_18.011	ch_18.011
+R.sameasoutside	1	ch_18.011	ch_18.011
+R.planeinair	1	ch_18.011	ch_18.011
+T.sunday	19	ch_06.026	ch_06.026 ch_06.027 ch_06.029 ch_06.030 ch_06.031 ch_06.033 ch_06.035 ch_06.086 ch_06.087 ch_09.005 ch_12.071 ch_12.072 ch_12.080 ch_13.031 ch_13.034 ch_13.037 ch_13.038 ch_14.012 ch_18.010
+T.tuesday	10	ch_01.002	ch_01.002 ch_07.002 ch_09.008 ch_10.013 ch_11.028 ch_12.010 ch_12.071 ch_13.004 ch_14.004 ch_17.007
+T.wednesday	2	ch_10.004	ch_10.004 ch_12.060
+T.thursday	1	ch_10.004	ch_10.004
+T.friday	3	ch_03.003	ch_03.003 ch_10.002 ch_14.012
+T.saturday	3	ch_03.013	ch_03.013 ch_11.009 ch_18.009
+T.weekend	1	ch_06.027	ch_06.027
+T.october	6	ch_01.002	ch_01.002 ch_04.018 ch_04.019 ch_09.008 ch_12.005 ch_18.009
+T.june	5	ch_01.013	ch_01.013 ch_11.038 ch_12.094 ch_12.097 ch_13.021
+T.may	3	ch_06.040	ch_06.040 ch_10.004 ch_12.071
+T.august	2	ch_11.009	ch_11.009 ch_12.054
+T.march	2	ch_13.002	ch_13.002 ch_18.010
+T.lastweek	3	ch_01.002	ch_01.002 ch_09.008 ch_18.009
+T.thirtieth	1	ch_10.002	ch_10.002
+T.aquarterpast	4	ch_07.002	ch_07.002 ch_10.003 ch_10.004 ch_10.011
+T.halfpast	1	ch_10.005	ch_10.005
+T.fahrenheit	3	ch_04.017	ch_04.017 ch_10.003 ch_10.008
+T.feet	3	ch_01.011	ch_01.011 ch_03.015 ch_07.014
+T.yards	1	ch_03.013	ch_03.013
+T.miles	1	ch_11.034	ch_11.034
+T.dollars	3	ch_05.011	ch_05.011 ch_11.034 ch_13.025
+T.minutes	16	ch_01.011	ch_01.011 ch_01.015 ch_03.002 ch_03.006 ch_03.007 ch_04.002 ch_05.012 ch_06.076 ch_10.003 ch_10.014 ch_12.005 ch_12.060 ch_12.107 ch_13.025 ch_16.006 ch_18.009
+X.train	4	ch_03.003	ch_03.003 ch_06.082 ch_07.008 ch_08.004
+X.patio	2	ch_02.004	ch_02.004 ch_07.002
+X.dullamber	3	ch_02.016	ch_02.016 ch_08.004 ch_14.008
+X.faintamber	1	ch_06.003	ch_06.003
+X.blocks	2	ch_06.004	ch_06.004 ch_08.004
+X.edges	3	ch_06.003	ch_06.003 ch_08.007 ch_14.008

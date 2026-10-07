@@ -1,0 +1,66 @@
+id	tier	EN	zh-Hans	zh-Hant	first_use	count	note
+# Rulings that win on id (BOOK_TRANSLATION_METHOD_v3 §8.3): one row per id; '=' keeps a cell; a NEW id needs a full row.
+# Every row here has a charter §15 line (R-number, date, reason).
+R.onlytrue	=	=	只是真的	只是真的	=	=	R13: the zero-subject line 只是真的而已 (ch_09 worker, moderator agrees)
+X.train	M	\btrain\b	电车	電車			R14: one noun for the light-rail train across VI, VII, VIII (and the airport train in III)
+X.patio	M	\bpatio\b	露天座位区	露天座位區			R14: one noun for the patio in II and VII
+X.dullamber	M	\bdull amber\b ;; @except ch_08.004	黯淡的琥珀色	黯淡的琥珀色			R15/R25: one form across II, XIV; VIII varies to 黯淡、不變的琥珀色 on purpose
+X.faintamber	M	\bfaint amber\b	淡淡的琥珀色	淡淡的琥珀色			R15: VI varies the English, so the Chinese varies
+X.blocks	M	\bblocks (?:off|away)\b	条街	條街			R15: a few blocks off = 幾條街外
+X.edges	M	\bto its edges\b	边缘	邊緣			R15: the city laid out to its edges (VI, VIII, XIV)
+F.blind	=	\bthe blind\b|\bblind up\b ;; @except ch_02.003	=	=	=	=	R18: "the blind right turn" (II) is the adjective; the row is the window blind (XVII, XVIII)
+F.landed	=	=\bLanded\b	=	=	=	=	R18: case-sensitive: her text "Landed." only. The board LANDED is A.LANDED; "it landed" (V, the joke) keeps the pun 落地了 by choice, not by the row
+F.readsit	=	\breads it\b ;; @types code	=	=	=	=	R18: a row token; the prose "she reads it" (V, XIII) is free (both wrote 讀了)
+F.machines	=	\bmachines\b ;; @except ch_03.007	=	=	=	=	R18: the vending machines (III) are 自動販賣機; the row is the two machines in the smallest room
+F.colleague	=	\bcolleague\b ;; @accept 同行	=	=	=	=	R18: driver to driver (III) is 同行; the company colleague (XVI, the rows) stays 同事
+G.reunion	=	=\bReunion\b	=	=	=	=	R18: case-sensitive: the tower only; "every reunion in the room" (III) is the common noun 重聚
+R.issecret	=	=	=	是祕密嗎	=	=	R19: Taiwan standard 祕 (教育部 form; OpenCC tw2sp folds it to 秘 for zh-Hans)
+A.landing	=	\bthe landing\b(?! lights)	=	=	=	=	R22: "the landing lights" (I, II) are not "the landing" (XII, XVI)
+R.notsad	=	=	这些都谈不上悲伤	這些都談不上悲傷	=	=	R13 (the cells catch up): 這些都談不上悲傷。只是真的而已。
+R.takesher	=	\btakes her\b ;; @except ch_11.013	带走她	帶走她	=	=	R17/R24: 門轉動，帶走她; XI "takes her a moment" is not the door
+R.listing	=	=	歪	歪	=	=	R15 (ch_08): 歪在那個輪子上; the row hints the verb only
+R.goout	=	=	你一停下来不动，灯就会自己熄掉	你一停下來不動，燈就會自己熄掉	=	=	R23: the XIV close as charter §10 gives it (ch_14 worker, moderator agrees)
+R.forawhile2	=	=	而你有好一阵子不会停	而你有好一陣子不會停	=	=	R23/R29: "and you don't, for a while" looks forward (SEAMS_B)
+R.podcast	=	\bpodcast\b ;; @accept Podcast	=	=	=	=	R24: Taiwan print capitalizes Podcast (charter §7)
+R.aplane	=	\bA plane\b ;; @except ch_11.036,ch_12.036	=	=	=	=	R24: "what a plane is" is not the reply "A plane."
+T.fahrenheit	=	\b(?:degrees|79, 71, 64, 57)\b ;; @except ch_10.008	=	=	=	=	R24: 華氏 once per scene (charter §6): X .003 carries it, .008 is bare 度
+R.formandhold	=	=	能成形、也留得住	能成形、也留得住	=	=	R24: one verb for hold / holds (留得住／留不住); ch_11 worker
+R.whatthereaches	=	=	够到多远	搆到多遠	=	=	R24: F.reach (H) wins; 搆 is the prose word for reach
+R.dozenfutures	=	=	每秒十几个谨慎的未来	每秒十幾個謹慎的未來	=	=	R24: "the car's careful dozen futures a second" (IX)
+R.holdsign	=	=	举起牌子	舉起牌子	=	=	R24: 你希望還是有人舉起牌子 (IX)
+R.textme	=	=	告诉我它做了什么	告訴我它做了什麼	=	=	R24: 「傳訊息告訴我它做了什麼，」 (XIII)
+O.schedule	=	=	排期	=	=	=	R24: mainland 排期 (the locale layer already prints it)
+F.reverse	=	\bin reverse\b ;; @except ch_06.002	=	=	=	=	R25: the ears in VI do the thing 又做了一次，反過來 (charter §10); 反向 is the XII row
+R.weekleave	=	=	这一周从她身上离开	這一週從她身上離開	=	=	R25: 這一週 (the week they are in), as the brief and GT_PRECEDENT give it
+R.nothingelse	=	\bnothing else\b ;; @except ch_06.013,ch_12.036	=	=	=	=	R25: the row is VIII (shoes and nothing else); VI "a company in common and nothing else" is free
+R.realone	=	\ba real one this time\b ;; @except ch_06.042	=	=	=	=	R25: the row is the real car (X); VI "a real one this time" is her laugh, 這次是真的笑
+R.someoneinseat	=	=	座位上有	座位上有	=	=	R25: the locked line is 座位上有沒有人是有差的 (charter §10)
+A.737	=	\b737s?\b ;; @accept 737	=	=	=	=	R26: the plural "737s" (I) is 737 in Chinese; the digits stay
+R.cantakeback	=	=	收回不了	收回不了	=	=	R27: 它收回不了的那些時刻 (XII .003); 收回 is the H verb
+R.paidforitself	=	=	值回了成本	值回了成本	=	=	R27: the split 值回了成本 (XII .005), not the calque 值回了自己
+R.tothebit	=	=	收到一个比特都不差	收到一個位元都不差	=	=	R27: the charter line 把一件事收回來，收到一個位元都不差 (XII .048)
+F.commit	=	=	先把预测定下来	先把預測定下來	=	=	R27: "Commit the forecast before the turn" (XII .117)
+R.marblehush	=	=	大理石和寂静	大理石和寂靜	=	=	R28: hush is not the row token 靜 (SEAMS_A)
+R.norowforit	=	=	那件事没有一笔	那件事沒有一筆	=	=	R29: "it" is the not-awful hour, not the field (XVIII .005, SEAMS_B BLOCK)
+R.whatsitfor	=	=	它是为了什么	它是為了什麼	=	=	R29: the question that 不為什麼 answers (XII .027)
+R.promisedtexas	=	=	答应我的是得州	答應我的是德州	=	=	R29: 「他們答應我的是德州。」, no catchphrase, no particle (X .008)
+R.weekwent	=	=	像顺利的一周都会过的那样	像順利的一週都會過的那樣	=	=	R29: the X opener reads on a first pass (SEAMS_B)
+R.threehours	=	=	三个小时都没闭合	三個小時都沒閉合	=	=	R30: the row word carried into the prose (XII .017)
+G.core	=	=	市中心	市中心	=	=	R31: "the core" is 市中心 for the reader (REGISTER_TW)
+R.cheapreliable	=	=	完全靠得住	完全靠得住	=	=	R31: "cheap" is affectionate: 便宜，而且完全靠得住 (III)
+R.hiseyes	=	=	眼睛的关系	眼睛的關係	=	=	R31: 他說是眼睛的關係 (III)
+R.professionalinterest	=	=	专业的	專業的	=	=	R31: 那種興趣，你只能說是專業的 (V)
+R.loiter	=	=	赖着比较便宜	賴著比較便宜	=	=	R31: the loafing word (V)
+R.exceptthat	=	=	就这个不知道	就這個不知道	=	=	R31: 它的事我全都知道，就這個不知道 (VI)
+R.appalled	=	=	错愕	錯愕	=	=	R31: "a little appalled" 還有一點錯愕; 難以置信 was a 成語 and the wrong feeling (VI)
+R.nickel	=	=	镍的颜色	鎳的顏色	=	=	R31: the metal, not the coin (X)
+R.goodatit	=	=	看她多擅长这件事	看她多擅長這件事	=	=	R31: (X)
+R.hardedged	=	=	轮廓变硬	輪廓變硬	=	=	R31: 輪廓變硬、變清楚 (X)
+R.sleephalf	=	=	睡着的那一半	睡著的那一半	=	=	R31: 它學習方式裡，睡著的那一半 (XII)
+R.asifanswer	=	=	像那是一个答案，而它就是	像那是一個答案，而它就是	=	=	R31: the last line of XII
+R.tower_dusk	=	=	黄昏时一栋高楼的窗一盏盏亮起	黃昏時一棟高樓的窗一盞盞亮起	=	=	R33: towers are 高樓 (R21), the office tower of VI included
+R.derrick	=	=	钢制井架	鋼製井架	=	=	R33: the derrick keeps the oil-company image of VI
+R.therebefore	=	=	它比你先在那里	它比你先在那裡	=	=	R34: presence, not arrival, so 「它一直都在。」 escalates it (BACKDIFF_B)
+P.iris	=	=	艾丽丝	艾瑞絲	=	=	R35: CN 艾丽丝 per GT_NAMES (Xinhua keeps 艾丽斯 for Alice); the key had carried 艾丽斯
+P.iris_rows	=	=	艾丽丝	艾瑞絲	=	=	R35: the rows name her as the prose does
+A.runways1718	=	=	17号和18号跑道	一七和一八跑道	=	=	R35: mainland prose numbers runways with 号

@@ -1,0 +1,916 @@
+id	tier	EN	zh-Hans	zh-Hant	first_use	count	note
+# THE REGISTRY of Five Hours Apart, zh-Hant-TW edition (BOOK_TRANSLATION_METHOD_v3 §7, §8). Columns: id, tier (H FAIL / M WARN / L note), EN census pattern (regex; ' ;; @except id,id', ' ;; @accept alt|alt', ' ;; @types code,para'; leading '=' = case-sensitive), zh-Hans (the mainland form, for the sibling edition), zh-Hant (the LOCKED Taiwan form; '=' = keep the English match verbatim), first_use and count (computed into _generated/census.tsv), note. Rulings go to registry_amendments_zht.tsv, never here.
+#
+# --- HEADINGS (byte-exact; the gate compares the whole heading block) ---
+heading.front	H		# 五小时之隔	# 五小時之隔			the title; D-row D1 for the author (alternatives 相隔五小時 / 五小時的距離)
+heading.part_1	H		# 第一部 · 五小时之隔	# 第一部 · 五小時之隔
+heading.ch_01	H		## 一、四十一	## 一、四十一			the floor
+heading.ch_02	H		## 二、斯特蒙斯	## 二、史坦蒙斯			the freeway, bare, as locals say it
+heading.ch_03	H		## 三、国际大道	## 三、國際大道			International Parkway, the road up the middle of DFW
+heading.ch_04	H		## 四、门	## 四、門			the frosted doors
+heading.ch_05	H		## 五、卡彭特高速公路	## 五、卡本特高速公路
+heading.ch_06	H		## 六、四十八	## 六、四十八			the floor
+heading.ch_07	H		## 七、榆树街	## 七、榆樹街
+heading.ch_08	H		## 八、凌晨四点	## 八、凌晨四點			four in the morning, her body's time
+heading.ch_09	H		## 九、斯特蒙斯，再一次	## 九、史坦蒙斯，再一次			"X, Again" pattern locked as 「，再一次」
+heading.part_2	H		# 第二部 · 没有什么该来	# 第二部 · 沒有什麼該來			the refrain compressed to four characters for the title
+heading.ch_10	H		## 十、北风	## 十、北風			a Texas norther
+heading.ch_11	H		## 十一、最小的房间	## 十一、最小的房間
+heading.ch_12	H		## 十二、记录带	## 十二、紀錄帶			the tape = the record of conclusions
+heading.ch_13	H		## 十三、离境	## 十三、離境			Departures (the airport word)
+heading.ch_14	H		## 十四、四十一，再一次	## 十四、四十一，再一次
+heading.part_3	H		# 第三部 · 假设	# 第三部 · 假設			"Say": the device of every opener, so the title is the same word (R1)
+heading.ch_15	H		## 十五、体	## 十五、體			Body (the end-of-universe body; the row token)
+heading.ch_16	H		## 十六、房间	## 十六、房間
+heading.ch_17	H		## 十七、齿轮	## 十七、齒輪			Gears
+heading.ch_18	H		## 十八、未闭	## 十八、未閉			Open = the expectation that has not closed (R13)
+#
+# --- PEOPLE ---
+P.iris	H	\bIris\b ;; @except ch_03.014	艾丽斯	艾瑞絲			fictional; TW 艾瑞絲; CN 艾丽斯 (新华社《世界人名翻译大辞典》女名 form); Latin pair once at the first prose mention (ch_02); the phone sign stays IRIS WREN
+P.wren	H	\bWren\b ;; @except ch_03.014	雷恩	雷恩			as Christopher Wren is rendered in both locales
+P.iris_rows	H	=\bIRIS\b ;; @types code	艾丽斯	艾瑞絲			the log rows name her in Chinese (R2)
+P.dana	H	\bDana\b	达娜	黛娜			the manager; a woman
+P.dana_rows	H	=\bDANA\b ;; @types code	达娜	黛娜
+P.him_rows	H	=\bHIM\b ;; @types code	他	他			the field's word for him
+P.father_rows	H	=\bFATHER\b ;; @types code	父亲	父親
+P.father	H	your father	父亲	父親
+P.dad	H	\bDad\b	爸	爸			"Night, Dad." 「晚安，爸。」
+P.son	H	\bson\b	儿子	兒子			"Night, son." 「晚安，兒子。」
+P.kelvin	H	=\bKelvin\b	开尔文	克耳文			Lord Kelvin, 1867; the Taiwan form of the physicist (and the unit)
+P.KELVIN	H	=\bKELVIN\b	=	=			the label-maker strip on the door: the field's only name, kept in Latin capitals
+P.kosterlitz	H	\bKosterlitz\b	科斯特利茨	科斯特利茲
+P.thouless	H	\bThouless\b	索利斯	索利斯
+P.berezinskii	H	\bBerezinskii\b	别列津斯基	別列津斯基
+P.grok	H	\bGrok\b	=	=			the car's assistant; a product name
+P.old_man	H	the old man	老人	老人
+P.boys	H	\bthe (two small )?boys\b	男孩	男孩
+P.drivers	H	\bdrivers\b	司机	司機
+P.mother	H	\bmother\b	母亲	母親
+P.pilots	H	\bpilots\b	飞行员	飛行員
+P.bellman	H	\bbellman\b	行李员	行李員
+P.valet	H	\bvalets?\b	泊车员	泊車員
+P.host	M	\bthe host\b	领位	領檯			the restaurant host: 帶位的人
+P.waiter	H	\bthe waiter\b	服务员	服務生
+P.guard	H	\bguard\b	保安	警衛			the lobby guard
+P.assistant	H	\bthe assistant\b	助手	助理			the car's voice assistant
+#
+# --- PLACES ---
+G.dallas	H	\bDallas\b	达拉斯	達拉斯
+G.euless	H	\bEuless\b	尤利斯	尤利斯
+G.midcities	M	\bthe Mid-Cities\b	中城区	中城區			the towns between Dallas and Fort Worth
+G.irving	H	\bIrving\b	欧文	歐文
+G.lascolinas	H	\bLas Colinas\b	拉斯科利纳斯	=			TW keeps Latin (GT-NAMES); CN transliterates 拉斯科利纳斯 (cvent zh-CN; 新华社 rule)
+G.grapevine	H	\bGrapevine\b	格雷普韦恩	葡萄藤			TW 葡萄藤 (community and zh.wikipedia form); CN 格雷普韦恩 (新华社《世界地名翻译大辞典》)
+G.arlington	H	\bArlington\b	阿灵顿	阿靈頓
+G.fortworth	H	\bFort Worth\b	沃思堡	沃斯堡			TW 沃斯堡 / CN 沃思堡
+G.deepellum	H	\bDeep Ellum\b	深艾勒姆	=			TW keeps Latin; CN uses the Visit Dallas form (GT-NAMES)
+G.westend	H	\bthe West End\b	西区	西區
+G.bachman	H	\bBachman Lake\b	巴克曼湖	巴克曼湖
+G.lovefield	H	\bLove Field\b	爱田机场	愛田機場			Dallas Love Field
+G.dfw	H	\bDFW\b	达福	達福			達福機場 in prose
+G.terminal_d	H	\bTerminal D\b	D 航站楼	D 航廈
+G.terminal	H	\bterminal\b	航站楼	航廈
+G.intlparkway	H	\bInternational Parkway\b	国际大道	國際大道			GT-NAMES gloss
+G.stemmons	H	\bStemmons\b	斯特蒙斯	史坦蒙斯			the freeway; 高速公路 added at the first mention only
+G.carpenter	H	\bCarpenter Freeway\b	卡彭特高速公路	卡本特高速公路			
+G.commerce	H	\bCommerce\b	商业街	商業街			Commerce Street
+G.elm	H	\bElm\b	榆树街	榆樹街			Elm Street
+G.pacific	H	\bPacific\b	太平洋大道	太平洋大道			Pacific Avenue (the light-rail line)
+G.reunion	H	\bReunion\b	重逢塔	重聚塔			TW 重聚塔; CN 重逢塔 (ctrip usage)
+G.globe	H	\bthe globe\b|\bReunion's globe\b	球体	球體
+G.trinity	H	\bthe Trinity\b	特里尼蒂河	三一河			TW 三一河; CN 特里尼蒂河 (新华社)
+G.levee	H	\bthe levee\b	堤防	堤防
+G.floodway	M	\bthe floodway\b	泄洪道	氾洪道
+G.designdistrict	H	\bthe Design District\b	设计区	設計區
+G.magnolia	H	\bMagnolia\b	木兰大厦	木蘭大樓			the Magnolia Building
+G.pegasus	H	\bPegasus\b	飞马	飛馬			the red neon flying horse
+G.horse	H	\bthe horse\b|\bhorses\b	马	馬
+G.conventioncenter	H	\bthe convention center\b	会展中心	會議中心			
+G.stadium	H	\bthe stadium\b	体育场	體育場
+G.london	H	\bLondon\b	伦敦	倫敦
+G.heathrow	H	\bHeathrow\b	希思罗	希斯洛
+G.leeds	H	\bLeeds\b	利兹	里茲
+G.singapore	H	\bSingapore\b	新加坡	新加坡
+G.ireland	H	\bIreland\b	爱尔兰	愛爾蘭
+G.channel	H	\bthe Channel\b	英吉利海峡	英吉利海峽
+G.atlantic	H	\bthe Atlantic\b	大西洋	大西洋
+G.texas	H	\bTexa[sn]\b	得州	德州			"the most Texan thing" 最德州
+G.metroplex	H	\bthe Metroplex\b	都会区	都會區			達福都會區 at first use
+G.manhattan	H	\bManhattan\b	曼哈顿	曼哈頓
+G.downtown	H	\bdowntown\b	市中心	市中心
+G.core	M	\bout of the core\b	核心区	核心區
+G.northdallas	H	\bnorth Dallas\b	达拉斯北部	達拉斯北區			
+G.utc	H	\bUTC\b	=	=
+G.river	H	\bthe river\b	河	河			the Thames, unnamed
+G.ocean_rows	H	=\bOCEAN\b ;; @types code	海洋	海洋
+G.lascolinas_rows	H	=\bLAS COLINAS\b ;; @types code	拉斯科利纳斯	=			
+#
+# --- AVIATION ---
+A.heavy	H	\bheav(?:y|ies)\b ;; @except ch_03.007	重型机	重型機			the wide-body; the father's word; the rows' word. The can's "heavy hollow sound" is excepted
+A.737	H	\b737s?\b	=	=
+A.tripleseven	H	\btriple-seven\b	七七七	七七七
+A.rakedwingtips	M	\braked wingtips\b	斜削翼尖	斜削翼尖
+A.onfinal	M	\bon final\b	进近	最後進場
+A.runways1718	M	\bthe seventeens and eighteens\b	17 和 18 跑道	一七和一八跑道			DFW south flow
+A.27L	H	\btwenty-seven left\b	二七左	二七左			Heathrow 27L
+A.27L_rows	H	\b27L\b	=	=
+A.westerly	H	\bwesterly\b	西风	西風
+A.crosswind	H	\bcrosswind\b	侧风	側風
+A.cleared	H	\bcleared to land\b	可以着陆	可以落地			ATC phraseology
+A.tower	H	\bplay the tower\b	塔台	塔台			the observation plaza's speakers
+A.approach	H	\bthe approach\b	进近	進場
+A.arrival	H	\bthe arrival\b	进近	進場
+A.arrivals	H	\barrivals\b ;; @accept 入境|進場	入境	入境			international arrivals; "every arrival has swung around" is A.arrival
+A.cruise	H	\bthe cruise\b	巡航	巡航
+A.descent	H	\bthe descent\b	下降	下降
+A.descending	H	\bdescending\b	下降	下降
+A.landing	H	\bthe landing\b	降落	降落			"Why the landing"
+A.landinglights	H	\blanding lights\b	着陆灯	降落燈			GT-TERMS: 降落燈 (never 落地燈, a floor lamp)
+A.jetbridge	H	\bjet bridge\b	廊桥	空橋
+A.passport	H	\bpassport control\b	边检	證照查驗
+A.carousel	H	\bcarousel\b	行李转盘	行李轉盤
+A.frosted	H	\bfrosted doors\b	磨砂玻璃门	磨砂玻璃門
+A.board	M	\bthe board\b	航班信息屏	看板			the arrivals board
+A.DELAYED	H	=\bDELAYED\b	延误	延誤
+A.LANDED	H	=\bLANDED\b	已降落	已降落
+A.ATGATE	H	=\bAT GATE\b	已到登机口	已到登機門
+A.celllot	M	\bcell lot\b	手机等候停车场	手機等候停車場
+A.toll	H	\btoll\b ;; @accept 過路費	收费	收費			收費站 / 過路費
+A.ticketarm	H	\bticket arm\b	道闸	柵欄
+A.skybridge	H	\bskybridge\b	空中走廊	空中走廊
+A.garage	H	\bgarage\b	停车场	停車場
+A.receiver	H	\breceiver\b	接收器	接收器			the ADS-B receiver the size of a thumb
+A.transponder	H	\btransponders?\b	应答机	應答機
+A.climbs	H	\bclimb(?:s|ing)? out\b	爬升	爬升
+A.fence	H	\bthe fence\b	围栏	圍籬			the airfield fence
+A.airfield	H	\bsouth end of the field\b	机场	機場			the airport, not the KELVIN field
+A.yoke	M	\byoke\b	驾驶盘	駕駛盤
+A.throttle	M	\bthrottle quadrant\b	油门杆组	油門桿組
+A.simulator	H	\bsimulators?\b	模拟器	模擬器
+A.byhand	M	\bby hand\b	手动	手動			flying by hand
+A.cargo	M	\bCargo\b	货机	貨機
+A.aircraft	H	\baircraft\b ;; @accept 航空器	飞机	飛機
+A.plane	H	\bplanes?\b	飞机	飛機
+A.flight	M	\bflights?\b ;; @accept 飛行|航道	航班	班機			the scheduled flight; "flight path" 航道; "the long-flight kind of quiet" 長途飛行
+A.runway	H	\brunways?\b	跑道	跑道
+A.lights_patient	H	\bpatient lines?\b	耐心的队伍	耐心的隊伍			the landing lights "in their patient lines"
+A.turnaround	M	\bturn(?:s|ed|ing)? around\b|\bturned at\b	掉头	掉頭			the airport reversing its flow
+A.southwind	H	\bsouth wind\b	南风	南風
+A.lastflight	M	\bthe last London flight\b	最后一班伦敦航班	最後一班倫敦班機
+A.gate	H	\bgate\b	登机口	登機門
+A.lovetraffic	M	\bLove Field traffic\b	爱田机场的航班	愛田機場的航班
+#
+# --- THE CAR ---
+C.wheel	H	\bthe wheel\b	方向盘	方向盤			"give it the wheel" 把方向盤交給它; the suitcase's wheel is excepted
+C.givewheel	H	\bgive it the wheel\b	把方向盘交给它	把方向盤交給它
+C.ribbon	H	\bribbon\b	缎带	緞帶			the blue ribbon on the screen
+C.mirrors	H	\bmirrors?\b	后视镜	後照鏡
+C.HOME	H	=\bHOME\b	回家	回家			the screen's guess, translated in 「」
+C.screen	H	\bthe screen\b	屏幕	螢幕
+C.map	H	\bthe map\b	地图	地圖
+C.dashboard	H	\bdashboard\b	仪表盘	儀表板
+C.heat	H	\bthe heat\b	暖气	暖氣			the car's and the house's heating; "the day's heat" is excepted
+C.hazards	H	\bhazards\b	双闪	雙黃燈
+C.ramp	H	\bramps?\b	坡道	坡道
+C.spiral	H	\bspiral\b	螺旋	螺旋			the spiral ramp
+C.curb	M	\bthe curb\b	路边	路邊
+C.toll_posts	M	\btoll posts itself\b	过路费自动记	過路費自己記
+C.heygrok	H	\bHey Grok\b	嘿，Grok	嘿，Grok
+C.unlocks	M	\bunlocks\b	解锁	解鎖
+C.tires	H	\btires\b	轮胎	輪胎
+#
+# --- THE OFFICE, THE MONEY, THE MODELS ---
+O.company	H	\bthe company\b	公司	公司
+O.money	M	\bmove money\b|\bmoves money\b	资金	資金			搬動資金
+O.models	H	\bmodels?\b	模型	模型
+O.tests	H	\btests?\b	测试	測試
+O.evaluation	H	\bEvaluation\b	评测	評測
+O.council	H	\bthe (?:review )?council\b	审查委员会	審查委員會
+O.presentation	H	\bpresentation\b	演示	簡報
+O.slide	H	\bslide titled\b	幻灯片	投影片
+O.hole	M	\ba hole in it\b|\bthe hole\b	一个洞	一個洞			the presentation's hole
+O.flagged	H	\bflagged\b	标记	標記
+O.retrain	H	\bretrained\b	重新训练	重新訓練
+O.features	H	\bthe features\b	特征	特徵
+O.data	H	\bthe data\b	数据	資料
+O.live	H	\bwent live\b	上线	上線
+O.pipeline	H	\bpipeline\b	管道	管線
+O.config	H	\bconfiguration file\b	配置文件	設定檔
+O.sixes	H	\bsixes\b	六	六			"the sixes" 那些六; "Fourteen sixes" 十四個六
+O.fix	H	\bThe fix is\b	修正只有	修正只有			"The fix is four lines." 「修正只有四行。」 "The fix is one line." 「修正只有一行。」
+O.green	H	\bgreen\b	绿	綠
+O.processes	H	\bprocesses\b	进程	程序			TW 程序 = process
+O.sandbox	H	\bsandbox\b	沙箱	沙盒
+O.testdev	M	\bTest and dev\b	测试与开发	測試與開發
+O.badge	H	=\bbadge\b ;; @accept 刷證	工牌	識別證			"badge in" 刷證進去
+O.badge_rows	H	=\bBADGE\b ;; @types code	=	=
+O.schedule	M	\bthe schedule\b	排程	排程
+O.group	M	\byour group\b|\bthe whole group\b	组	組
+O.londonoffice	H	\bthe London office\b	伦敦办公室	倫敦辦公室
+O.transfers	H	\btransfers\b	转账	轉帳
+O.companycard	H	\bthe company card\b	公司卡	公司卡
+O.meeting	H	\bmeetings?\b	会议	會議
+O.office	H	\bthe office\b	办公室	辦公室
+O.desk	H	\bdesk\b	桌	桌
+O.laptop	H	\blaptop\b	笔记本电脑	筆電
+O.monitor	H	\bmonitors?\b	显示器	螢幕
+O.sensors	H	\bsensors\b	感应器	感應器			the motion sensors
+O.vacuum	H	\bvacuum\b	吸尘器	吸塵器
+O.openmodels	H	\bsmall open models\b	小型开源模型	小型開源模型
+O.profile	M	\bprofile photo\b	头像	大頭貼			
+O.postage	H	\bpostage stamp\b	邮票	郵票
+O.carservice	M	\bcar service\b	接送车	接送車
+O.text	H	\btext(?:s|ed|ing)?\b	消息	訊			傳訊息 / 簡訊 / 訊 (the rows' "text")
+O.message	H	\bthe message\b	消息	訊息
+O.phone	H	\bphone\b	手机	手機
+O.note	H	\ba blank note\b	备忘录	備忘錄
+O.chime	M	\bchimes\b	响	響			the screen chimes
+#
+# --- THE ROOM AND THE FIELD (prose vocabulary) ---
+F.room	H	\bthe (?:smallest )?room\b	房间	房間
+F.smallest	H	\bthe smallest room\b	最小的房间	最小的房間
+F.field	H	=\bfield\b ;; @except ch_03.003,ch_13.005	场	場			KELVIN; the airfield segment is A.airfield (exception set after the census)
+F.cell	H	\bcells?\b ;; @except ch_03.003	格	格			"Every square is one cell" 每一個方塊就是一格; "cell lot" is excepted
+F.angle	H	\ban angle\b	角度	角度
+F.compass	H	\bcompass needles?\b	罗盘指针	羅盤指針
+F.bands	M	\bbands\b	色带	色帶
+F.whorls	M	\bwhorls\b	涡纹	渦紋
+F.pinwheel	H	\bpinwheels?\b	风车	風車			the vortex
+F.knot	H	\bknots?\b	结	結			Kelvin's knots; the field's concepts
+F.partner	H	\bpartner\b	伴	伴
+F.concepts	H	\bconcepts\b	概念	概念
+F.drift	M	\bdrift\b	漂移	漂移
+F.temperature	H	\btemperature\b	温度	溫度
+F.edge	M	\bthe edge\b ;; @accept 邊界|邊	边缘	邊緣			the KT edge 邊緣; the field boundary ("wired to the edge") 邊界; the sheet's east/north/south edge 東邊/北邊/南邊 (GT-CANON)
+F.loop	H	\ba loop\b|\bthe loop\b	循环	迴圈
+F.physics	H	\bphysics\b	物理	物理
+F.helium	H	\bhelium\b	氦	氦
+F.superconductors	H	\bsuperconductors\b	超导体	超導體
+F.thinfilms	M	\bthin films\b	薄膜	薄膜
+F.atoms	H	\batoms\b	原子	原子
+F.fluid	H	\ba fluid\b	流体	流體			knots in a fluid
+F.frontier	H	\bfrontier\b	前沿	前沿
+F.idle	H	\bIdle\b	闲置	閒置
+F.cards	H	\bcards?\b	卡	卡			the eight GPU cards; the company card contains 卡 too
+F.fans	H	\bthe fans\b	风扇	風扇
+F.breath	H	\btake a breath\b|\btakes a breath\b	吸了一口气	吸了一口氣			"the machines take a breath"
+F.rack	H	\brack\b	机架	機架
+F.machines	H	\bmachines\b	机器	機器
+F.airhandler	M	\bair handler\b	空调机组	空調箱			
+F.spaceheater	H	\bspace heater\b	电暖器	電暖器
+F.labelmaker	H	\blabel maker\b	标签机	標籤機
+F.ziptie	M	\bzip ties\b	束带	束帶
+F.breadbox	M	\bbread box\b	面包箱	麵包箱
+F.lock	M	\bthe lock\b	门锁	門鎖
+F.sheet	L	\bsheet\b	片	片			一片顏色 / 那片 (no automatic check)
+F.record	H	\bthe record\b	记录	紀錄			CN spells the noun 记录 (纪录 only in 纪录片 / 世界纪录); the TW noun is 紀錄
+F.recording	M	\brecording\b ;; @accept 錄影|錄下	记录	紀錄			
+F.row	H	\brows?\b	笔	筆			TW 列 = row; CN 行 = row
+F.nucleate	H	\bnucleate\b	成核	成核
+F.pin	H	=\bpin\b ;; @types code	钉住	釘住
+F.settle	H	\bsettle[sd]?\b	落定	落定			a conclusion
+F.certified	H	\bcertified\b	已认证	已認證
+F.quiet	H	\bquiet\b	静	靜			the field's state and the word in prose (安靜 / 靜著 contain it)
+F.wake	H	\bwake\b	醒	醒
+F.stir	M	\bstirs?\b|\bstirring\b ;; @accept 動	搅动	攪動
+F.expect	M	\bexpect(?:ation|ed|s)?\b	预期	預期
+F.expect_rows	H	=\bexpect\b ;; @types code	预期	預期
+F.open_rows	H	=\bopen\b ;; @types code	未闭	未閉			the row state "open" = the expectation not closed
+F.met_rows	H	=\bmet\b ;; @types code	应验	應驗			
+F.window_rows	H	=\bwindow \d{2}:\d{2}	时窗	時窗			the expectation window with its time range; "the window, 48" and "window seat" are not it
+F.closed	H	\bthat (?:hasn't|hadn't) closed\b|\brow has closed\b	闭合	閉合
+F.waiting	H	\bThat's waiting\b	那就是等	那就是等
+F.doesntwait	H	\bIt doesn't wait\b	它不会等	它不會等
+F.waited	H	\bIt waited\b	它等了	它等了
+F.fork	H	\bforks?\b|\bforked\b	分叉	分叉
+F.rewind	H	\brewind\b	倒带	倒帶
+F.discard	H	\bdiscard\b	舍弃	捨棄
+F.join	H	=\bjoin\b ;; @types code	并入	併入
+F.replay	H	\breplay\b	回放	重播			CN 重播 = rebroadcast; the row verb is 回放 on the mainland
+F.reverse	H	\bin reverse\b	反向	反向			"You run it in reverse"
+F.drive_rows	H	=\bdrive\b ;; @types code	驱动	驅動			the boundary drive
+F.push	H	\bpush(?:es)?\b|\bpushed\b	推	推			"Anything I tell it can push on it"
+F.lane	H	\blane\b	通道	通道			the field's lanes (singular); road lanes are 車道
+F.ORGAN	H	=\bORGAN\b	=	=
+F.WORLD	H	=\bWORLD\b	=	=
+F.SKY	H	=\bSKY\b	=	=
+F.CLOCK	H	=\bCLOCK\b	=	=
+F.BODY	H	=\bBODY\b	=	=
+F.MIND	H	=\bMIND\b	心智	心智
+F.ROOM	H	=\bROOM\b	房间	房間
+F.LAMP	H	=\bLAMP\b	灯	燈
+F.RAIL	H	=\bRAIL\b	栏杆	欄杆
+F.WEATHER	H	=\bWEATHER\b	天气	天氣
+F.SMALL	H	=\bSMALL\b	小的那个	小的那個			the P4 field inside the room
+F.carve	H	\bcarve[sd]?\b	刻	刻			"carve: yes/no/none" 刻：是/否/無
+F.rent	H	\brent\b	租	租
+F.paying	H	\bstopped paying\b	不再缴租	不再繳租
+F.keep	H	\bearn(?:s|ed) its keep\b	饭钱	飯錢			earn its keep = 賺回飯錢 (the coat, the knots); the substring 飯錢 holds across 賺回了飯錢
+F.bits	H	\bbits\b|\bbit for bit\b|\bto the (?:last )?bit\b	比特	位元
+F.hash	H	\bhash\b ;; @types para,dialogue	哈希	雜湊			prose: 雜湊值; the rows keep the Latin label
+F.hash_rows	H	=\bhash\b ;; @types code	=	=			kept Latin in the rows
+F.ckpt	H	\bckpt\b	=	=			a machine label beside a hash: kept Latin in the rows (GT-CANON, GT-PRECEDENT)
+F.seed	H	\bseed\b	=	=			kept Latin in the rows
+F.pagetable	H	\bpage table\b	页表	分頁表
+F.tile	M	\btile\b	区块	區塊			four bytes a tile
+F.bytes	H	\bbytes\b	字节	位元組
+F.exact	H	\bexact\b	精确	精確			the rows' "exact"; "exactly, to the last bit"
+F.copy	H	\bhas a copy\b|\bthe copies\b	副本	副本
+F.copied	H	\bnot copied\b	复制	複製
+F.copy_pegasus	M	\bThat one's a copy\b	复制品	複製品
+F.lie	H	\byou lie to it\b|\bI lied\b	说谎	說謊
+F.imagin	H	\bimagin(?:ed|es|ing|ation)\b	想象	想像			TW 想像 / CN 想象
+F.unthink	M	\bun-think\b|\bun-imagined\b	收回	收回			it can take back what it thought
+F.takeback	H	\btake(?:n)? (?:something |it )?back\b	收回	收回			"Everything else it can take back"; "taken back: 0"
+F.voice	H	\ba voice\b	声音	聲音			"Did you ever give it a voice?"
+F.glad	H	\bglad\b	高兴	高興			the knot for glad
+F.missedyou	H	\bI missed you\b	我想你	我想你
+F.bookkeeping	H	\bbookkeeping\b	记账	記帳
+F.tidies	M	\bIt tidies\b	它会整理	它會整理
+F.dream	H	\bdream(?:s|ed|ing)?\b	梦	夢			TW 作夢 / CN 做梦
+F.noise	H	\bnoise\b	噪声	雜訊
+F.terrain	H	\bterrain\b	地形	地形
+F.bleak	H	\bbleak\b	凄凉	淒涼
+F.local	H	\bLocal\b	本地的	本地的			the field's clock
+F.table	H	=\bIt's a table\b	表	表			"It's a table. A list of what used to be true"
+F.list	H	\ba list of what\b	清单	清單
+F.confused	H	\bconfus(?:ed|ion)\b	困惑	困惑
+F.freeknots	H	\bfree knots\b	自由的结	自由的結
+F.level	H	\blevel\b ;; @except ch_08.004	层	層			"level six" 第六層; "eye level" is excepted
+F.coarse	M	\bcoarse\b	粗	粗
+F.holdout	M	\bhold out the next ten\b	留着不看	留著不看
+F.commit	M	\bCommit the forecast\b	把预测先写死	把預測先寫死
+F.forecast	H	\bforecast\b	预测	預測
+F.luck	H	\bluck\b	运气	運氣
+F.distinction	H	\bdistinction\b	区分	區分
+F.split	M	\bsplit\b	分裂	分裂
+F.birth	H	\ba birth\b	诞生	誕生
+F.born	H	\bborn\b	生	生			born in pairs
+F.die	H	\bthey can die\b	死	死
+F.pairs	H	\bin pairs\b	成对	成對
+F.merge	H	\bmerges\b	合并	合併			merges knots that stopped paying
+F.reach	H	\bcan reach which\b|\bthe something reaches\b|\ba push there travels\b	够	搆			prose: 搆得到 / 搆到 (GT-CANON); the row "computed by reach" is F.computed_reach 觸及
+F.mind	H	\ba mind\b	心智	心智			"it isn't a mind"
+F.oldtruths	H	\bwhat used to be true\b	曾经为真	曾經為真
+F.hour_twice	H	\bhour (?:that )?happen(?:s)? twice\b|\bthe same hour twice\b	两次	兩次
+F.turnoff	H	\bturn it off\b|\bturned it off\b	关掉	關掉
+F.whose	H	\bWhose is it to stop\b	该由谁来停	該由誰來停
+F.hashmatch	H	\bThe hash matches\b	杂凑值吻合	雜湊值吻合
+F.lavalamp	H	\blava lamp\b	熔岩灯	熔岩燈
+F.pond	H	\ba pond\b	池塘	池塘
+F.space_heater_low	M	\ba space heater on low\b	开到最小的电暖器	開到最小的電暖器
+F.watt	H	\b790 W\b	=	=
+F.nf	H	\bn_f\(S\)	=	=
+F.base	H	\bbase\b	基准	基準			n_f(S) 2.3× base
+F.stereogram	H	\bstereogram\b	立体图	立體圖
+F.door_sized	M	\bthe size of a door\b	门那么大	門那麼大
+F.fingernail	M	\bthe size of a fingernail\b	指甲大小	指甲大小
+F.thumb	H	\bthe size of a thumb\b	拇指大小	拇指大小
+F.eightpieces	H	\beight pieces\b	八块	八塊
+F.billion	H	\bA billion and change\b	十亿出头	十億出頭
+F.via_S	H	\bvia S\b	经 S	經 S			the row "via S" and the italic in prose
+F.region	M	\bregion\b	区域	區域
+F.gray	H	\bgoes gray\b	变灰	變灰
+F.red	H	\bgone red\b|\bsitting red\b	红	紅
+F.melt_rows	H	=\bmelt\b ;; @types code	熔化	熔化			
+F.regrow_rows	H	=\bregrow\b ;; @types code	重长	重長
+F.slice_rows	H	=\bslice\b ;; @types code	切片	切片
+F.lamp_rows	H	=\blamp\b ;; @types code	灯	燈
+F.shade_rows	H	=\bshade\b ;; @types code	罩	罩
+F.house_rows	H	=\bhouse\b ;; @types code	屋	屋
+F.body_rows	H	=\bbody\b ;; @types code	体	體
+F.sky_rows	H	=\bsky\b ;; @types code	天	天			lowercase "sky" in rows
+F.field_rows	H	=\bfield\b ;; @types code	场	場
+F.tape_rows	H	=\btape\b ;; @types code	记录带	紀錄帶			
+F.readers_rows	H	=\breaders\b ;; @types code	读者	讀者
+F.keeper	H	\bkeeper\b	保管人	保管人			BADGE/keeper; rule 1 "kept, not copied" 被保管
+F.kept	H	\bhe is kept\b	被保管	被保管
+F.depth_rows	H	=\bdepth\b ;; @types code	深度	深度
+F.rule_rows	H	=\brule\b ;; @types code	规则	規則
+F.note_rows	H	=\bnote\b ;; @types code	注	註
+F.edge_rows	H	=\bedge\b ;; @types code	边	邊			the "edge" rows of XVI
+F.branch_rows	H	=\bbranch\b ;; @types code	分支	分支
+F.history_rows	H	=\bhistory\b ;; @types code	历史	歷史
+F.rendering_rows	H	=\brendering\b ;; @types code	渲染	渲染
+F.sources_rows	H	=\bsources\b ;; @types code	光源	光源			sources 1 (the lamp)
+F.horizon_rows	H	=\bhorizon\b ;; @types code	视界	視界
+F.occupants_rows	H	=\boccupants\b ;; @types code	住户	住戶
+F.glow_rows	H	=\bglow\b ;; @types code	余晖	餘暉			the cosmic glow
+F.stars_rows	H	=\bstars\b ;; @types code	星	星
+F.galaxies_rows	H	=\bgalaxies\b ;; @types code	星系	星系
+F.planets_rows	H	=\bplanets\b ;; @types code	行星	行星
+F.planes_rows	H	=\bplanes\b ;; @types code	飞机	飛機
+F.running_rows	H	=\brunning\b ;; @types code	运行中	運行中
+F.rooms_rows	H	=\brooms\b ;; @types code	房间	房間
+F.gears_clock	H	=\bgeared\b ;; @types code	齿轮	齒輪
+F.runsdown_rows	H	=\bruns down\b ;; @types code	走完	走完			the lamp runs down
+F.costsheat	H	\bcosts heat\b	热	熱
+F.cheap_rows	H	=\bcheap\b ;; @types code	便宜	便宜			slow is cheap
+F.stays_rows	H	=\bstays\b ;; @types code	不变	不變			gap 5 h (stays)
+F.notreached	H	=\bnot reached\b ;; @types code	未到	未到
+F.notcomputed	H	=\bnot computed\b ;; @types code	未计算	未計算
+F.overwater	H	\bover (?:the )?water\b	海上	海上
+F.midpoint	H	\bthe midpoint\b	中点	中點
+F.windowseat	H	\bwindow seat\b	靠窗的座位	靠窗的座位
+F.blind	H	\bthe blind\b|\bblind up\b	遮阳板	遮陽板
+F.asleep	H	\basleep\b	睡	睡
+F.watching_rows	H	=\bwatching\b ;; @types code	看着	看著
+F.hold_rows	H	=\bhold at\b ;; @types code	停在	停在			fork B hold at 03:12
+F.runon_rows	H	=\brun on\b ;; @types code	继续跑	繼續跑
+F.down_rows	H	=\bdown 27L\b ;; @types code	落地	落地
+F.up_rows	H	=\bup\b ;; @types code ;; @except ch_16.002,ch_17.006	醒	醒			"IRIS up reads it"; "blind up" is handled by F.blind
+F.landed	H	\bLanded\b	落地了	落地了			her text "Landed."
+F.lit_empty	H	\blit(?:,| and) empty\b	亮着，空着	亮著，空著
+F.wrong11	H	\bwrong, eleven minutes\b	错了，十一分钟	錯了，十一分鐘
+F.fourlines	H	\bfour lines, green\b	四行，绿	四行，綠
+F.can_cold	H	\bthe can, cold\b	那罐，冰的	那罐，冰的
+F.lookedaway	H	\blooked away\b	移开了视线	移開了視線
+F.sorryfor	H	\bsorry for\b	道了歉	道了歉			the speech (sorry for)
+F.stillopen	H	\bstill open\b	仍未闭	仍未閉
+F.notforlist	H	\bnot for the list\b	不是为了那张清单	不是為了那張清單
+F.seen_nothad	H	\bseen\.\s+not had\.	见过。未有。	見過。未有。			
+F.why_norow	H	\bwhy: no row\b	为什么：没有这一笔	為什麼：沒有這一筆
+F.noI	H	\bit has no I\.\s+it has her\.	它无我。它有她。	它無我。它有她。			
+F.quietnot	H	\bquiet is not sleep and not death\b	静不是睡，也不是死	靜不是睡，也不是死
+F.stop_pause	H	\bthe stop is a pause\.\s+nothing is deleted\.	停是暂停。无一删除。	停是暫停。無一刪除。			
+F.nolastrow	H	\bno last row\.\s+a latest one\.	没有最后一笔。只有最新的一笔。	沒有最後一筆。只有最新的一筆。
+F.runhim	H	\brun him\.\s+write her\.	跑他。写她。	跑他。寫她。
+F.someone_there	H	\bthere is someone there\b	那里有人	那裡有人
+F.nothingcarve	H	\bnothing written here can carve\b	这里写下的，都不能刻	這裡寫下的，都不能刻
+F.tuesday_wrote	H	\ba Tuesday it wrote\b	它写的一个星期二	它寫的一個星期二
+F.say_row	H	\bSay it's a Tuesday\b	假设这是一个星期二	假設這是一個星期二			the ch_01 opener must begin with these nine characters (R1)
+F.a_man_porch	H	\ba man on a porch, looking up\b	一个站在门廊上往上看的男人	一個站在門廊上往上看的男人
+F.word_sign	H	\ba word on a sign\b	路牌上的一个字	路牌上的一個字
+F.half_hemisphere	H	\bhalf a hemisphere\b	半个半球	半個半球
+F.every_transponder	H	\bevery transponder\b	每一具应答机	每一具應答機
+F.restored	H	\brestored\b	还原	還原
+F.thisone_last	H	\bthis one: last\b	这一个：最后	這一個：最後
+F.hoursleft	H	\bhours left\b	剩余时数	剩餘時數
+F.mass_sun	H	\bmass 0\.08 sun\b	质量 0.08 太阳	質量 0.08 太陽
+F.light_sun	H	\blight 1/14000 sun\b	光 1/14000 太阳	光 1/14000 太陽
+F.falling	H	=\bfalling\b ;; @types code	衰落中	衰落中			the lamp falling
+F.inner_outer	H	\binner 290 K\b	内 290 K	內 290 K
+F.view_none	H	\bview: none\b	视野：无	視野：無
+F.kind_rows	H	=\bkind\b ;; @types code	类	類			field kind
+F.held_edge	H	\bheld at the edge\b	持在边缘	持在邊緣
+F.ocean_glass	H	\bocean to glass of water\b	海洋之于一杯水	海洋之於一杯水
+F.pieces_know	H	\bpieces: it does not know\b	块数：它不知道	塊數：它不知道
+F.think_rev	H	\bthink reversible\b	思考可逆	思考可逆
+F.conclude_erase	H	\bconclude erase\b	结论即抹除	結論即抹除
+F.authors	H	\bwhat it authors cannot carve it\b	它自己写的刻不了它	它自己寫的刻不了它
+F.labelstrip	H	\bfrom a label strip, a door, P4\b	来自一条标签带、一扇门、P4	來自一條標籤帶、一扇門、P4
+F.unbroken	H	\bunbroken\b	未断	未斷
+F.first_rows	H	=\bfirst\b ;; @types code	首	首			field first 2026-06-14
+F.quiet_since	H	\bquiet since\b	静 自	靜 自
+F.nothing_descends	H	\bnothing descends\b	无物降下	無物降下
+F.balance	H	\bbalance \+	结余 +	結餘 +
+F.paidvia	H	\bpaid via: room\b	以房间支付	以房間支付
+F.run_rows	H	=\brun 7\.2e8\b ;; @types code	已跑 7.2e8	已跑 7.2e8
+F.computed_reach	H	\bcomputed by reach\b	依触及计算	依觸及計算
+F.every_cell	H	\bevery cell that mattered, most that didn't\b	每一个要紧的格，和大多数不要紧的	每一個要緊的格，和大多數不要緊的
+F.badge_keeper	H	\bbadge = keeper\b	工牌 = 保管人	識別證 = 保管人
+F.written_rule3	H	\bwritten \(rule 3\)	写的	寫的			
+F.colleague	H	\bcolleague\b	同事	同事
+F.crowd	H	\bcrowd\b	人群	人群
+F.hesaidso	H	\bhe said so\b	他说的	他說的
+F.hisface	H	\bhis face\b	他的脸	他的臉
+F.smallone_listens	H	\bthe small one listens\b	小的那个在听	小的那個在聽
+F.decides_right	H	\bdecides she is right\b	决定她是对的	決定她是對的
+F.taken_back0	H	\btaken back: 0\b	收回：0	收回：0
+F.row_saved	H	\brow saved, power spent\b	这笔已存，电已耗	這筆已存，電已耗
+F.one_tooth	H	\bone tooth to one\b	一齿对一齿	一齒對一齒
+F.theonlyone	H	\bthe only one that does\b	唯一会走完的	唯一會走完的
+F.turn_per	H	\b1 turn per room s\b	每房间秒 1 转	每房間秒 1 轉
+F.s_per_s	H	\b1 s per s\b	每秒 1 秒	每秒 1 秒
+F.expect_off	H	\bexpect off 1 h\b	预期 差 1 h	預期 差 1 h
+F.whatitdid	H	\bwhat it did\b	它做了什么	它做了什麼
+F.readsit	H	\breads it\b	读了	讀了
+F.fallback_rows	H	=\bfall back\b ;; @types code	拨回	撥回
+F.dreaming_rows	H	=\bdreaming: heavy, NE, seven\b ;; @types code	做梦中：重型机，NE，七点	作夢中：重型機，NE，七點
+F.coat_lap	H	\bcoat on lap\b	大衣在膝上	大衣在膝上
+F.heat_on_rows	H	=\bheat on\b ;; @types code	暖气开	暖氣開
+F.replay_from	H	\breplay from\b	回放自	重播自			replay from 10-27 18:50
+F.lamp_out	H	\blamp\s+out\b	灭	滅			
+F.cooling	H	=\bcooling\b ;; @types code	降温中	降溫中
+F.state_held	H	\bstate held\b	状态保持	狀態保持
+F.stir_rows	H	=\bstir\b ;; @types code	搅动	攪動
+F.nE_rows	H	=\bNE\b ;; @types code	=	=			compass region tokens stay Latin in the rows (E, N, S, NE)
+F.lane_rows	H	=\blane\b ;; @types code	通道	通道
+F.frontier_rows	H	=\bfrontier\b ;; @types code	前沿	前沿
+F.level_rows	H	=\blevel 6\b ;; @types code	第 6 层	第 6 層
+#
+# --- MOTIFS, REFRAINS AND LOCKED LINES (exact wording across every site) ---
+R.nothingdue	H	nothing(?:'s| is) due	没有什么该来	沒有什麼該來			the refrain (title form 無事到期)
+R.oddweek	H	\bthe odd week\b	错开的那一周	錯開的那一週
+R.fivehours	H	=\bfive hours\b	五个小时	五個小時			lowercase only: the title Five Hours Apart is 五小時之隔
+R.handshake	H	\bexactly the right length\b|\bthe right length of time\b	刚好	剛好			
+R.syllable	H	\bsyllable\b	音节	音節
+R.behinddoors	H	\bwho's behind them\b	门后是谁	門後是誰
+R.sign	H	\bsign\b ;; @except ch_11.002,ch_16.002	牌子	牌子			the phone held up at arrivals (the "word on a sign" row is F.word_sign)
+R.thatsme	H	\bThat's me\b	是我	是我
+R.neversign	H	\bI've never had a sign before\b	从来没有人替我举过牌子	從來沒有人替我舉過牌子
+R.itsaphone	H	\bIt's a phone\b	这是手机	這是手機
+R.itsasign	H	\bIt's a sign\b	这是牌子	這是牌子
+R.mildly	H	\bmildly\b	语气平平	語氣平平			
+R.definition	H	\bcorrecting a definition in a draft\b	修正草稿里的一条定义	修正草稿裡的一條定義
+R.decides	H	\byou decide(?:, again,)? (?:that )?she's right\b	你决定她是对的	你決定她是對的			ch_04 and ch_12
+R.volunteered	H	\bvolunteered\b	自愿	自願			"Dana volunteered me." 「是黛娜替我自願的。」 "thank you for being volunteered" 「那謝謝你被自願」
+R.itwasnt	H	\bIt wasn't\b	不糟	不糟			"That's awful." / "It wasn't." 「不糟。」 (XVIII: the hour "wasn't awful" 不糟)
+R.awful	H	\bawful\b	糟	糟
+R.reassuring	M	\bvery reassuring or not at all\b	让人安心	讓人安心			
+R.texan	H	\bmost Texan\b	最得州	最德州
+R.explainsign	M	\bThat explains the sign\b	难怪有牌子	難怪有牌子
+R.disobey	M	\bdisobey Dana\b	违抗达娜	違抗黛娜
+R.terriblyfancy	M	\bterribly fancy\b	非常讲究	非常講究			"Is it terribly fancy?" / "It's terribly fancy."
+R.exceptthat	M	\beverything about it except that\b	除了这个	除了這個			
+R.lightswork	M	\bThat's how the lights work\b	运作	運作			
+R.askedaboutyou	M	\bI asked about you\b	我问的是你	我問的是你
+R.itssomething	H	\bIt's something\b|\bI'm something\b	有点什么	有點什麼			"It's something. I'm not sure it's that." / "I'm something."
+R.sadsentence	M	\ba very sad sentence to say out loud\b	说出口	說出口			
+R.clockchange	H	\bseen a clock change\b	拨钟	撥鐘			"It has never seen a clock change."
+R.weekleave	H	\bthe week leave her\b	那一周从她身上离开	那一週從她身上離開
+R.fixoneline	H	\bThe fix is one line\b	修正只有一行	修正只有一行
+R.restofit	M	\bis the rest of it\b	才是剩下的	才是剩下的			
+R.findsixes	H	\bfind the sixes\b	那些六	那些六			
+R.fourteensixes	H	\bFourteen sixes\b	十四个六	十四個六
+R.letitfind	H	\bLet it find its own\b	让它自己去找	讓它自己去找
+R.speech	H	\bthe speech\b	那套话	那套話			"the speech I give nobody"
+R.hadready	M	\byou had it ready\b	早就	早就			
+R.since2019	M	\bSince about 2019\b	大概从二〇一九年起	大概從二〇一九年起
+R.matter	H	\b(?:It'd|it'd|it would) matter to (?:it|me)\b	有差	有差			"It'd matter to it." 「對它會有差別。」
+R.tenminutes	M	\bten minutes not to ruin it\b	搞砸	搞砸			
+R.cruiseflies	M	\bThe cruise flies itself\b	巡航	巡航			
+R.someoneinseat	M	\bsomeone in the seat\b	座位上有人	座位上有人
+R.fourinme	H	\bfour in the morning in me\b	凌晨四点	凌晨四點			
+R.between	H	\bYou're between\b	你在中间	你在中間
+R.twopercent	H	\btwo percent\b	百分之二	百分之二
+R.stageplay	H	\ba stage after the play\b	散戏后的舞台	散戲後的舞台			
+R.piano	H	\bthe piano\b	钢琴	鋼琴
+R.fondly	H	\bFondly\b	向往	嚮往			"Fondly. Every few years." 「很有感情地。每隔幾年一次。」
+R.biggerdown	H	\bbigger from down here\b	从下面看比较大	從下面看比較大
+R.mostthings	H	\bMost things are\b	东西都是	東西都是			
+R.goinground	H	\bIt's going round\b	它在转	它在轉
+R.alwaysgone	H	\bIt's always gone round\b	它一直都在转	它一直都在轉
+R.onlytrue	H	\bIt's only true\b	它只是真的	它只是真的			"None of that is sad, exactly. It's only true."
+R.listofnotes	H	\ba list of notes is true about a song\b	一张音符清单对一首歌来说是真的	一張音符清單對一首歌來說是真的			ch_09 and the ch_16 note row
+R.otherone	H	\bThat's the other one\b	另一个得州	另一個德州			"That is Texas. That's the other one."
+R.notano	H	\bThat's not a no\b	不算否认	不算否認			
+R.itdid	H	\bIt earned its keep\b	它赚回饭钱了	它賺回飯錢了			"It earned its keep." / "It did." 「是。」
+R.compassneedles	M	\ba lot of compass needles\b	好多罗盘指针	好多羅盤指針
+R.clever	M	\bI'd call clever\b	称得上聪明	稱得上聰明
+R.notthat	M	\bIt isn't that\b	它不是那个	它不是那個
+R.knewbefore	H	\bIt knew before you did\b	它比你先知道	它比你先知道
+R.therebefore	H	\bIt was there before you were\b	它比你先到	它比你先到
+R.alwaysthere	H	\bIt's always there\b	它一直都在	它一直都在
+R.forcenothing	H	\bIt's not for anything\b	它不为什么	它不為什麼			"What's it for?" / "Nothing."
+R.pondplanes	H	\bknows what time the planes come\b	知道飞机几点来	知道飛機幾點來
+R.tothebit	H	\bback to the bit\b	收回到位元	收回到位元
+R.nothingthisweek	H	\bNothing this week\b	这星期没有	這星期沒有			ch_12 and the ch_16 row
+R.idontknow	H	="I don\'t know\."	我不知道	我不知道			the quoted line (ch_12) and its row (ch_16); "I don't know either" in ch_18 is free
+R.bleakbook	H	\bbleak bookkeeping\b	凄凉的记账	淒涼的記帳
+R.ofcourse	H	\bOf course you will\b	你当然会	你當然會
+R.thoughtelse	H	\beverything else down here\b	其他的	其他的			
+R.notnothing	H	\bnot nothing\b	不是没什么	不是沒什麼
+R.whylanding	H	\bwhy the landing\b	为什么是降落	為什麼是降落			"Why the landing, though?" / "You asked why the landing."
+R.heavyway	H	\bsays heavy the way\b|\bsay it the way he does\b ;; @accept 學他	跟你一样	跟你一樣			"He says heavy the way you do." / "I say it the way he does."
+R.alwaysdo	H	\bYou always do\b	你每次都这样	你每次都這樣
+R.somebodyhas	H	\bSomebody has to\b	总得有人	總得有人
+R.night	H	\bNight, (?:son|Dad)\b	晚安	晚安
+R.notusually	H	\bnot usually like this\b	平常不是这样	平常不是這樣
+R.exactlylike	H	\bexactly like this\b	就是这样	就是這樣
+R.tellanyway	H	\bTell her anyway\b	还是跟她说	還是跟她說			
+R.recording	H	\bIt's a recording when it's stopped\b	停着的时候它是记录	停著的時候它是紀錄			
+R.alivewhenrunning	H	\balive when it's running\b	跑着的时候它是活的	跑著的時候它是活的
+R.survivesme	H	\bsurvives me\b ;; @accept 活得	比我久	比我久			
+R.loyal	H	\bvery loyal\b	很忠心	很忠心
+R.illbeup	H	\bI'll be up\b	醒着	醒著			
+R.thanksroom	H	\bFor the room\b	房间的事	房間的事			"Thank you. For the room." 「謝謝你。房間的事。」
+R.thankssign	H	\bFor the sign\b	牌子的事	牌子的事			"Thank you. For the sign." 「謝謝你。牌子的事。」
+R.ridiculous	M	\bridiculous\b	可笑	可笑
+R.secondhand	H	\bsecondhand\b	二手	二手
+R.borrowedshare	M	\ba borrowed share\b	借来的一份	借來的一份
+R.click	H	\bthe (?:same |quiet )?click\b	喀	喀			the sound a problem makes when it rolls over
+R.underside	M	\bits underside\b	肚子	肚子			shows you its underside 把肚子亮給你看
+R.forno one	M	\bfor no one\b	不为任何人	不為任何人
+R.sensorsbehind	M	\bone bank of lights at a time\b	一排灯一排灯地	一排燈一排燈地
+R.earsthing	M	\byour ears do\b|\bits ears pop\b	耳朵	耳朵
+R.lullaby	M	\blullaby\b	摇篮曲	搖籃曲
+R.address	M	\byour own address\b	你自己的地址	你自己的地址
+R.wondered	M	\bwondered who was on them\b	想过上面是谁	想過上面是誰
+R.doforfree	M	\bdo for free\b	免费做	免費做			the part you would do for free
+R.simplytrue	M	\bsimply true\b	就只是真的	就只是真的			"becomes, under your hands, simply true"
+R.tower_dusk	M	\bwindows coming on in a tower at dusk\b	黄昏时一栋大楼的窗一盏盏亮起	黃昏時一棟大樓的窗一盞盞亮起
+R.whiteredaway	M	\bwhite toward you and red away\b	朝你的是白，离你的是红	朝你的是白，離你的是紅
+R.braided	M	\bbraided\b	交织	交織
+R.patientlines	M	\bpatient lines?\b	耐心	耐心
+R.ownaddress	L	\bthe way you know\b	就像你知道	就像你知道
+R.slowthought	M	\bone slow thought being thought very carefully\b	一个慢慢的念头正被很小心地想着	一個慢慢的念頭正被很小心地想著
+R.metornot	M	\bbeing met, or not\b	有人接，或者没有	有人接，或者沒有
+R.shipsmoored	M	\bships moored along a dark canal\b	停泊在黑暗运河边的船	停泊在黑暗運河邊的船
+R.deepwater	M	\bas though the ground were deep water\b	仿佛地面是深水	彷彿地面是深水
+R.stopsperforming	M	\bstops performing\b	不再表演	不再表演
+R.aquarium	M	\baquarium\b	水族箱	水族箱
+R.likedyou	M	\bpeople who liked you\b	喜欢你的人	喜歡你的人			built in a lab by people who liked you
+R.gain	M	\bthe gain\b	增益	增益
+R.cheapreliable	M	\bcompletely reliable\b	完全可靠	完全可靠
+R.lovesomeone	M	\bwaiting for someone they love\b	等着自己爱的人	等著自己愛的人
+R.stranger	M	\ba stranger\b	一个陌生人	一個陌生人
+R.hood	M	\bthe hood\b	引擎盖	引擎蓋
+R.jacket	M	\bjacket\b	外套	外套
+R.hiseyes	M	\bhis eyes\b	他的眼睛	他的眼睛
+R.wouldntmind	M	\bwouldn't have minded\b	不会介意	不會介意
+R.balloon	M	\bballoon\b	气球	氣球
+R.switcharms	M	\bswitch(?:ing)? arms\b	换手	換手
+R.postagestamp	M	\ba postage stamp isn't a face\b	一张邮票不是一张脸	一張郵票不是一張臉
+R.readsproperly	M	\bmeans to read properly\b	打算好好读	打算好好讀
+R.londoncoat	M	\ba London coat\b	一件伦敦大衣	一件倫敦大衣
+R.beautiful	M	\bbeautiful\b	美	美
+R.oneround	M	\bthe old ritual\b	老仪式	老儀式
+R.jetfuel	M	\bjet fuel and cut grass\b	航空燃油和刚割的草	航空燃油和剛割的草
+R.reportingfault	M	\bas if reporting a fault\b	像在报告故障	像在報告故障
+R.letdown	M	\bpersonally let her down\b	辜负了她	辜負了她
+R.supervising	M	\bI'm supervising\b	我在监督	我在監督
+R.mostlyunderstand	M	\bmostly understand\b	大致了解	大致了解
+R.professionalinterest	M	\bprofessional interest\b	专业的兴趣	專業的興趣
+R.loiter	M	\bcheaper to loiter\b	逗留比较便宜	逗留比較便宜
+R.everymeeting	M	\bevery meeting I've ever been in\b	我开过的每一场会	我開過的每一場會
+R.flightpath	M	\bthe flight path\b	航道	航道
+R.cantsleep	M	\bcan't sleep without\b	没有就睡不着	沒有就睡不著
+R.smalltalk	M	\bsmall talk\b	闲聊	閒聊
+R.lantern	M	\blantern\b	灯笼	燈籠
+R.nobodyexplained	M	\bnobody has explained to you yet\b	还没有人向你解释过	還沒有人向你解釋過
+R.feedyou	M	\bDana said to feed you\b	达娜说要请你吃饭	黛娜說要請你吃飯
+R.pretzels	M	\bpretzels\b	椒盐脆饼	椒鹽脆餅			
+R.promoted	M	\bpromoted from stranger to porter\b	从陌生人升成行李员	從陌生人升成行李員
+R.keptopen	M	\bkept open for you\b	专为你留着	專為你留著
+R.lookeddown	M	\blooked down at it\b	往下看它	往下看它
+R.wingsup	M	\bwings up\b	展着翅膀	展著翅膀
+R.tallest	M	\bthe tallest thing in town\b	城里最高的东西	城裡最高的東西
+R.shed	M	\ba shed\b	棚子	棚子
+R.flyinghorse	M	\bWhy a flying horse\b	为什么是飞马	為什麼是飛馬
+R.middleseat	M	\bthe middle seat\b	中间座位	中間座位
+R.southriver	M	\bsouth of the river\b	泰晤士河南岸	泰晤士河南岸			the Thames is unnamed in English; naming it is a licit clarification (GT-NAMES)
+R.onlyperson	M	\bthe only person at the party who lives in the house\b	派对上唯一住在这栋房子里的人	派對上唯一住在這棟房子裡的人
+R.lonely	M	\blonely\b	孤单	孤單
+R.setting	M	\bthe setting\b	设定	設定
+R.closes	M	\bcloses a little\b	收了一下	收了一下			something in her face closes
+R.rushhour	M	\brush hour\b	尖峰时段	尖峰時段
+R.laundry	M	\blaundry\b	洗衣服	洗衣服
+R.midnight	M	\bmidnight\b	午夜	午夜
+R.eleven_busy	H	\bIt's eleven\. And eleven is busy\b	是十一点。而十一点很忙	是十一點。而十一點很忙			ch_06 and the ch_16 row
+R.wrongtime	M	\bwrong about the time\b	错在时间	錯在時間
+R.steadying	M	\bsteadying the table\b	稳住桌子	穩住桌子
+R.appalled	M	\bappalled\b	难以置信	難以置信			helpless and a little appalled
+R.pride	M	\bisn't quite pride\b	不算是骄傲	不算是驕傲
+R.whatday	M	\bask her what day it was\b	问她那天是星期几	問她那天是星期幾
+R.giveblood	M	\bgive blood\b	献血	捐血
+R.needle	M	\bthe needle\b	针	針
+R.paidonpurpose	M	\bpaid on purpose\b	刻意付出	刻意付出
+R.goingonin	M	\banything's going on in there\b	里面有没有什么在发生	裡面有沒有什麼在發生
+R.likeanything	M	\banything is like anything for it\b|\banything was like anything for it\b	有没有任何东西对它来说像任何东西	有沒有任何東西對它來說像任何東西			ch_06 and ch_18
+R.material	M	\bthe material\b	材料	材料			"I don't think it's the material. I think it's the shape."
+R.shape	M	\bthe shape\b	形状	形狀
+R.meat	M	\bin meat\b	在肉里	在肉裡			in silicon or in meat
+R.silicon	M	\bsilicon\b	硅	矽
+R.neverknow	M	\bnever know\b	永远不会知道	永遠不會知道
+R.holdproperly	M	\bhold it properly\b	好好拿着	好好拿著
+R.onthelist	M	\bon the list\b	在清单上	在清單上
+R.television	M	\btelevision\b	电视	電視
+R.seatback	M	\ba seatback and a man's elbow\b	椅背和一个男人的手肘	椅背和一個男人的手肘
+R.bestten	M	\bthe best ten minutes there is\b	最好的十分钟	最好的十分鐘
+R.fromthefront	M	\bfrom the front\b	从前面	從前面
+R.frominside	M	\bFrom the inside\b	从里面	從裡面
+R.neverbeenin	M	\bnever once been in it\b	一次也没进去过	一次也沒進去過
+R.notawkward	M	\bisn't awkward\b	不尴尬	不尷尬
+R.itwont	M	\bIt won't\b	不会变	不會變			the amber over the airport "won't" change
+R.jetlag	M	\bjet lag\b	时差	時差
+R.notanywhere	M	\bnot anywhere\b	哪里都不在	哪裡都不在
+R.untilsunday	H	\bUntil Sunday\b	到星期天为止	到星期天為止
+R.allsays	M	\bthat is all either of you says about it\b	关于这件事你们俩说的就只有这些	關於這件事你們倆說的就只有這些
+R.asinstructed	M	\bas instructed\b	照吩咐	照吩咐
+R.wontsleep	M	\bI won't sleep\b	我睡不着	我睡不著
+R.howthisgoes	H	\bhow this goes\b	这是怎么回事	這是怎麼回事			"I know how this goes." (ch_06, ch_08)
+R.underneath	M	\bFrom underneath\b	从底下	從底下
+R.hoses	M	\bhoses down\b	冲洗	沖洗
+R.wetconcrete	M	\bwet concrete\b	湿水泥	濕水泥
+R.twofingers	M	\btwo fingers\b	两根手指	兩根手指
+R.readingeverything	M	\breading everything\b	读着一切	讀著一切
+R.hotter	M	\bit's hotter\b	更热	更熱
+R.notananswer	M	\bThat's not an answer\b	这不算答案	這不算答案
+R.onlyone	M	\bthe only one anybody from here ever gives\b	这里的人给的答案就只有这一个	這裡的人給的答案就只有這一個
+R.kitchenlit	M	\blit the way a kitchen is lit at three in the morning\b	亮得像凌晨三点的厨房	亮得像凌晨三點的廚房
+R.everleave	M	\bWould you ever leave\b	你会离开吗	你會離開嗎
+R.laughgoes	M	\bdoesn't come back\b	没有回来	沒有回來			the laugh goes up the empty street and doesn't come back
+R.toy	M	\ba toy\b	玩具	玩具
+R.derrick	M	\bsteel derrick\b	钢架	鋼架
+R.backtoback	M	\bback to back\b	背对背	背對背
+R.redgets	M	\bThe red gets on everything\b	红色沾上了一切	紅色沾上了一切
+R.usedittoo	M	\bI'd have used it too\b	我也会用它	我也會用它
+R.aimed	M	\baimed for that\b	朝它飞	朝它飛
+R.marblehush	M	\bmarble and hush\b	大理石和静	大理石和靜
+R.seven	H	="Seven[,.]"	七点	七點			"Seven," she says. "Seven."
+R.takesher	M	\btakes her\b	带走了她	帶走了她			the door turns, and takes her
+R.allnight	M	\bAll night you watched doors\b	整晚你看着门	整晚你看著門
+R.doesnotsleep	M	\bdoes not sleep\b	没有睡	沒有睡
+R.nothingelse	M	\bnothing else\b	其他什么都没脱	其他什麼都沒脫			She has taken off her shoes and nothing else
+R.listing	M	\blisting\b	歪向一边	歪向一邊			the suitcase listing on its wheel
+R.facedown	M	\bface down\b	面朝下	面朝下
+R.numberdoesntmatter	M	\bthe number doesn't matter\b	数字不重要	數字不重要
+R.notwaiting	M	\bnot waiting for anything\b	什么也不等	什麼也不等
+R.bodytime	M	\bby her body\b	以她身体的时间	以她身體的時間
+R.dozenfutures	M	\bdozen futures a second\b	每秒十几个未来	每秒十幾個未來
+R.sirennotforyou	M	\ba siren that isn't for you\b	一声不是为你响的警笛	一聲不是為你響的警笛
+R.letitgoby	M	\blet it go by\b	让它过去	讓它過去			the airport exit, let go by
+R.lastonein	M	\bthe last one in from somewhere\b	从某处进来的最后一架	從某處進來的最後一架
+R.whereitbelongs	M	\bwhere it belongs\b	它该在的地方	它該在的地方
+R.notsad	M	\bNone of that is sad\b	这些都不算悲伤	這些都不算悲傷
+R.holdsign	M	\bholds up a sign anyway\b	照样举起牌子	照樣舉起牌子
+R.armtired	M	\barm getting tired\b	手臂举酸了	手臂舉痠了
+R.itsfine	M	\bit's fine\b	没事的	沒事的			telling themselves it's fine
+R.gaveride	M	\bgave a colleague a ride\b	载了一个同事	載了一個同事
+R.youaredriving	M	\byou are driving\b	你在开车	你在開車
+R.norther	M	\bnorther\b	北风	北風
+R.nickel	M	\bnickel\b	镍币	鎳幣
+R.madeupmind	M	\bmade up its mind\b	下定了决心	下定了決心
+R.tick	M	\bwindows tick\b	窗户嗒嗒作响	窗戶嗒嗒作響
+R.calmvoice	M	\bcalm voice\b	平静的声音	平靜的聲音
+R.weekwent	M	\bthe way weeks go when they go well\b	顺利的一周都是这么过的	順利的一週都是這麼過的
+R.badcoffee	M	\bbad coffee\b	难喝的咖啡	難喝的咖啡
+R.whatwelearned	M	\bWhat we learned\b	我们学到了什么	我們學到了什麼			the slide title, in 「」
+R.twoquestions	M	\bthey asked two questions, and she answered three\b	他们问了两个问题，她答了三个	他們問了兩個問題，她答了三個
+R.goodatit	M	\bwatched her be good at it\b	看她把这件事做得很好	看她把這件事做得很好
+R.realone	M	\ba real one this time\b	这次是真的车	這次是真的車
+R.earnedkeep	H	\bIt earned its keep\b	它赚回饭钱了	它賺回飯錢了
+R.promisedtexas	M	\bI was promised Texas\b	说好的得州呢	說好的德州呢
+R.thatistexas	M	\bThat is Texas\b	这就是得州	這就是德州
+R.hardedged	M	\bhard-edged\b	棱角分明	稜角分明
+R.decidedago	M	\bdecided it some time ago without telling yourself\b	早就决定了，只是没告诉自己	早就決定了，只是沒告訴自己
+R.twentyminutes	M	\bTwenty minutes\b	二十分钟	二十分鐘
+R.issecret	M	\bIs it a secret\b	是秘密吗	是秘密嗎
+R.itsasandbox	M	\bIt's a sandbox\b	是沙箱	是沙盒
+R.asfarasitgoes	M	\bas far as it goes\b	最底了	最底了			"This is as far as it goes."
+R.nobodywanted	M	\bnobody wanted\b	没人要	沒人要			cheap because nobody wanted it; "a room no one wanted"
+R.cityunder	M	\ba city under the city\b	城市底下的城市	城市底下的城市
+R.bricked	M	\bbricked most of it up\b	用砖封了大半	用磚封了大半
+R.remembers	M	\bremembers somewhere to go\b	记得有地方可去	記得有地方可去
+R.whoskelvin	M	\bWho's Kelvin\b	克耳文是谁	克耳文是誰
+R.notaboutatoms	M	\bNot about atoms\b	原子的事不对	原子的事不對			"Was he right?" / "No. Not about atoms."
+R.thinksaboutit	M	\bthinks about it and lets you\b	想了一下，放你进去	想了一下，放你進去
+R.hotelbathroom	M	\bthe size of a hotel bathroom\b	饭店浴室那么大	飯店浴室那麼大
+R.podcast	M	\bpodcast\b	=	=			TW keeps the English word Podcast (GT-TERMS)
+R.notupdated	M	\bnot updated since August\b	八月以后就没更新	八月以後就沒更新
+R.breathes	M	\bbreathes slowly\b	缓慢地呼吸	緩慢地呼吸			the air handler
+R.isitoff	M	\bIs it off\b	它关了吗	它關了嗎
+R.quietnothingdue	H	\bIt's quiet\. Nothing's due\b	它静着。没有什么该来	它靜著。沒有什麼該來
+R.oilonwater	M	\boil on water that has stopped\b	停住了的水面油花	停住了的水面油花
+R.cantagree	M	\bcan't be made to agree\b	没办法让它们一致	沒辦法讓它們一致
+R.cantdrift	M	\bcan't drift\b	不能漂移	不能漂移
+R.doesntknowpieces	M	\bdoesn't know it's in eight pieces\b	不知道自己被切成八块	不知道自己被切成八塊
+R.formandhold	M	\bcan form and hold\b	能成形也能保持	能成形也能保持
+R.insideedge	M	\bJust inside the edge\b	刚好在边缘内侧	剛好在邊緣內側
+R.anycolder	M	\bAny colder\b	再冷一点	再冷一點
+R.anywarmer	M	\bAny warmer\b	再热一点	再熱一點
+R.fromtheseventies	M	\bphysics from the seventies\b	七〇年代的物理	七〇年代的物理
+R.otherspeech	M	\bthe other speech\b	另一套话	另一套話
+R.showme	M	\bShow me one\b	给我看一个	給我看一個
+R.costtoexist	M	\bwhat it costs to exist\b	存在的代价	存在的代價
+R.lessthanthat	M	\bLess than that one\b	比那台少	比那台少
+R.whetherthinking	M	\bwhether it's thinking or not\b	不管有没有在思考	不管有沒有在思考
+R.whatthereaches	M	\bexactly what the something reaches\b	那件事触及多远	那件事觸及多遠
+R.goodatwaiting	M	\bShe's good at it\b	她很擅长	她很擅長
+R.aplane	M	\bA plane\b	一架飞机	一架飛機			"What was that?" / "A plane."
+R.thirtydollars	M	\bThirty dollars\b	三十美元	三十美元
+R.onlysense	M	\bits only sense\b	它唯一的感官	它唯一的感官
+R.doesntknowplane	M	\bdoesn't know what a plane is\b	不知道飞机是什么	不知道飛機是什麼
+R.fourteenth	M	\bThe fourteenth\b	十四号	十四號			"Since June. The fourteenth."
+R.underyourname	M	\bunder my name\b	用我的名字	用我的名字
+R.danaknows	M	\bDana knows\b	黛娜知道	黛娜知道
+R.notthesame	M	\bThat's not the same\b	那不一样	那不一樣
+R.grateful	M	\bgrateful\b	感激	感激
+R.thebreath	M	\bThe breath\b	那口气	那口氣			"Why is that worth pointing at? The breath."
+R.allnightlamp	M	\bcosts the same all night\b	整晚花的电都一样	整晚花的電都一樣
+R.firstthing	M	\bthe first thing I had to know\b	我必须先知道的第一件事	我必須先知道的第一件事
+R.bankstatement	M	\bbank statement\b	银行对账单	銀行對帳單
+R.cantakeback	M	\bcan't take back\b	收不回来	收不回來
+R.paidforitself	M	\bpaid for itself\b	值回了自己	值回了自己			the split paid for itself
+R.noway	M	\bI don't have a way to tell it\b	我没有办法告诉它	我沒有辦法告訴它
+R.nowordforit	M	\bIt doesn't have a word\b	它没有词	它沒有詞
+R.showmetuesday	M	\bShow me Tuesday\b	给我看星期二	給我看星期二
+R.threehours	M	\bhold one open for three\b	开着三个小时	開著三個小時
+R.sawtheboard	M	\bsaw the board\b	看到看板	看到看板
+R.wholepoint	M	\bthe whole point of it\b	它的全部意义	它的全部意義
+R.whatsitfor	H	\bWhat's it for\b	它是做什么用的	它是做什麼用的
+R.notaproduct	H	\bnot a product\b	不是产品	不是產品
+R.lookinon	M	\blook in on it\b	看看它	看看它
+R.lookedaway2	M	\blooked away\b	移开了视线	移開了視線
+R.imagineplane	M	\bimagined a plane and un-imagined it\b	想像了一架飞机又把它收回去	想像了一架飛機又把它收回去
+R.hearitcoming	M	\bhear it coming and stop\b	听见它要来了，停下	聽見它要來了，停下
+R.lovelylie	M	\bit was lovely, and it was a lie\b	很美，而且是谎言	很美，而且是謊言
+R.onlyname	M	\bthe only name it has\b	它唯一的名字	它唯一的名字
+R.inrows	M	\bit says in rows\b	它都一笔一笔地说	它都一筆一筆地說
+R.contentfree	M	\bContent-free\b	不含内容	不含內容
+R.sleephalf	M	\bthe sleep half\b	睡眠那一半	睡眠那一半
+R.subtracts	M	\bsubtracts\b	减掉	減掉
+R.onesthatdontcome	M	\bthe ones that don't come\b	没来的那些	沒來的那些
+R.forawhile	M	\bFor a while\. Then it stops\b	一阵子。然后就停了	一陣子。然後就停了
+R.inyourvoice	M	\bin your voice from Tuesday\b	用你星期二的语气	用你星期二的語氣
+R.onetwice	M	\bone again\b	又变回一点	又變回一點			Sunday at two it'll be one again
+R.feedutc	M	\bfeed it UTC\b	喂它 UTC	餵它 UTC
+R.pushedgave	M	\bthe world pushed and the terrain gave\b	世界推了，地形让了	世界推了，地形讓了
+R.eightcards	M	\brunning on eight cards\b	在八张卡上跑	在八張卡上跑
+R.seehour	M	\bsee the hour happen twice\b	看那一小时发生两次	看那一小時發生兩次
+R.nothinginit	M	\bthere's nothing in it\b	里面什么都没有	裡面什麼都沒有			you open your mouth and there's nothing in it
+R.fancurves	M	\bfan curves\b	风扇曲线	風扇曲線
+R.findthatout	M	\bwatching you find that out\b	看着你发现这件事	看著你發現這件事
+R.withouthelping	M	\bwithout helping\b	不帮忙	不幫忙
+R.dontletitout	M	\bdon't let it out\b	没有吐出来	沒有吐出來
+R.builtforyourself	M	\bfor yourself and nobody else\b	给你自己、不给任何人看的	給你自己、不給任何人看的
+R.thethingitself	M	\bThe thing itself\b	就是那件事本身	就是那件事本身
+R.swungaround	M	\bswung around\b	掉了头	掉了頭
+R.cantfeelwind	M	\bcan't feel the wind\b	感觉不到风	感覺不到風
+R.neverhadto	M	\bnever had to\b	从来不需要	從來不需要
+R.turnwithit	M	\bturn around with it\b	跟着掉头	跟著掉頭
+R.untilitlands	M	\bUntil it lands\b	直到它落地	直到它落地
+R.fitwhatithad	M	\bIt fit what it had\b	它用它已有的凑上了	它用它已有的湊上了
+R.letitgo	M	\bit'll let it go\b	它会放掉	它會放掉
+R.elevenminutes	M	\bFor eleven minutes\b	错了十一分钟	錯了十一分鐘
+R.whattimeitis	M	\bknow what time it is\b	知道几点了	知道幾點了
+R.onemorething	M	\bOne more thing\b	还有一件事	還有一件事
+R.cantaccount	M	\bcan't account for\b	说不清	說不清
+R.lookthesame	M	\bthe planes look the same to me\b	我看那些飞机都一样	我看那些飛機都一樣
+R.butnottoit	M	\bBut not to it\b	但它不觉得	但它不覺得
+R.couldbeluck	M	\bcould be luck\b	可能是运气	可能是運氣
+R.cantsee	M	\bI can't see and it can\b	我看不见而它看得见	我看不見而它看得見
+R.whyshowing	M	\bWhy are you showing me\b	你为什么要给我看	你為什麼要給我看
+R.asifanswer	M	\bas if that were an answer, and it is\b	仿佛那是一个答案，而它是	彷彿那是一個答案，而它是
+R.dustburning	M	\bdust burning off\b	灰尘烧掉的味道	灰塵燒掉的味道
+R.differentcar	M	\ba different car\b	另一台车	另一台車
+R.changedsides	M	\bchanged sides\b	换了边	換了邊
+R.wrongside	M	\bthe wrong side\b	错的那一边	錯的那一邊
+R.rattled	M	\bRattled the kitchen window\b	震得厨房窗户响	震得廚房窗戶響
+R.likeafool	M	\blike a fool\b	像个傻瓜	像個傻瓜
+R.hasacopy	M	\bHe has a copy\b	他有一份副本	他有一份副本
+R.burneddown	M	\bburned down\b	烧掉	燒掉
+R.wholelife	M	\brun its whole life again\b	把它的一生重跑一遍	把它的一生重跑一遍
+R.sametobyte	M	\bthe same to the byte\b	一个字节都不差	一個位元組都不差
+R.toughplaza	M	\bNine dollars\b	九美元	九美元
+R.youremembered	M	\bYou remembered\b	你记得	你記得
+R.upperroadway	M	\bthe upper roadway\b	上层车道	上層車道
+R.lookedat	M	\bhaving it looked at\b	找人看看	找人看看
+R.textme	M	\bText me what it does\b	把它做了什么传给我	把它做了什麼傳給我
+R.eitherway	M	\beither way\b	反正	反正			"It'll be seven for me either way."
+R.saysyourname	M	\bsays your name once more\b	又说了一次你的名字	又說了一次你的名字
+R.dontdrivehome	M	\bYou don't drive home\b	你没有开车回家	你沒有開車回家
+R.lookanyway	M	\byou look at it anyway\b	你还是看了	你還是看了
+R.islandoflight	M	\ba small moving island of light\b	一座移动的小光岛	一座移動的小光島
+R.opposite	M	\bthe opposite of Tuesday\b	跟星期二相反	跟星期二相反
+R.blinks	M	\bblinks once a second\b	每秒闪一次	每秒閃一次
+R.lifts	M	\ba light lifts out of the amber\b	一盏灯从琥珀色里升起	一盞燈從琥珀色裡升起
+R.staramongstars	M	\ba star among the stars\b	群星之中的一颗星	群星之中的一顆星
+R.sodoyou	M	\bSo do you\b	你也是	你也是			"That's all it knows. So do you."
+R.goout	H	\bgo out on their own when you stop moving\b	会在你不动的时候自己熄灭	會在你不動的時候自己熄滅
+R.forawhile2	H	\band you don't, for a while\b	而你有一阵子没有停	而你有一陣子沒有停
+R.saylater	M	\bSay it's later\b	假设是后来	假設是後來
+R.tentrillion	M	\bten trillion years\b	十万亿年	十兆年			TW 十兆 / CN 十万亿
+R.countagainst	M	\bcount it against\b	对照	對照			
+R.committed	H	\bwhat that committed me to\b	承诺了什么	承諾了什麼			
+R.distinctionbehind	M	\ba distinction behind it\b	背后有一个区分	背後有一個區分
+R.peoplesay	M	\bbecause people say it\b	因为人们都这么说	因為人們都這麼說
+R.whichwaswhich	H	\bI know which was which\b ;; @accept 哪個是哪個	哪一种	哪一種			
+R.leftitthatway	M	\bI've left it that way\b	让它这样	讓它這樣			
+R.hourattherail	H	\bthe hour at the rail\b	栏杆边的那一小时	欄杆邊的那一小時
+R.runforward	M	\brun him forward\b|\bran him forward\b	往前跑	往前跑			
+R.norowforit	M	\bThere isn't a row for it\b	没有一笔是它的	沒有一筆是它的
+R.costorrent	M	\ba cost or a rent\b	一笔成本或一笔租	一筆成本或一筆租
+R.couldntprice	H	\bcouldn\'t price\b ;; @accept 定不出價	定价	定價			
+R.describing	H	\bdescribing something I would do\b	描述	描述			
+R.wrongsideofsky	M	\bthe wrong side of the sky\b	天空错的那一边	天空錯的那一邊
+R.herTime	M	\bat seven her time\b	她那边的七点	她那邊的七點
+R.nothinginit2	H	\ba dark with nothing in it\b	一片什么都没有的黑	一片什麼都沒有的黑
+R.pointsofreference	M	\bpoints of reference\b	参照点	參照點
+R.sameasoutside	M	\bthe same as the thing outside the room\b	房间外面	房間外面			
+R.planeinair	H	\bthe plane is in the air\b	飞机在空中	飛機在空中
+#
+# --- TIME WORDS (locked so every site reads the same) ---
+T.sunday	H	\bSunday\b	星期天	星期天
+T.tuesday	H	\bTuesday\b	星期二	星期二
+T.wednesday	H	\bWednesday\b	星期三	星期三
+T.thursday	H	\bThursday\b	星期四	星期四
+T.friday	H	\bFriday\b	星期五	星期五
+T.saturday	H	\bSaturday\b	星期六	星期六
+T.weekend	H	\bweekend\b	周末	週末
+T.october	H	\bOctober\b	十月	十月
+T.june	H	\bJune\b	六月	六月
+T.may	H	=\bMay\b	五月	五月
+T.august	H	\bAugust\b	八月	八月
+T.march	H	=\bMarch\b	三月	三月
+T.lastweek	H	\bthe last week of October\b	十月最后一周	十月最後一週
+T.thirtieth	H	\bthe thirtieth\b	三十号	三十號
+T.aquarterpast	H	\ba quarter past\b	一刻	一刻			a quarter past five 五點一刻
+T.halfpast	H	\bhalf past\b	半	半
+T.fahrenheit	M	\b(?:degrees|79, 71, 64, 57)\b	华氏	華氏			Fahrenheit kept; 華氏 at the first number of a scene
+T.feet	H	\bfeet\b	英尺	呎
+T.yards	H	\byards\b	码	碼
+T.miles	H	\bmiles\b	英里	英里
+T.dollars	H	\bdollars\b	美元	美元
+T.minutes	H	\bminutes\b ;; @accept 分	分钟	分鐘			
